@@ -22,17 +22,17 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="version.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/version.php">
+      <file leaf-file-name="constant.php" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/constant.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="44">
-              <caret line="2" column="29" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
+            <state relative-caret-position="66">
+              <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="process.php" pinned="false" current-in-tab="true">
+      <file leaf-file-name="process.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/process.php">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="154">
@@ -47,8 +47,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/version.php" />
         <option value="$PROJECT_DIR$/process.php" />
+        <option value="$PROJECT_DIR$/version.php" />
+        <option value="$PROJECT_DIR$/constant.php" />
       </list>
     </option>
   </component>
@@ -154,12 +155,12 @@
       <option name="presentableId" value="Default" />
       <updated>1478955130369</updated>
       <workItem from="1478955131589" duration="1000" />
-      <workItem from="1478955166497" duration="2251000" />
+      <workItem from="1478955166497" duration="3150000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2252000" />
+    <option name="totallyTimeSpent" value="3151000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1604" height="876" extended-state="0" />
@@ -183,18 +184,18 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/version.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="29" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/process.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="154">
           <caret line="7" column="22" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/constant.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
           <folding />
         </state>
       </provider>

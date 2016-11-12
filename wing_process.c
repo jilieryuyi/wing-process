@@ -146,9 +146,8 @@ PHP_MINIT_FUNCTION(wing_process)
 	memset(PHP_PATH, 0, MAX_PATH);
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 
-	zend_register_string_constant("WING_PROCESS_PHP",     sizeof("WING_PROCESS_PHP"),     PHP_PATH,                 CONST_CS | CONST_PERSISTENT, module_number TSRMLS_CC);
-	zend_register_string_constant("WING_PROCESS_VERSION", sizeof("WING_PROCESS_VERSION"), PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT, module_number TSRMLS_CC);
-
+	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
+	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );
 
 	zend_class_entry _wing_process_ce;
 	INIT_CLASS_ENTRY(_wing_process_ce, "wing_process", wing_process_methods);
@@ -168,6 +167,10 @@ PHP_MSHUTDOWN_FUNCTION(wing_process)
 	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
 	*/
+
+	if( PHP_PATH )
+		efree(PHP_PATH);
+
 	return SUCCESS;
 }
 /* }}} */
