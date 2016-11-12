@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("wing_process", "for wing_process support", "no");
+
+// Otherwise, use ARG_ENABLE
+ ARG_ENABLE("wing_process", "enable wing_process support", "no");
+
+if (PHP_WING_PROCESS != "no") {
+	EXTENSION("wing_process", "wing_process.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+}
+
