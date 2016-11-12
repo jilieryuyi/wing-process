@@ -27,6 +27,12 @@
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
 
+#include "Shlwapi.h"
+#pragma comment(lib,"Shlwapi.lib")
+
+#define WING_ERROR_FAILED  0
+#define WING_ERROR_SUCCESS 1
+
 /* If you declare any globals in php_wing_process.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(wing_process)
 */
@@ -74,12 +80,18 @@ zend_class_entry *wing_process_ce;
 * @ 构造函数
 */
 ZEND_METHOD(wing_process, __construct) {
+	
 	char *file        = NULL;  
 	char *output_file = NULL;
 	int file_len      = 0;
 	int output_len    = 0;
 	
 	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &file, &file_len, &output_file, &output_len)) {
+		return;
+	}
+
+	if (!PathFileExists(file)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "file <%s> does not found", file);
 		return;
 	}
 
@@ -93,6 +105,101 @@ ZEND_METHOD(wing_process, __construct) {
 */
 ZEND_METHOD(wing_process, __destruct) {
 
+
+}
+
+ZEND_METHOD(wing_process, run) {
+
+
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	char *php_file = Z_STRVAL_P(file);
+
+
+	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
+	char *output_file = Z_STRVAL_P(_output_file);
+
+	char *command = NULL;
+
+	//if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &php_file, &php_file_len, &output_file, &output_file_len) != SUCCESS) {
+		//php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
+	//	RETURN_LONG(0);
+	//}
+
+
+	spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
+
+	//HANDLE m_hRead         = NULL;
+	//HANDLE m_hWrite        = NULL;
+	STARTUPINFO sui;
+	PROCESS_INFORMATION pi;                        // 保存了所创建子进程的信息
+	SECURITY_ATTRIBUTES sa;                        // 父进程传递给子进程的一些信息
+
+
+
+	sa.bInheritHandle = TRUE;                // 还记得我上面的提醒吧，这个来允许子进程继承父进程的管道句柄
+	sa.lpSecurityDescriptor = NULL;
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+
+	/*if (!CreatePipe(&m_hRead, &m_hWrite, &sa, 0))
+	{
+	efree(command);
+	RETURN_LONG( WING_ERROR_FAILED );
+	return;
+	}*/
+
+	SECURITY_ATTRIBUTES *psa = NULL;
+	DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+	OSVERSIONINFO osVersion = { 0 };
+	osVersion.dwOSVersionInfoSize = sizeof(osVersion);
+	if (GetVersionEx(&osVersion))
+	{
+		if (osVersion.dwPlatformId == VER_PLATFORM_WIN32_NT)
+		{
+			psa = &sa;
+			dwShareMode |= FILE_SHARE_DELETE;
+		}
+	}
+
+
+	HANDLE hConsoleRedirect = CreateFile(
+		output_file,
+		GENERIC_WRITE,
+		dwShareMode,
+		psa,
+		OPEN_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	ZeroMemory(&sui, sizeof(STARTUPINFO));         // 对一个内存区清零，最好用ZeroMemory, 它的速度要快于memset
+
+	sui.cb = sizeof(STARTUPINFO);
+	sui.dwFlags = STARTF_USESTDHANDLES;
+	sui.hStdInput = NULL;//m_hRead;
+	sui.hStdOutput = hConsoleRedirect;//m_hWrite;
+	sui.hStdError = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
+
+									 /*if( params_len >0 ) {
+									 DWORD byteWrite  = 0;
+									 if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
+									 php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
+									 }
+									 }*/
+
+	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, &pi)) {
+		CloseHandle(hConsoleRedirect);
+		// CloseHandle(m_hWrite);
+		efree(command);
+		RETURN_LONG(WING_ERROR_FAILED);
+		return;
+	}
+
+	CloseHandle(hConsoleRedirect);
+	//CloseHandle( m_hWrite );
+	CloseHandle(pi.hProcess);  // 子进程的进程句柄
+	CloseHandle(pi.hThread);   // 子进程的线程句柄，windows中进程就是一个线程的容器，每个进程至少有一个线程在执行
+
+	efree(command);
+	RETURN_LONG(pi.dwProcessId);
 
 }
 
@@ -113,6 +220,7 @@ static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
 	ZEND_ME(wing_process, test,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, run,  NULL,ZEND_ACC_PUBLIC)
 {
 	NULL,NULL,NULL
 }
