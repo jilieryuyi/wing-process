@@ -84,10 +84,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WING_PROCESS_EXPORTS;ZEND_DEBUG=0;PHP_EXTENSION;PHP_WIN32;ZEND_WIN32;HAVE_WING_PROCESS=1;COMPILE_DL_WING_PROCESS;ZTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12;D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\main;D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\TSRM;D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\Zend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>
+      </SDLCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>

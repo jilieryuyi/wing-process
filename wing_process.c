@@ -57,20 +57,6 @@ PHP_INI_END()
 /* Every user-visible function in PHP should document itself in the source */
 /* {{{ proto string confirm_wing_process_compiled(string arg)
    Return a string to confirm that the module is compiled in */
-PHP_FUNCTION(confirm_wing_process_compiled)
-{
-	char *arg = NULL;
-	size_t arg_len, len;
-	zend_string *strg;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
-		return;
-	}
-
-	strg = strpprintf(0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "wing_process", arg);
-
-	RETURN_STR(strg);
-}
 
 
 
@@ -104,26 +90,32 @@ ZEND_METHOD(wing_process, __construct) {
 * @ 析构函数
 */
 ZEND_METHOD(wing_process, __destruct) {
+	
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+	CloseHandle(pi->hProcess); 
+	CloseHandle(pi->hThread); 
 
+	zval *command_line = zend_read_property(wing_process_ce, getThis(), 
+		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+	efree(Z_STRVAL_P(command_line));
+	
+
+	delete pi;
 }
 
 ZEND_METHOD(wing_process, run) {
 
 
-	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
-	char *php_file = Z_STRVAL_P(file);
-
-
+	zval *file         = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	char *php_file     = Z_STRVAL_P(file);
 	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
-	char *output_file = Z_STRVAL_P(_output_file);
+	char *output_file  = Z_STRVAL_P(_output_file);
+	
+	char *command      = NULL;
 
-	char *command = NULL;
-
-	//if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &php_file, &php_file_len, &output_file, &output_file_len) != SUCCESS) {
-		//php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
-	//	RETURN_LONG(0);
-	//}
+	
 
 
 	spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
@@ -131,7 +123,7 @@ ZEND_METHOD(wing_process, run) {
 	//HANDLE m_hRead         = NULL;
 	//HANDLE m_hWrite        = NULL;
 	STARTUPINFO sui;
-	PROCESS_INFORMATION pi;                        // 保存了所创建子进程的信息
+	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION();                        // 保存了所创建子进程的信息
 	SECURITY_ATTRIBUTES sa;                        // 父进程传递给子进程的一些信息
 
 
@@ -185,7 +177,7 @@ ZEND_METHOD(wing_process, run) {
 									 }
 									 }*/
 
-	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, &pi)) {
+	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
 		CloseHandle(hConsoleRedirect);
 		// CloseHandle(m_hWrite);
 		efree(command);
@@ -194,59 +186,62 @@ ZEND_METHOD(wing_process, run) {
 	}
 
 	CloseHandle(hConsoleRedirect);
-	//CloseHandle( m_hWrite );
-	CloseHandle(pi.hProcess);  // 子进程的进程句柄
-	CloseHandle(pi.hThread);   // 子进程的线程句柄，windows中进程就是一个线程的容器，每个进程至少有一个线程在执行
+	//CloseHandle(pi->hProcess);  // 子进程的进程句柄
+	//CloseHandle(pi->hThread);   // 子进程的线程句柄，windows中进程就是一个线程的容器，每个进程至少有一个线程在执行
+	//redirect_handler
+	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
+	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
 
-	efree(command);
-	RETURN_LONG(pi.dwProcessId);
+	//efree(command);
+	RETURN_LONG(pi->dwProcessId);
+	//delete pi;
+	return;
 
 }
 
 /**
-* @ 获取某个key
+*@wait process进程等待
+*@param process id 进程id
+*@param timeout 等待超时时间 单位毫秒
+*@return exit code 进程退出码
 */
-ZEND_METHOD(wing_process, test) {
+ZEND_METHOD(wing_process, wait) {
 
-	
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"),0, 0 TSRMLS_CC);
-	char *str = Z_STRVAL_P(file);
-	printf(str);
-	RETURN_STRING("test function");
 }
 
+ZEND_METHOD(wing_process, getProcessId) {
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+	RETURN_LONG(pi->dwProcessId);
+}
+
+ZEND_METHOD(wing_process, getThreadId) {
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+	RETURN_LONG(pi->dwThreadId);
+}
+ZEND_METHOD(wing_process, getCommandLine)
+{
+	zval *command_line = zend_read_property(wing_process_ce, getThis(),
+		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+	RETURN_STRING(Z_STRVAL_P(command_line));
+}
 static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-	ZEND_ME(wing_process, test,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, wait,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, run,  NULL,ZEND_ACC_PUBLIC)
-{
+	ZEND_ME(wing_process, getProcessId,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getThreadId,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCommandLine,  NULL,ZEND_ACC_PUBLIC)
+	{
 	NULL,NULL,NULL
-}
+	}
 };
 
-/* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and
-   unfold functions in source code. See the corresponding marks just before
-   function definition, where the functions purpose is also documented. Please
-   follow this convention for the convenience of others editing your code.
-*/
 
-
-/* {{{ php_wing_process_init_globals
- */
-/* Uncomment this function if you have INI entries
-static void php_wing_process_init_globals(zend_wing_process_globals *wing_process_globals)
-{
-	wing_process_globals->global_value = 0;
-	wing_process_globals->global_string = NULL;
-}
-*/
-/* }}} */
-
-/* {{{ PHP_MINIT_FUNCTION
- */
 PHP_MINIT_FUNCTION(wing_process)
 {
 
@@ -260,8 +255,12 @@ PHP_MINIT_FUNCTION(wing_process)
 	zend_class_entry _wing_process_ce;
 	INIT_CLASS_ENTRY(_wing_process_ce, "wing_process", wing_process_methods);
 	wing_process_ce = zend_register_internal_class(&_wing_process_ce TSRMLS_CC);
-	zend_declare_property_long(wing_process_ce, "file", strlen("file"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_long(wing_process_ce, "output_file", strlen("output_file"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+	
+	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+	//zend_declare_property_long(wing_process_ce, "redirect_handler", strlen("redirect_handler"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_string(wing_process_ce, "command_line", strlen("command_line"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 
 
 	return SUCCESS;
@@ -323,7 +322,7 @@ PHP_MINFO_FUNCTION(wing_process)
  * Every user visible function must have an entry in wing_process_functions[].
  */
 const zend_function_entry wing_process_functions[] = {
-	PHP_FE(confirm_wing_process_compiled,	NULL)		/* For testing, remove later. */
+	//PHP_FE(wing_process_exit,NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 /* }}} */

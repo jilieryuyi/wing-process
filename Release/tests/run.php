@@ -5,9 +5,11 @@
  * @email 297341015@qq.com
  */
 $count = 0;
-while( $count < 60 )
+while( 1 )
 {
     echo $count,"\r\n";
     sleep(1);
     $count++;
 }
+
+exit(999);
