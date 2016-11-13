@@ -10,4 +10,5 @@ $process = new \wing\wing_process($process_id);
 echo "process_id=",$process->getProcessId(),"\r\n";
 echo "thread_id=",$process->getThreadId(),"\r\n";
 echo "command line=",$process->getCommandLine(),"\r\n";
+echo "memory used=",$process->getMemory()," byte\r\n";
 //$process->kill();

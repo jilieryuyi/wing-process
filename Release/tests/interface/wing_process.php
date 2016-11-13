@@ -22,4 +22,5 @@ interface wing_process{
     public function getThreadId();
     public function getCommandLine();
     public function kill();
+    public function getMemory();
 }
