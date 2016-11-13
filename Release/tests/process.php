@@ -11,6 +11,7 @@ echo "process_id=",$process->run(),"\r\n";
 echo "process_id=",$process->getProcessId(),"\r\n";
 echo "thread_id=",$process->getThreadId(),"\r\n";
 echo "command line=",$process->getCommandLine(),"\r\n";
+file_put_contents("process.pid",$process->getProcessId());
 
 //var_dump($process->kill());
 

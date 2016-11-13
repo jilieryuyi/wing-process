@@ -70,12 +70,12 @@ zend_class_entry *wing_process_ce;
 ZEND_METHOD(wing_process, __construct) {
 	
 	char *file        = NULL;  
-	char *output_file = NULL;
+	char *output_file = "";
 	int file_len      = 0;
 	int output_len    = 0;
 	
 	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
-		"ss", &file, &file_len, &output_file, &output_len)) {
+		"s|s", &file, &file_len, &output_file, &output_len)) {
 		return;
 	}
 
@@ -90,20 +90,23 @@ ZEND_METHOD(wing_process, __construct) {
 * @ Îö¹¹º¯Êý
 */
 ZEND_METHOD(wing_process, __destruct) {
-	
-	zval *_pi = zend_read_property(wing_process_ce, getThis(), 
+
+	zval *_pi = zend_read_property(wing_process_ce, getThis(),
 		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-	CloseHandle(pi->hProcess); 
-	CloseHandle(pi->hThread); 
+
+	if (pi) {
+		CloseHandle(pi->hProcess);
+		CloseHandle(pi->hThread);
+		delete pi;
+	}
 
 	zval *command_line = zend_read_property(wing_process_ce, getThis(), 
 		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	efree(Z_STRVAL_P(command_line));
-	
-
-	delete pi;
+	if( Z_STRVAL_P(command_line) )
+		efree(Z_STRVAL_P(command_line));
+		
 }
 
 BOOL wing_check_is_runable(char *file) {
@@ -284,10 +287,22 @@ ZEND_METHOD(wing_process, getCommandLine)
 }
 ZEND_METHOD(wing_process, kill)
 {
-	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
-	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-	if (!TerminateProcess(pi->hProcess, 0)) {
+	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	HANDLE process = NULL;
+
+	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
+		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+	}
+
+	else {
+		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+
+		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+		process = pi->hProcess;
+	}
+
+	if (!TerminateProcess(process, 0)) {
 
 		RETURN_LONG(WING_ERROR_FAILED);
 		return;
