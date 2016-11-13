@@ -33,3 +33,5 @@ tests/*/*.php
 tests/*/*.exp
 tests/*/*.log
 tests/*/*.sh
+Release/tests/*.log
+Release/tests/*.pid

@@ -148,35 +148,23 @@ ZEND_METHOD(wing_process, run) {
 	char *php_file     = Z_STRVAL_P(file);
 	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	char *output_file  = Z_STRVAL_P(_output_file);
-	
-
-	zval *_command = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-
+	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	char *command      = Z_STRVAL_P(_command);
 
-	/*if( !wing_check_is_runable(php_file) )
-		spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
-	else
-		spprintf(&command, 0, "%s\0", php_file);*/
 
-
-	HANDLE m_hRead         = NULL;
-	HANDLE m_hWrite        = NULL;
 	STARTUPINFO sui;
-	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION();                        // 保存了所创建子进程的信息
-	SECURITY_ATTRIBUTES sa;                        // 父进程传递给子进程的一些信息
+	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // 保存了所创建子进程的信息
+	SECURITY_ATTRIBUTES sa;                            // 父进程传递给子进程的一些信息
 
 
 
-	sa.bInheritHandle = TRUE;                // 还记得我上面的提醒吧，这个来允许子进程继承父进程的管道句柄
+	sa.bInheritHandle = TRUE;                         // 来允许子进程继承父进程的管道句柄
 	sa.lpSecurityDescriptor = NULL;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
 	/*if (!CreatePipe(&m_hRead, &m_hWrite, &sa, 0))
 	{
-	efree(command);
-	RETURN_LONG( WING_ERROR_FAILED );
-	return;
+		RETURN_LONG( WING_ERROR_FAILED );
 	}*/
 
 	SECURITY_ATTRIBUTES *psa = NULL;
@@ -201,7 +189,7 @@ ZEND_METHOD(wing_process, run) {
 		OPEN_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
-
+	SetLastError(0);
 	ZeroMemory(&sui, sizeof(STARTUPINFO));         // 对一个内存区清零，最好用ZeroMemory, 它的速度要快于memset
 
 	sui.cb = sizeof(STARTUPINFO);
@@ -224,19 +212,13 @@ ZEND_METHOD(wing_process, run) {
 	}
 
 	CloseHandle(hConsoleRedirect);
-	//CloseHandle(pi->hProcess);  // 子进程的进程句柄
-	//CloseHandle(pi->hThread);   // 子进程的线程句柄，windows中进程就是一个线程的容器，每个进程至少有一个线程在执行
-	//redirect_handler
+
 	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
 	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
 	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), pi->dwProcessId TSRMLS_CC);
 	zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), pi->dwThreadId TSRMLS_CC);
 
-	//efree(command);
 	RETURN_LONG(pi->dwProcessId);
-	//delete pi;
-	return;
-
 }
 
 
