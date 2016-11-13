@@ -35,8 +35,8 @@
       <file leaf-file-name="process.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/process.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="8" column="33" selection-start-line="8" selection-start-column="15" selection-end-line="8" selection-end-column="33" />
+            <state relative-caret-position="132">
+              <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
               <folding>
                 <element signature="e#6#85#0#PHP" expanded="true" />
               </folding>
@@ -44,21 +44,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="create_process_by_pid.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="create_process_by_pid.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/create_process_by_pid.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="8" column="33" selection-start-line="8" selection-start-column="33" selection-end-line="8" selection-end-column="33" />
+            <state relative-caret-position="22">
+              <caret line="1" column="3" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="wing_process.php" pinned="false" current-in-tab="true">
+      <file leaf-file-name="wing_process.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="21" selection-start-line="0" selection-start-column="21" selection-end-line="0" selection-end-column="21" />
+            <state relative-caret-position="528">
+              <caret line="24" column="1" selection-start-line="6" selection-start-column="0" selection-end-line="24" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -97,8 +97,8 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
-    <option name="x" value="-10" />
-    <option name="y" value="188" />
+    <option name="x" value="-11" />
+    <option name="y" value="50" />
     <option name="width" value="1604" />
     <option name="height" value="876" />
   </component>
@@ -206,18 +206,18 @@
       <option name="presentableId" value="Default" />
       <updated>1478955130369</updated>
       <workItem from="1478955131589" duration="1000" />
-      <workItem from="1478955166497" duration="20886000" />
+      <workItem from="1478955166497" duration="22532000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20887000" />
+    <option name="totallyTimeSpent" value="22533000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-10" y="188" width="1604" height="876" extended-state="0" />
-    <editor active="false" />
+    <frame x="-11" y="50" width="1604" height="876" extended-state="1" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33873057" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33873057" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -235,14 +235,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/constant.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="3" column="47" selection-start-line="3" selection-start-column="47" selection-end-line="3" selection-end-column="47" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Wing.log">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -275,10 +267,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="24" column="1" selection-start-line="6" selection-start-column="0" selection-end-line="24" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/constant.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="47" selection-start-line="3" selection-start-column="47" selection-end-line="3" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/process.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="8" column="33" selection-start-line="8" selection-start-column="15" selection-end-line="8" selection-end-column="33" />
+        <state relative-caret-position="132">
+          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
           <folding>
             <element signature="e#6#85#0#PHP" expanded="true" />
           </folding>
@@ -287,16 +295,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/create_process_by_pid.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="8" column="33" selection-start-line="8" selection-start-column="33" selection-end-line="8" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="21" selection-start-line="0" selection-start-column="21" selection-end-line="0" selection-end-column="21" />
+        <state relative-caret-position="22">
+          <caret line="1" column="3" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
           <folding />
         </state>
       </provider>

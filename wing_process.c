@@ -124,6 +124,8 @@ BOOL wing_check_is_runable(char *file) {
 
 
 	find = strchr(begin, '.');
+	if (!find)
+		return 0;
 	const char *p = strchr(begin, '.') + 1;
 
 	char *ext = (char*)emalloc(4);
