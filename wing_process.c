@@ -74,17 +74,15 @@ ZEND_METHOD(wing_process, __construct) {
 	int file_len      = 0;
 	int output_len    = 0;
 	
-	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &file, &file_len, &output_file, &output_len)) {
+	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
+		"ss", &file, &file_len, &output_file, &output_len)) {
 		return;
 	}
 
-	if (!PathFileExists(file)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "file <%s> does not found", file);
-		return;
-	}
-
-	zend_update_property_string( wing_process_ce, getThis(), "file",        strlen("file"),        file        TSRMLS_CC );
-	zend_update_property_string( wing_process_ce, getThis(), "output_file", strlen("output_file"), output_file TSRMLS_CC );
+	zend_update_property_string( wing_process_ce, getThis(), 
+		"file",        strlen("file"),        file        TSRMLS_CC );
+	zend_update_property_string( wing_process_ce, getThis(), 
+		"output_file", strlen("output_file"), output_file TSRMLS_CC );
 
 }
 
@@ -93,7 +91,8 @@ ZEND_METHOD(wing_process, __construct) {
 */
 ZEND_METHOD(wing_process, __destruct) {
 	
-	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), 
+		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 	CloseHandle(pi->hProcess); 
@@ -107,6 +106,35 @@ ZEND_METHOD(wing_process, __destruct) {
 	delete pi;
 }
 
+BOOL wing_check_is_runable(char *file) {
+
+	char *begin     = NULL;
+	char *find      = NULL;
+
+	if ( file[0] == '\'' || file[0] == '\"' ) {
+		 begin = file + 1;
+	}
+	else {
+		begin = file;
+	}
+
+
+	find = strchr(begin, '.');
+	const char *p = strchr(begin, '.') + 1;
+
+	char *ext = (char*)emalloc(4);
+	memset(ext, 0, 4);
+	strncpy_s(ext, 4, p, 3);
+
+	BOOL is_run = 0;
+	if (strcmp(ext, "exe") == 0 || strcmp(ext, "bat") == 0)
+	{
+		is_run = 1;
+	}
+	efree(ext);
+	return is_run;
+}
+
 ZEND_METHOD(wing_process, run) {
 
 
@@ -117,13 +145,14 @@ ZEND_METHOD(wing_process, run) {
 	
 	char *command      = NULL;
 
-	
+	if( !wing_check_is_runable(php_file) )
+		spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
+	else
+		spprintf(&command, 0, "%s\0", php_file);
 
 
-	spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
-
-	//HANDLE m_hRead         = NULL;
-	//HANDLE m_hWrite        = NULL;
+	HANDLE m_hRead         = NULL;
+	HANDLE m_hWrite        = NULL;
 	STARTUPINFO sui;
 	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION();                        // 保存了所创建子进程的信息
 	SECURITY_ATTRIBUTES sa;                        // 父进程传递给子进程的一些信息
@@ -208,9 +237,9 @@ ZEND_METHOD(wing_process, run) {
 *@return exit code 进程退出码
 */
 ZEND_METHOD(wing_process, wait) {
-	int process_id, timeout = INFINITE;
+	int timeout = INFINITE;
 
-	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|l", &timeout);
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
 
 	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
@@ -359,8 +388,11 @@ PHP_MINFO_FUNCTION(wing_process)
  *
  * Every user visible function must have an entry in wing_process_functions[].
  */
+
+
 const zend_function_entry wing_process_functions[] = {
-	//PHP_FE(wing_process_exit,NULL)
+//	PHP_FE(wing_process_wait,NULL)
+//	PHP_FE(wing_create_process_ex,NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 /* }}} */

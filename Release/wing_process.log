@@ -1,7 +1,6 @@
 ﻿  wing_process.c
-wing_process.c(146): warning C4996: 'GetVersionExA': 被声明为已否决
+wing_process.c(177): warning C4996: 'GetVersionExA': 被声明为已否决
   C:\Program Files (x86)\Windows Kits\8.1\Include\um\sysinfoapi.h(433): note: 参见“GetVersionExA”的声明
-wing_process.c(209): warning C4101: “process_id”: 未引用的局部变量
 LINK : warning LNK4075: 忽略“/INCREMENTAL”(由于“/OPT:ICF”规范)
     正在创建库 D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\ext\wing_process\Release\wing_process.lib 和对象 D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\ext\wing_process\Release\wing_process.exp
   wing_process.vcxproj -> D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\ext\wing_process\Release\wing_process.dll

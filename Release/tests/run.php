@@ -5,7 +5,7 @@
  * @email 297341015@qq.com
  */
 $count = 0;
-while( 1 )
+while( $count<10 )
 {
     echo $count,"\r\n";
     sleep(1);
