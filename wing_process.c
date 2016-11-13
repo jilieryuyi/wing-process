@@ -144,8 +144,8 @@ BOOL wing_check_is_runable(char *file) {
 ZEND_METHOD(wing_process, run) {
 
 
-	zval *file         = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
-	char *php_file     = Z_STRVAL_P(file);
+	//zval *file         = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	//char *php_file     = Z_STRVAL_P(file);
 	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
