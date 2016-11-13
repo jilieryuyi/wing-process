@@ -29,12 +29,15 @@
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
 
+#include "helper/wing_ntdll.h"
 #include "Shlwapi.h"
 #pragma comment(lib,"Shlwapi.lib")
 
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
 
+
+BOOL wing_check_is_runable(char *file);
 /* If you declare any globals in php_wing_process.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(wing_process)
 */
@@ -83,6 +86,36 @@ ZEND_METHOD(wing_process, __construct) {
 		"file",        strlen("file"),        file        TSRMLS_CC );
 	zend_update_property_string( wing_process_ce, getThis(), 
 		"output_file", strlen("output_file"), output_file TSRMLS_CC );
+
+
+	//zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+
+	char *command_line = "";
+	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
+		PROCESSINFO *item = new PROCESSINFO();
+		WingQueryProcessByProcessID(item, zend_atoi(file, strlen(file)));
+		if (item)
+		{
+			spprintf(&command_line, 0, "%s", item->command_line);
+
+			
+			delete item;
+			//RETURN_STRING(command_line)
+		}
+	}
+	else {
+		
+
+		if (!wing_check_is_runable(file))
+			spprintf(&command_line, 0, "%s %s\0", PHP_PATH, file);
+		else
+			spprintf(&command_line, 0, "%s\0", file);
+
+	}
+
+	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
+
+
 
 }
 
@@ -146,12 +179,15 @@ ZEND_METHOD(wing_process, run) {
 	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	char *output_file  = Z_STRVAL_P(_output_file);
 	
-	char *command      = NULL;
 
-	if( !wing_check_is_runable(php_file) )
+	zval *_command = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+
+	char *command      = Z_STRVAL_P(_command);
+
+	/*if( !wing_check_is_runable(php_file) )
 		spprintf(&command, 0, "%s %s\0", PHP_PATH, php_file);
 	else
-		spprintf(&command, 0, "%s\0", php_file);
+		spprintf(&command, 0, "%s\0", php_file);*/
 
 
 	HANDLE m_hRead         = NULL;
@@ -213,8 +249,6 @@ ZEND_METHOD(wing_process, run) {
 
 	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
 		CloseHandle(hConsoleRedirect);
-		// CloseHandle(m_hWrite);
-		efree(command);
 		RETURN_LONG(WING_ERROR_FAILED);
 		return;
 	}
@@ -281,9 +315,24 @@ ZEND_METHOD(wing_process, getThreadId) {
 }
 ZEND_METHOD(wing_process, getCommandLine)
 {
-	zval *command_line = zend_read_property(wing_process_ce, getThis(),
-		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	RETURN_STRING(Z_STRVAL_P(command_line));
+	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+
+	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
+		PROCESSINFO *item = new PROCESSINFO();
+		WingQueryProcessByProcessID(item, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+		if (item)
+		{
+			char *command_line;
+			spprintf(&command_line, 0, "%s", item->command_line);
+			delete item;
+			RETURN_STRING(command_line)
+		}
+	}
+	else {
+		zval *command_line = zend_read_property(wing_process_ce, getThis(),
+			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+		RETURN_STRING(Z_STRVAL_P(command_line));
+	}
 }
 ZEND_METHOD(wing_process, kill)
 {
@@ -294,7 +343,6 @@ ZEND_METHOD(wing_process, kill)
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	}
-
 	else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 

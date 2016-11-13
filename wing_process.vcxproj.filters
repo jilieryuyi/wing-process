@@ -18,10 +18,25 @@
     <ClCompile Include="wing_process.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="helper\ntdll.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="helper\WingString.class.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="php_wing_process.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\ntdll.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\wing_ntdll.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\WingString.class.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

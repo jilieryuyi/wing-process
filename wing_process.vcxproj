@@ -102,9 +102,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="helper\ntdll.c" />
+    <ClCompile Include="helper\WingString.class.c" />
     <ClCompile Include="wing_process.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="helper\ntdll.h" />
+    <ClInclude Include="helper\WingString.class.h" />
+    <ClInclude Include="helper\wing_ntdll.h" />
     <ClInclude Include="php_wing_process.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
