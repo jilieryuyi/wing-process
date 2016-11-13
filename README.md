@@ -1,9 +1,13 @@
-####php win32 daemon process support
-####demo dir
+php win32 daemon process support
+---
+demo dir
+---
 Release/tests
-####php version
+php version
+---
 7.0.*
-####interface
+interface
+---
 	interface wing_process{
 		/**
 		 * @__construct all file path onle support full path
@@ -23,8 +27,9 @@ Release/tests
 		public function getCommandLine();
 		public function kill();
 	}
-####demo
-	//run.php
+demo
+---
+####run.php
 	$count = 0;
 	while( 1 )
 	{
@@ -33,7 +38,7 @@ Release/tests
 		$count++;
 	}
 
-	//process.php
+####process.php
 	//run .php file as a deamon process
 	$process = new \wing\wing_process(__DIR__."/run.php",__DIR__."/process.log");
 	echo "process_id=",$process->run(),"\r\n";
@@ -51,7 +56,7 @@ Release/tests
 	echo "process_id=",$process->run(),"\r\n";*/
 
 	
-	//create_process_by_pid.php
+####create_process_by_pid.php
 	$process_id = file_get_contents("process.pid");
 	//create process by pid
 	$process = new \wing\wing_process($process_id);
