@@ -821,7 +821,7 @@ unsigned long WingQueryProcessByProcessID(PROCESSINFO *process_item, unsigned lo
 				memset(process_item->file_path, 0, 4);
 
 			}
-
+			//process_item->thread_id = pSystemProc->Threads[0].ClientId;
 			process_item->process_id = pSystemProc->ProcessId;
 			process_item->parent_process_id = pSystemProc->InheritedFromProcessId;
 			process_item->working_set_size = pSystemProc->VmCounters.WorkingSetSize;

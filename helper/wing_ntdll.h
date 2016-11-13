@@ -19,6 +19,7 @@ typedef struct _PROCESSINFO {
 	char *file_name;
 	char *file_path;
 	int process_id;
+	//int thread_id;
 	int parent_process_id;
 	unsigned long working_set_size;
 	unsigned long base_priority;//基本的优先级
