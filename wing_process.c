@@ -206,7 +206,30 @@ ZEND_METHOD(wing_process, run) {
 *@return exit code ½ø³ÌÍË³öÂë
 */
 ZEND_METHOD(wing_process, wait) {
+	int process_id, timeout = INFINITE;
 
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|l", &timeout);
+
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+
+
+	DWORD wait_result = 0;
+	DWORD wait_status = WaitForSingleObject(pi->hProcess, timeout);
+
+	if (wait_status != WAIT_OBJECT_0) {
+		RETURN_LONG(wait_status);
+		return;
+	}
+	if (GetExitCodeProcess(pi->hProcess, &wait_result) == 0) {
+
+		RETURN_LONG(WING_ERROR_FAILED);
+		return;
+	}
+
+	RETURN_LONG(wait_result);
+	return;
 }
 
 ZEND_METHOD(wing_process, getProcessId) {
@@ -228,6 +251,18 @@ ZEND_METHOD(wing_process, getCommandLine)
 		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	RETURN_STRING(Z_STRVAL_P(command_line));
 }
+ZEND_METHOD(wing_process, kill)
+{
+	zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+	if (!TerminateProcess(pi->hProcess, 0)) {
+
+		RETURN_LONG(WING_ERROR_FAILED);
+		return;
+	}
+	RETURN_LONG(WING_ERROR_SUCCESS);
+}
 static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
@@ -236,6 +271,7 @@ static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, getProcessId,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getThreadId,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getCommandLine,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, kill,  NULL,ZEND_ACC_PUBLIC)
 	{
 	NULL,NULL,NULL
 	}
