@@ -12,7 +12,9 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: yuyi 
+  | Email: 297341015@qq.com
+  | Home: http://www.itdfy.com/
   +----------------------------------------------------------------------+
 */
 
