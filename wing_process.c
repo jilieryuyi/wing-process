@@ -12,13 +12,12 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
+  | php win32 deamon process support
   | Author: yuyi 
   | Email: 297341015@qq.com
   | Home: http://www.itdfy.com/
   +----------------------------------------------------------------------+
 */
-
-/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,38 +37,12 @@
 
 
 BOOL wing_check_is_runable(char *file);
-/* If you declare any globals in php_wing_process.h uncomment this:
-ZEND_DECLARE_MODULE_GLOBALS(wing_process)
-*/
 
-/* True global resources - no need for thread safety here */
 static int le_wing_process;
 char *PHP_PATH = NULL;
-/* {{{ PHP_INI
- */
-/* Remove comments and fill if you need to have entries in php.ini
-PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("wing_process.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_wing_process_globals, wing_process_globals)
-    STD_PHP_INI_ENTRY("wing_process.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_wing_process_globals, wing_process_globals)
-PHP_INI_END()
-*/
-/* }}} */
-
-/* Remove the following function when you have successfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
-
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_wing_process_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-
-
 
 zend_class_entry *wing_process_ce;
 
-/**
-* @ 构造函数
-*/
 ZEND_METHOD(wing_process, __construct) {
 	
 	char *file        = NULL;  
@@ -83,30 +56,30 @@ ZEND_METHOD(wing_process, __construct) {
 	}
 
 	zend_update_property_string( wing_process_ce, getThis(), 
-		"file",        strlen("file"),        file        TSRMLS_CC );
+		"file", strlen("file"), file TSRMLS_CC );
 	zend_update_property_string( wing_process_ce, getThis(), 
 		"output_file", strlen("output_file"), output_file TSRMLS_CC );
 
-
-	//zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
-
 	char *command_line = "";
-	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
+
+	//if file is a process id,so here we check the file param is number ?
+	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) 
+	{
+		//if create by a process id
 		PROCESSINFO *item = new PROCESSINFO();
 		DWORD process_id = zend_atoi(file, strlen(file));
+		//query the process info by ntll.dll
 		WingQueryProcessByProcessID(item, process_id);
 		if (item)
 		{
 			spprintf(&command_line, 0, "%s", item->command_line);
-
 			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
 			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
-
 			delete item;
 		}
 	}
-	else {
-		
+	else 
+	{
 		if (!wing_check_is_runable(file))
 			spprintf(&command_line, 0, "%s %s\0", PHP_PATH, file);
 		else
@@ -116,9 +89,7 @@ ZEND_METHOD(wing_process, __construct) {
 	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
 }
 
-/**
-* @ 析构函数
-*/
+
 ZEND_METHOD(wing_process, __destruct) {
 
 	zval *_pi = zend_read_property(wing_process_ce, getThis(),
@@ -266,12 +237,7 @@ ZEND_METHOD(wing_process, run) {
 
 }
 
-/**
-*@wait process进程等待
-*@param process id 进程id
-*@param timeout 等待超时时间 单位毫秒
-*@return exit code 进程退出码
-*/
+
 ZEND_METHOD(wing_process, wait) {
 	int timeout = INFINITE;
 
@@ -406,26 +372,16 @@ PHP_MINIT_FUNCTION(wing_process)
 
 	return SUCCESS;
 }
-/* }}} */
 
-/* {{{ PHP_MSHUTDOWN_FUNCTION
- */
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
-	/* uncomment this line if you have INI entries
-	UNREGISTER_INI_ENTRIES();
-	*/
-
+	
 	if( PHP_PATH )
 		efree(PHP_PATH);
 
 	return SUCCESS;
 }
-/* }}} */
 
-/* Remove if there's nothing to do at request start */
-/* {{{ PHP_RINIT_FUNCTION
- */
 PHP_RINIT_FUNCTION(wing_process)
 {
 #if defined(COMPILE_DL_WING_PROCESS) && defined(ZTS)
@@ -433,35 +389,18 @@ PHP_RINIT_FUNCTION(wing_process)
 #endif
 	return SUCCESS;
 }
-/* }}} */
 
-/* Remove if there's nothing to do at request end */
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
 PHP_RSHUTDOWN_FUNCTION(wing_process)
 {
 	return SUCCESS;
 }
-/* }}} */
 
-/* {{{ PHP_MINFO_FUNCTION
- */
 PHP_MINFO_FUNCTION(wing_process)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "wing_process support", "enabled");
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
-/* }}} */
-
-/* {{{ wing_process_functions[]
- *
- * Every user visible function must have an entry in wing_process_functions[].
- */
 
 
 const zend_function_entry wing_process_functions[] = {
@@ -469,10 +408,7 @@ const zend_function_entry wing_process_functions[] = {
 //	PHP_FE(wing_create_process_ex,NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
-/* }}} */
 
-/* {{{ wing_process_module_entry
- */
 zend_module_entry wing_process_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"wing_process",
@@ -485,7 +421,6 @@ zend_module_entry wing_process_module_entry = {
 	PHP_WING_PROCESS_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
-/* }}} */
 
 #ifdef COMPILE_DL_WING_PROCESS
 #ifdef ZTS
@@ -494,11 +429,3 @@ ZEND_TSRMLS_CACHE_DEFINE()
 ZEND_GET_MODULE(wing_process)
 #endif
 
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
