@@ -44,7 +44,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="create_process_by_pid.php" pinned="false" current-in-tab="true">
+      <file leaf-file-name="create_process_by_pid.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/create_process_by_pid.php">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="176">
@@ -54,11 +54,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="wing_process.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="wing_process.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="132">
-              <caret line="6" column="23" selection-start-line="6" selection-start-column="23" selection-end-line="6" selection-end-column="23" />
+            <state relative-caret-position="0">
+              <caret line="0" column="21" selection-start-line="0" selection-start-column="21" selection-end-line="0" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -84,9 +84,9 @@
         <option value="$PROJECT_DIR$/process.log" />
         <option value="$PROJECT_DIR$/run.php" />
         <option value="$PROJECT_DIR$/kill_process.php" />
-        <option value="$PROJECT_DIR$/interface/wing_process.php" />
         <option value="$PROJECT_DIR$/process.php" />
         <option value="$PROJECT_DIR$/create_process_by_pid.php" />
+        <option value="$PROJECT_DIR$/interface/wing_process.php" />
       </list>
     </option>
   </component>
@@ -206,12 +206,12 @@
       <option name="presentableId" value="Default" />
       <updated>1478955130369</updated>
       <workItem from="1478955131589" duration="1000" />
-      <workItem from="1478955166497" duration="20711000" />
+      <workItem from="1478955166497" duration="20836000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20712000" />
+    <option name="totallyTimeSpent" value="20837000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-10" y="188" width="1604" height="876" extended-state="0" />
@@ -275,14 +275,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="6" column="23" selection-start-line="6" selection-start-column="23" selection-end-line="6" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/process.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
@@ -297,6 +289,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
           <caret line="8" column="33" selection-start-line="8" selection-start-column="33" selection-end-line="8" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/interface/wing_process.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="21" selection-start-line="0" selection-start-column="21" selection-end-line="0" selection-end-column="21" />
           <folding />
         </state>
       </provider>

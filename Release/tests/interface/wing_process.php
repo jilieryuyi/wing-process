@@ -1,4 +1,4 @@
-<?php
+<?php namespace wing;
 /**
  * @author yuyi
  * @created 2016/11/13 17:33
