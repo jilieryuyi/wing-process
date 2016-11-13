@@ -391,7 +391,8 @@ PHP_MINIT_FUNCTION(wing_process)
 	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );
 
 	zend_class_entry _wing_process_ce;
-	INIT_CLASS_ENTRY(_wing_process_ce, "wing_process", wing_process_methods);
+	//INIT_CLASS_ENTRY(_wing_process_ce, "wing_process", wing_process_methods);
+	INIT_NS_CLASS_ENTRY(_wing_process_ce, "wing", "wing_process", wing_process_methods);
 	wing_process_ce = zend_register_internal_class(&_wing_process_ce TSRMLS_CC);
 	
 	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);

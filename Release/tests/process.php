@@ -6,7 +6,7 @@
  */
 
 //run .php file as a deamon process
-$process = new wing_process(__DIR__."/run.php",__DIR__."/process.log");
+$process = new \wing\wing_process(__DIR__."/run.php",__DIR__."/process.log");
 echo "process_id=",$process->run(),"\r\n";
 echo "process_id=",$process->getProcessId(),"\r\n";
 echo "thread_id=",$process->getThreadId(),"\r\n";

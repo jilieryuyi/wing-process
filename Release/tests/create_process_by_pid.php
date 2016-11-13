@@ -6,7 +6,7 @@
  */
 $process_id = file_get_contents("process.pid");
 //create process by pid
-$process = new wing_process($process_id);
+$process = new \wing\wing_process($process_id);
 echo "process_id=",$process->getProcessId(),"\r\n";
 echo "thread_id=",$process->getThreadId(),"\r\n";
 echo "command line=",$process->getCommandLine(),"\r\n";
