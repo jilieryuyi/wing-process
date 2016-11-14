@@ -1,13 +1,22 @@
-php win32 daemon process support
----
-demo dir
----
+# wing\wing_process
+
+This library provides a better API to work with daemon processes on windows systems using PHP.
+
+## Installation
+
+The dll is available on [dll download](https://github.com/jilieryuyi/wing_process/blob/master/Release/wing_process.dll). You can install it on your windows system using php7.0.*.
+
+##Build
+
+php version 7.0.* ZTS
+visual stdio 2015(vc14)
+
+##Demo dir
+
 Release/tests
-php version
----
-7.0.*
-interface
----
+
+##Interface
+
 	interface wing_process{
 		/**
 		 * @__construct all file path onle support full path
@@ -26,9 +35,11 @@ interface
 		public function getThreadId();
 		public function getCommandLine();
 		public function kill();
+		public function getMemory();
 	}
-demo
----
+	
+##Demo
+
 ####run.php
 	$count = 0;
 	while( 1 )
