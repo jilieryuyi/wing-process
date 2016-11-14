@@ -4,11 +4,11 @@ This library provides a better API to work with daemon processes on windows syst
 
 ## Installation
 
-The dll is available on [dll download](https://github.com/jilieryuyi/wing_process/blob/master/Release/wing_process.dll). You can install it on your windows system using php7.0.*.
+The dll is available on [x86 dll download](https://github.com/jilieryuyi/wing_process/blob/master/Release/wing_process.dll). You can install it on your windows system using php7.0.*.
 
 ##Build
 
-php version 7.0.9 ZTS
+php version 7.0.9 ZTS x86
 visual stdio 2015(vc14)
 
 ##Demo dir
