@@ -8,7 +8,7 @@ The dll is available on [dll download](https://github.com/jilieryuyi/wing_proces
 
 ##Build
 
-php version 7.0.* ZTS
+php version 7.0.9 ZTS
 visual stdio 2015(vc14)
 
 ##Demo dir
