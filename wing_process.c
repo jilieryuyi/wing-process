@@ -83,7 +83,9 @@ ZEND_METHOD(wing_process, __construct) {
 	else 
 	{
 		if (!wing_check_is_runable(file))
+		{
 			spprintf(&command_line, 0, "%s %s\0", PHP_PATH, file);
+		}
 		else
 			spprintf(&command_line, 0, "%s\0", file);
 	}
@@ -127,7 +129,9 @@ BOOL wing_check_is_runable(char *file) {
 
 	find = strchr(begin, '.');
 	if (!find)
+	{
 		return 0;
+	}
 	const char *p = strchr(begin, '.') + 1;
 
 	char *ext = (char*)emalloc(4);
@@ -144,7 +148,6 @@ BOOL wing_check_is_runable(char *file) {
 }
 
 ZEND_METHOD(wing_process, run) {
-
 
 	//zval *file         = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	//char *php_file     = Z_STRVAL_P(file);
@@ -182,7 +185,6 @@ ZEND_METHOD(wing_process, run) {
 		}
 	}
 
-
 	HANDLE hConsoleRedirect = CreateFile(
 		output_file,
 		GENERIC_WRITE,
@@ -206,13 +208,11 @@ ZEND_METHOD(wing_process, run) {
 									 php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
 									 }
 									 }*/
-
 	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
 		CloseHandle(hConsoleRedirect);
 		RETURN_LONG(WING_ERROR_FAILED);
 		return;
 	}
-
 	CloseHandle(hConsoleRedirect);
 
 	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
@@ -361,7 +361,7 @@ static zend_function_entry wing_process_methods[] = {
 PHP_MINIT_FUNCTION(wing_process)
 {
 
-	PHP_PATH = (char*)emalloc(MAX_PATH);
+	PHP_PATH = (char*)malloc(MAX_PATH);
 	memset(PHP_PATH, 0, MAX_PATH);
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 
@@ -389,7 +389,7 @@ PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
 	
 	if( PHP_PATH )
-		efree(PHP_PATH);
+		free(PHP_PATH);
 
 	return SUCCESS;
 }
