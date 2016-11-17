@@ -338,6 +338,9 @@ ZEND_METHOD(wing_process, getMemory) {
 	GetProcessMemoryInfo(process, &pmc, sizeof(pmc));
 	RETURN_LONG(pmc.WorkingSetSize);
 }
+ZEND_METHOD(wing_process, getCurrentProcessId) {
+	ZVAL_LONG(return_value, GetCurrentProcessId());
+}
 static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
@@ -348,6 +351,7 @@ static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, getCommandLine,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, kill,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getMemory,  NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCurrentProcessId,  NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{
 	NULL,NULL,NULL
 	}
