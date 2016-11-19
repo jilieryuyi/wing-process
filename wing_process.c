@@ -112,9 +112,8 @@ ZEND_METHOD(wing_process, __destruct) {
 
 	zval *command_line = zend_read_property(wing_process_ce, getThis(), 
 		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	if( Z_STRVAL_P(command_line) )
-		efree(Z_STRVAL_P(command_line));
 	
+	zval_ptr_dtor(command_line);
 }
 
 BOOL wing_check_is_runable(const char *file) {
@@ -152,12 +151,15 @@ BOOL wing_check_is_runable(const char *file) {
 
 ZEND_METHOD(wing_process, run) {
 
-	//zval *file         = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
-	//char *php_file     = Z_STRVAL_P(file);
+
+	int redirect_output = 1;
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &redirect_output);
+	
 	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	char *command      = Z_STRVAL_P(_command);
+
 
 	STARTUPINFO sui;
 	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // 保存了所创建子进程的信息
@@ -203,14 +205,16 @@ ZEND_METHOD(wing_process, run) {
 	sui.hStdInput = NULL;//m_hRead;
 	sui.hStdOutput = hConsoleRedirect;//m_hWrite;
 	sui.hStdError = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
-
+	//sui.wShowWindow = SW_SHOW;
+	if(!redirect_output)
+	sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
 									 /*if( params_len >0 ) {
 									 DWORD byteWrite  = 0;
 									 if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
 									 php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
 									 }
 									 }*/
-	if (!CreateProcess(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
+	if (!CreateProcessA(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
 		CloseHandle(hConsoleRedirect);
 		RETURN_LONG(WING_ERROR_FAILED);
 		return;
@@ -218,7 +222,7 @@ ZEND_METHOD(wing_process, run) {
 	CloseHandle(hConsoleRedirect);
 
 	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
-	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
+	//zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
 	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), pi->dwProcessId TSRMLS_CC);
 	zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), pi->dwThreadId TSRMLS_CC);
 
@@ -281,13 +285,15 @@ ZEND_METHOD(wing_process, getCommandLine)
 			memset(command_line, 0, size);
 			spprintf(&command_line, size,"%s", item->command_line);
 			delete item;
-			RETURN_STRING(command_line)
+			RETURN_STRING(command_line);
 		}
 	}
 	else {
+
 		zval *command_line = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-		RETURN_ZVAL(command_line,0,0);
+	
+		ZVAL_ZVAL(return_value, command_line, 0, 0);
 	}
 }
 ZEND_METHOD(wing_process, kill)
