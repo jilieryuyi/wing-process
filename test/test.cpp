@@ -4,8 +4,29 @@
 #include "stdafx.h"
 #include "Windows.h"
 
+void str_replace( char **str) {
+	
+	while ( (*str) != '\0') {
+		if ((**str) == '\\')
+			(**str) = '/';
+		(*str)++;
+	}
+}
+
 int main()
 {
+
+	char *str = "D:\xampp\bin\php.exe";
+	char *t = _strdup(str);
+	 str_replace(&t);
+
+	 printf(t);
+	 free(t);
+	
+
+
+	return 0;
+
 	char *file = "D:/Wing/Release/Wing.exe";
 
 	char first_char = file[0];

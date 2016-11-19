@@ -64,8 +64,8 @@ ZEND_METHOD(wing_process, __construct) {
 
 	//char *command_line = "";
 	int size = strlen(PHP_PATH) + file_len + 2;
-	char *command_line = (char*)emalloc(size);
-	memset(command_line, 0, size);
+	char *command_line = "";// (char*)emalloc(size);
+	//memset(command_line, 0, size);
 
 	//if file is a process id,so here we check the file param is number ?
 	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) 
@@ -77,7 +77,7 @@ ZEND_METHOD(wing_process, __construct) {
 		WingQueryProcessByProcessID(item, process_id);
 		if (item)
 		{
-			spprintf(&command_line, 0, "%s", item->command_line);
+			spprintf(&command_line, size, "%s", item->command_line);
 			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
 			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
 			delete item;
@@ -87,13 +87,13 @@ ZEND_METHOD(wing_process, __construct) {
 	{
 		if (!wing_check_is_runable((const char*)file))
 		{
-			sprintf(command_line,"%s %s", PHP_PATH, file);
+			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
 		}
 		else
-			sprintf(command_line,"%s", file);
+			spprintf(&command_line,size,"%s\0", file);
 	}
 
-	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line);
+	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
 }
 
 
@@ -158,7 +158,6 @@ ZEND_METHOD(wing_process, run) {
 	char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	char *command      = Z_STRVAL_P(_command);
-
 
 	STARTUPINFO sui;
 	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // 保存了所创建子进程的信息
@@ -228,6 +227,7 @@ ZEND_METHOD(wing_process, run) {
 
 
 ZEND_METHOD(wing_process, wait) {
+	
 	int timeout = INFINITE;
 
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
@@ -245,36 +245,27 @@ ZEND_METHOD(wing_process, wait) {
 		process = pi->hProcess;
 	}
 
-
 	DWORD wait_result = 0;
 	DWORD wait_status = WaitForSingleObject(process, timeout);
 
 	if (wait_status != WAIT_OBJECT_0) {
 		RETURN_LONG(wait_status);
-		return;
 	}
 	if (GetExitCodeProcess(process, &wait_result) == 0) {
-
 		RETURN_LONG(WING_ERROR_FAILED);
-		return;
 	}
 
 	RETURN_LONG(wait_result);
-	return;
 }
 
 ZEND_METHOD(wing_process, getProcessId) {
 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
-
-	//PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-	RETURN_LONG(Z_LVAL_P(process_id));
+	RETURN_ZVAL(process_id,0,0);
 }
 
 ZEND_METHOD(wing_process, getThreadId) {
 	zval *thread_id = zend_read_property(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0, 0 TSRMLS_CC);
-
-	//PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-	RETURN_LONG(Z_LVAL_P(thread_id));
+	RETURN_ZVAL(thread_id,0,0);
 }
 ZEND_METHOD(wing_process, getCommandLine)
 {
@@ -285,8 +276,10 @@ ZEND_METHOD(wing_process, getCommandLine)
 		WingQueryProcessByProcessID(item, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 		if (item)
 		{
-			char *command_line;
-			spprintf(&command_line, 0, "%s", item->command_line);
+			int size = strlen(item->command_line) + 1;
+			char *command_line = "";//(char*)emalloc(size);
+			memset(command_line, 0, size);
+			spprintf(&command_line, size,"%s", item->command_line);
 			delete item;
 			RETURN_STRING(command_line)
 		}
@@ -294,7 +287,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 	else {
 		zval *command_line = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-		RETURN_STRING(Z_STRVAL_P(command_line));
+		RETURN_ZVAL(command_line,0,0);
 	}
 }
 ZEND_METHOD(wing_process, kill)
