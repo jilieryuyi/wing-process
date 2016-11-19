@@ -38,7 +38,7 @@
 #define WING_ERROR_SUCCESS 1
 
 
-BOOL wing_check_is_runable(char *file);
+BOOL wing_check_is_runable(const char *file);
 
 static int le_wing_process;
 char *PHP_PATH = NULL;
@@ -62,7 +62,10 @@ ZEND_METHOD(wing_process, __construct) {
 	zend_update_property_string( wing_process_ce, getThis(), 
 		"output_file", strlen("output_file"), output_file TSRMLS_CC );
 
-	char *command_line = "";
+	//char *command_line = "";
+	int size = strlen(PHP_PATH) + file_len + 2;
+	char *command_line = (char*)emalloc(size);
+	memset(command_line, 0, size);
 
 	//if file is a process id,so here we check the file param is number ?
 	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) 
@@ -82,15 +85,15 @@ ZEND_METHOD(wing_process, __construct) {
 	}
 	else 
 	{
-		if (!wing_check_is_runable(file))
+		if (!wing_check_is_runable((const char*)file))
 		{
-			spprintf(&command_line, 0, "%s %s\0", PHP_PATH, file);
+			sprintf(command_line,"%s %s", PHP_PATH, file);
 		}
 		else
-			spprintf(&command_line, 0, "%s\0", file);
+			sprintf(command_line,"%s", file);
 	}
 
-	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
+	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line);
 }
 
 
@@ -111,19 +114,19 @@ ZEND_METHOD(wing_process, __destruct) {
 		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	if( Z_STRVAL_P(command_line) )
 		efree(Z_STRVAL_P(command_line));
-		
+	
 }
 
-BOOL wing_check_is_runable(char *file) {
+BOOL wing_check_is_runable(const char *file) {
 
 	char *begin     = NULL;
 	char *find      = NULL;
 
 	if ( file[0] == '\'' || file[0] == '\"' ) {
-		 begin = file + 1;
+		 begin = (char*)(file + 1);
 	}
 	else {
-		begin = file;
+		begin = (char*)file;
 	}
 
 
