@@ -64,7 +64,7 @@ ZEND_METHOD(wing_process, __construct) {
 
 	//char *command_line = "";
 	int size = strlen(PHP_PATH) + file_len + 2;
-	char *command_line = "";// (char*)emalloc(size);
+	char *command_line = NULL;// (char*)emalloc(size);
 	//memset(command_line, 0, size);
 
 	//if file is a process id,so here we check the file param is number ?
@@ -94,11 +94,14 @@ ZEND_METHOD(wing_process, __construct) {
 	}
 
 	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
+	//zend_printf("--->%s\r\n\r\n",command_line);
+	if(command_line)
+	efree(command_line);
 }
 
 
 ZEND_METHOD(wing_process, __destruct) {
-
+	 
 	zval *_pi = zend_read_property(wing_process_ce, getThis(),
 		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
@@ -109,11 +112,11 @@ ZEND_METHOD(wing_process, __destruct) {
 		CloseHandle(pi->hThread);
 		delete pi;
 	}
-
+/*
 	zval *command_line = zend_read_property(wing_process_ce, getThis(), 
 		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	
-	zval_ptr_dtor(command_line);
+	zval_ptr_dtor(command_line);*/
 }
 
 BOOL wing_check_is_runable(const char *file) {
@@ -346,120 +349,6 @@ ZEND_METHOD(wing_process, getCurrentProcessId) {
 
 
 
-
-/*
-ZEND_METHOD(wing_process, setProcTitle) {
-	ULONG pProcess = 0;
-
-		ULONG peb, ProcessParameters, ldr;
-
-		ULONG InLoadOrderModuleList;
-
-		ULONG InMemoryOrderModuleList;
-
-		ULONG tmp;
-
-		KAPC_STATE kapc;
-
-		PUCHAR str;
-
-		PWCHAR wstr;
-
-
-
-		//get PEB
-
-		peb = *(PULONG)(pProcess + 0x1b0);
-
-
-
-		KeStackAttachProcess((PEPROCESS)pProcess, &kapc);
-
-		__try {
-
-			ProcessParameters = *(PULONG)(peb + 0x010);
-
-			//ImagePathName
-
-			FindAndChangeUni(ProcessParameters + 0x038);
-
-			//CommandLine
-
-			FindAndChangeUni(ProcessParameters + 0x040);
-
-			//WindowTitle
-
-			FindAndChangeUni(ProcessParameters + 0x070);
-
-			//Ldr
-
-			ldr = *(PULONG)(peb + 0x00c);
-
-			//InLoadOrderModuleList->FullDllName
-
-			InLoadOrderModuleList = *(PULONG)(ldr + 0x00c);
-
-			FindAndChangeUni(InLoadOrderModuleList + 0x024);
-
-			//InLoadOrderModuleList->BaseDllName
-
-			FindAndChangeUni(InLoadOrderModuleList + 0x02c);
-
-			//InMemoryOrderModuleList->FullDllName
-
-			InMemoryOrderModuleList = *(PULONG)(ldr + 0x014);
-
-			FindAndChangeUni(InMemoryOrderModuleList + 0x024);
-
-		}
-		__except (1) {
-
-			KdPrint(("exception occured!"));
-
-		}
-
-		KeUnstackDetachProcess(&kapc);
-
-		//EPROCESS-->ImageFileName
-
-		FindAndChangeA(pProcess + 0x174, 16);
-
-		//EPROCESS-->SeAuditProcessCreationInfo->ImageFileName
-
-		FindAndChangeUni(*(PULONG)(pProcess + 0x1F4));
-
-		//EPROCESS->SectionObject->Segment->ControlArea->FileObject->FileName
-
-		//should use MmIsAddressValid to verify
-
-		tmp = *(PULONG)(pProcess + 0x138);
-
-		tmp = *(PULONG)(tmp + 0x14);
-
-		tmp = *(PULONG)tmp;
-
-		tmp = *(PULONG)(tmp + 0x024);
-
-		FindAndChangeUni(tmp + 0x030);
-
-
-
-		//VAD
-
-		//should use MmIsAddressValid to verify
-
-		tmp = *(PULONG)(pProcess + 0x11c);
-
-		tmp = *(PULONG)(tmp + 0x10);
-
-		tmp = *(PULONG)(tmp + 0x018);
-
-		tmp = *(PULONG)(tmp + 0x024);
-
-		FindAndChangeUni(tmp + 0x030);
-
-	
-}*/
 static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
@@ -470,7 +359,6 @@ static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, getCommandLine,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, kill,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getMemory,  NULL,ZEND_ACC_PUBLIC)
-	//ZEND_ME(wing_process, setProcTitle,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getCurrentProcessId,  NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{
 	NULL,NULL,NULL
