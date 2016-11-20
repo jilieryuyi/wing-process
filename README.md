@@ -28,7 +28,7 @@ Release/tests
 		/**
 		 * @run as deamon process
 		 */
-		public function run();
+		public function run( $redirect_ouput = 1);
 
 		public function wait();
 		public function getProcessId();

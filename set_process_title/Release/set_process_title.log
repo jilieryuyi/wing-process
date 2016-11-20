@@ -1,0 +1,8 @@
+﻿  stdafx.cpp
+  set_process_title.cpp
+set_process_title.cpp(505): warning C4477: “printf”: 格式字符串“%x”需要类型“unsigned int”的参数，但可变参数 2 拥有了类型“PVOID”
+  正在生成代码
+  All 8 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  set_process_title.vcxproj -> D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\ext\wing_process\Release\set_process_title.exe
+  set_process_title.vcxproj -> D:\php\php7-sdk\phpdev\vc14\x86\php-7.0.12\ext\wing_process\Release\set_process_title.pdb (Full PDB)
