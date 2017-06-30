@@ -35,3 +35,13 @@ tests/*/*.log
 tests/*/*.sh
 Release/tests/*.log
 Release/tests/*.pid
+/Release
+/x64
+/Debug
+/.vs
+/*.opendb
+/*.db
+/*.sln
+/*.vcxproj
+/*.filters
+/*.user
