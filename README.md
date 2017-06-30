@@ -2,20 +2,8 @@
 
 This library provides a better API to work with daemon processes on windows systems using PHP.
 
-## Installation
 
-The dll is available on [x86 dll download](https://github.com/jilieryuyi/wing_process/blob/master/Release/wing_process.dll). You can install it on your windows system using php7.0.*.
-
-##Build
-
-php version 7.0.9 ZTS x86
-visual stdio 2015(vc14)
-
-##Demo dir
-
-Release/tests
-
-##Interface
+## Interface
 
 	interface wing_process{
 		/**
@@ -38,9 +26,9 @@ Release/tests
 		public function getMemory();
 	}
 	
-##Demo
+## Demo
 
-####run.php
+#### run.php
 	$count = 0;
 	while( 1 )
 	{
@@ -49,7 +37,7 @@ Release/tests
 		$count++;
 	}
 
-####process.php
+#### process.php
 	//run .php file as a deamon process
 	$process = new \wing\wing_process(__DIR__."/run.php",__DIR__."/process.log");
 	echo "process_id=",$process->run(),"\r\n";
@@ -67,7 +55,7 @@ Release/tests
 	echo "process_id=",$process->run(),"\r\n";*/
 
 	
-####create_process_by_pid.php
+#### create_process_by_pid.php
 	$process_id = file_get_contents("process.pid");
 	//create process by pid
 	$process = new \wing\wing_process($process_id);
