@@ -113,7 +113,7 @@ void WingGetProcessCommandLine( DWORD process_id, char* &lpszCommandLine ){
 		}
 	
 		DWORD dwExitCode        = 0;
-		SIZE_T dwReaded          = 0;
+		SIZE_T dwReaded         = 0;
 		int buf_size            = 10240;
 		lpszCommandLine         = new char[buf_size]; 
         
@@ -122,7 +122,7 @@ void WingGetProcessCommandLine( DWORD process_id, char* &lpszCommandLine ){
 		::WaitForSingleObject(hThread, 500);
         ::GetExitCodeThread(hThread, &dwExitCode);
 
-		SetLastError(0);
+		 SetLastError(0);
 		::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, sizeof(char)*buf_size, &dwReaded);
 
 		//进程的可执行文件名称。要获得可执行文件的完整路径，应调用Module32First函数，再检查其返回的MODULEENTRY32结构的szExePath成员。
