@@ -45,3 +45,5 @@ Release/tests/*.pid
 /*.vcxproj
 /*.filters
 /*.user
+/ipch
+/*/*/x64

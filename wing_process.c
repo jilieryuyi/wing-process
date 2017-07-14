@@ -45,87 +45,19 @@ char *PHP_PATH = NULL;
 
 zend_class_entry *wing_process_ce;
 
-ZEND_METHOD(wing_process, __construct) {
-	
-	char *file        = NULL;  
-	char *output_file = "";
-	int file_len      = 0;
-	int output_len    = 0;
-	
-	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
-		"s|s", &file, &file_len, &output_file, &output_len)) {
-		return;
-	}
-
-	zend_update_property_string( wing_process_ce, getThis(), 
-		"file", strlen("file"), file TSRMLS_CC );
-	zend_update_property_string( wing_process_ce, getThis(), 
-		"output_file", strlen("output_file"), output_file TSRMLS_CC );
-
-	//char *command_line = "";
-	int size = strlen(PHP_PATH) + file_len + 2;
-	char *command_line = NULL;// (char*)emalloc(size);
-	//memset(command_line, 0, size);
-
-	//if file is a process id,so here we check the file param is number ?
-	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) 
-	{
-		//if create by a process id
-		PROCESSINFO *item = new PROCESSINFO();
-		DWORD process_id = zend_atoi(file, strlen(file));
-		//query the process info by ntll.dll
-		WingQueryProcessByProcessID(item, process_id);
-		if (item)
-		{
-			spprintf(&command_line, size, "%s", item->command_line);
-			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
-			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
-			delete item;
-		}
-	}
-	else 
-	{
-		if (!wing_check_is_runable((const char*)file))
-		{
-			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
-		}
-		else
-			spprintf(&command_line,size,"%s\0", file);
-	}
-
-	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
-	//zend_printf("--->%s\r\n\r\n",command_line);
-	if(command_line)
-	efree(command_line);
-}
-
-
-ZEND_METHOD(wing_process, __destruct) {
-	 
-	zval *_pi = zend_read_property(wing_process_ce, getThis(),
-		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
-
-	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-
-	if (pi) {
-		CloseHandle(pi->hProcess);
-		CloseHandle(pi->hThread);
-		delete pi;
-	}
-/*
-	zval *command_line = zend_read_property(wing_process_ce, getThis(), 
-		"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	
-	zval_ptr_dtor(command_line);*/
-}
-
+/**
+ * 检查文件是否为可执行文件
+ * 
+ * @param string 文件名（可以带路径，也可以不带路径）
+ * @return bool
+ */
 BOOL wing_check_is_runable(const char *file) {
 
-	char *begin     = NULL;
-	char *find      = NULL;
+	char *begin = NULL;
+	char *find = NULL;
 
-	if ( file[0] == '\'' || file[0] == '\"' ) {
-		 begin = (char*)(file + 1);
+	if (file[0] == '\'' || file[0] == '\"') {
+		begin = (char*)(file + 1);
 	}
 	else {
 		begin = (char*)file;
@@ -152,9 +84,80 @@ BOOL wing_check_is_runable(const char *file) {
 	return is_run;
 }
 
-ZEND_METHOD(wing_process, run) {
+/**
+ * 构造函数
+ * @param $file
+ * @param $ouput
+ */
+ZEND_METHOD(wing_process, __construct) 
+{
+	
+	char *file        = NULL;  
+	char *output_file = "";
+	int file_len      = 0;
+	int output_len    = 0;
+	
+	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
+		"s|s", &file, &file_len, &output_file, &output_len)) {
+		return;
+	}
 
+	zend_update_property_string( wing_process_ce, getThis(), 
+		"file", strlen("file"), file TSRMLS_CC );
+	zend_update_property_string( wing_process_ce, getThis(), 
+		"output_file", strlen("output_file"), output_file TSRMLS_CC );
 
+	int size = strlen(PHP_PATH) + file_len + 2;
+	char *command_line = NULL;
+
+	//如果参数是数字 则认为需要通过已有进程id创建进程
+	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
+		PROCESSINFO *item = new PROCESSINFO();
+		DWORD process_id  = zend_atoi(file, strlen(file));
+		WingQueryProcessByProcessID(item, process_id);
+		if (item){
+			spprintf(&command_line, size, "%s", item->command_line);
+			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
+			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
+			delete item;
+		}
+	} else {
+		if (!wing_check_is_runable((const char*)file)){
+			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
+		} else {
+			spprintf(&command_line, size, "%s\0", file);
+		}
+	}
+
+	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
+	if(command_line)
+	efree(command_line);
+}
+
+/***
+ * 析构函数
+ */
+ZEND_METHOD(wing_process, __destruct) {
+	 
+	zval *_pi = zend_read_property(wing_process_ce, getThis(),
+		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+
+	if (pi) {
+		CloseHandle(pi->hProcess);
+		CloseHandle(pi->hThread);
+		delete pi;
+	}
+}
+
+/**
+ * 开始执行
+ *
+ * @param int 是否重定向输出，可以理解为，如果重定向输出即为守护进程，默认是1 重定向输出
+ */
+ZEND_METHOD(wing_process, run) 
+{
 	int redirect_output = 1;
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &redirect_output);
 	
@@ -173,11 +176,6 @@ ZEND_METHOD(wing_process, run) {
 	sa.bInheritHandle = TRUE;                         // 来允许子进程继承父进程的管道句柄
 	sa.lpSecurityDescriptor = NULL;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-
-	/*if (!CreatePipe(&m_hRead, &m_hWrite, &sa, 0))
-	{
-		RETURN_LONG( WING_ERROR_FAILED );
-	}*/
 
 	SECURITY_ATTRIBUTES *psa = NULL;
 	DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
@@ -233,6 +231,12 @@ ZEND_METHOD(wing_process, run) {
 }
 
 
+/**
+ * 等待进程结束
+ * 
+ * @param int $timout 等待多少秒超时，可选参数，默认为 INFINITE， 意思为永不超时
+ * @return int
+ */
 ZEND_METHOD(wing_process, wait) {
 	
 	int timeout = INFINITE;
@@ -265,15 +269,33 @@ ZEND_METHOD(wing_process, wait) {
 	RETURN_LONG(wait_result);
 }
 
+/**
+ * 获取进程id
+ *
+ * @return int
+ */
 ZEND_METHOD(wing_process, getProcessId) {
 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
 	RETURN_ZVAL(process_id,0,0);
 }
 
+
+/**
+ * 获取线程id
+ *
+ * @return int
+ */
 ZEND_METHOD(wing_process, getThreadId) {
 	zval *thread_id = zend_read_property(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0, 0 TSRMLS_CC);
 	RETURN_ZVAL(thread_id,0,0);
 }
+
+
+/**
+ * 获取进程启动参数
+ *
+ * @return string
+ */
 ZEND_METHOD(wing_process, getCommandLine)
 {
 	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
@@ -299,6 +321,12 @@ ZEND_METHOD(wing_process, getCommandLine)
 		ZVAL_ZVAL(return_value, command_line, 0, 0);
 	}
 }
+
+/**
+ * 杀死进程
+ *
+ * @return int
+ */
 ZEND_METHOD(wing_process, kill)
 {
 
@@ -323,7 +351,6 @@ ZEND_METHOD(wing_process, kill)
 	RETURN_LONG(WING_ERROR_SUCCESS);
 }
 
-
 ZEND_METHOD(wing_process, getMemory) {
 
 	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
@@ -343,8 +370,77 @@ ZEND_METHOD(wing_process, getMemory) {
 	GetProcessMemoryInfo(process, &pmc, sizeof(pmc));
 	RETURN_LONG(pmc.WorkingSetSize);
 }
+
 ZEND_METHOD(wing_process, getCurrentProcessId) {
 	ZVAL_LONG(return_value, GetCurrentProcessId());
+}
+
+
+jmp_buf j;
+void raise_exception(void)
+{
+	printf("exception raised\n");
+	longjmp(j, 1); /* jump to exception handler */
+	printf("this line should never appear\n");
+}
+
+
+DWORD WINAPI ThreadFuncFirst(LPVOID param)
+{
+	printf("thread is running\r\n");
+	//Sleep(1000000);
+	printf("exception raised\n");
+	longjmp(j, 1); /* jump to exception handler */
+	printf("this line should never appear\n");
+	return 0;
+}
+
+ZEND_FUNCTION(alarm) {
+	zval *ontimeout;
+	zval *retval_ptr;
+
+	//参数获取
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &ontimeout) != SUCCESS) {
+		RETURN_LONG(0);
+		return;
+	}
+	
+
+	DWORD dwThreadID = 0;
+    HANDLE handleFirst = NULL;
+	if (setjmp(j) == 0)
+	{
+		//printf("\''setjmp\'' is initializing \''j\''\n");
+		//Sleep(1000000);
+		//raise_exception();
+
+		handleFirst= CreateThread(NULL, 0, ThreadFuncFirst, 0, 0, &dwThreadID);
+	    if (!handleFirst)
+		{
+			RETURN_LONG(0);
+		}
+		
+		//raise_exception();
+		//HANDLE arrayHandle[] = {handleFirst, handleSecond};
+		//WaitForMultipleObjects(2, arrayHandle, TRUE, INFINITE);
+		
+
+		//printf("this line should never appear\n");
+	}
+	else
+	{
+	//	printf("''setjmp'' was just jumped into\n");
+
+		if (SUCCESS != call_user_function(EG(function_table), NULL, ontimeout, retval_ptr, 0, NULL)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "ontimeout callback fail");
+		}
+
+		/* this code is the exception handler */
+	}
+	WaitForSingleObject(handleFirst, INFINITE);//等待线程返回，用sleep()就太山寨了
+	CloseHandle(handleFirst);//句柄默认值2 这里减1，线程函数执行完后释放资源。
+	RETURN_LONG(1);
+
 }
 
 
@@ -361,7 +457,7 @@ static zend_function_entry wing_process_methods[] = {
 	ZEND_ME(wing_process, getMemory,  NULL,ZEND_ACC_PUBLIC)
 	ZEND_ME(wing_process, getCurrentProcessId,  NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{
-	NULL,NULL,NULL
+	    NULL,NULL,NULL
 	}
 };
 
@@ -426,6 +522,7 @@ PHP_MINFO_FUNCTION(wing_process)
 const zend_function_entry wing_process_functions[] = {
 //	PHP_FE(wing_process_wait,NULL)
 //	PHP_FE(wing_create_process_ex,NULL)
+	PHP_FE(alarm, NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 
