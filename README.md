@@ -63,4 +63,6 @@ This library provides a better API to work with daemon processes on windows syst
 	echo "thread_id=",$process->getThreadId(),"\r\n";
 	echo "command line=",$process->getCommandLine(),"\r\n";
 	//$process->kill();
-	
+
+### help
+For more information QQ group 535218312	
