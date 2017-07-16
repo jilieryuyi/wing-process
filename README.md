@@ -64,5 +64,5 @@ This library provides a better API to work with daemon processes on windows syst
 	echo "command line=",$process->getCommandLine(),"\r\n";
 	//$process->kill();
 
-### help
+### Help
 For more information QQ group 535218312	
