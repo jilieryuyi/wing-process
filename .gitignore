@@ -48,3 +48,6 @@ Release/tests/*.pid
 /ipch
 /*/*/x64
 *.sdf
+/.idea/
+/tests/.idea/
+/tests/log.txt
