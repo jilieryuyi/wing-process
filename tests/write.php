@@ -15,3 +15,5 @@ var_dump((shmop_read($shmid, 0, $len)));
 //
 //shmop_delete($shmid);
 shmop_close($shmid);
+
+sleep(100);
