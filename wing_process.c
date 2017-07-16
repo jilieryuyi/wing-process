@@ -330,19 +330,20 @@ ZEND_METHOD(wing_process, getCommandLine)
 ZEND_METHOD(wing_process, kill)
 {
 
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	HANDLE process = NULL;
 
+	//判断进程参数是否为纯数字 如果是数字 则通过进程id 打开进程
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	}
-	else {
+	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
 	}
 
+	//终止进程
 	if (!TerminateProcess(process, 0)) {
 
 		RETURN_LONG(WING_ERROR_FAILED);
@@ -351,19 +352,27 @@ ZEND_METHOD(wing_process, kill)
 	RETURN_LONG(WING_ERROR_SUCCESS);
 }
 
+/**
+ * 获取进程占用的真是的内存大小
+ * 
+ * @return int  
+ */
 ZEND_METHOD(wing_process, getMemory) {
 
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	}
-	else {
+	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
+	}
+
+	if (!process) {
+		RETURN_LONG(0);
 	}
 
 	PROCESS_MEMORY_COUNTERS pmc;
@@ -371,6 +380,11 @@ ZEND_METHOD(wing_process, getMemory) {
 	RETURN_LONG(pmc.WorkingSetSize);
 }
 
+/**
+ * 获取当前进程id
+ *
+ * @return int
+ */
 ZEND_METHOD(wing_process, getCurrentProcessId) {
 	ZVAL_LONG(return_value, GetCurrentProcessId());
 }
