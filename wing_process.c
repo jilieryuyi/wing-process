@@ -506,9 +506,9 @@ PHP_MINIT_FUNCTION(wing_process)
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
 	
-	if( PHP_PATH )
+	if (PHP_PATH) {
 		free(PHP_PATH);
-
+	}
 	return SUCCESS;
 }
 
@@ -536,7 +536,7 @@ PHP_MINFO_FUNCTION(wing_process)
 const zend_function_entry wing_process_functions[] = {
 //	PHP_FE(wing_process_wait,NULL)
 //	PHP_FE(wing_create_process_ex,NULL)
-	PHP_FE(alarm, NULL)
+	//PHP_FE(alarm, NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 
