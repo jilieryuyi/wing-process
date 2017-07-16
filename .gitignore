@@ -47,3 +47,4 @@ Release/tests/*.pid
 /*.user
 /ipch
 /*/*/x64
+*.sdf
