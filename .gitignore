@@ -43,6 +43,7 @@ Release/tests/*.pid
 /*.db
 /*.sln
 /*.vcxproj
+*/*.vcxproj
 /*.filters
 /*.user
 /ipch
