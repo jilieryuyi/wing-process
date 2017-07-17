@@ -330,19 +330,20 @@ ZEND_METHOD(wing_process, getCommandLine)
 ZEND_METHOD(wing_process, kill)
 {
 
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	HANDLE process = NULL;
 
+	//判断进程参数是否为纯数字 如果是数字 则通过进程id 打开进程
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	}
-	else {
+	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
 	}
 
+	//终止进程
 	if (!TerminateProcess(process, 0)) {
 
 		RETURN_LONG(WING_ERROR_FAILED);
@@ -351,19 +352,27 @@ ZEND_METHOD(wing_process, kill)
 	RETURN_LONG(WING_ERROR_SUCCESS);
 }
 
+/**
+ * 获取进程占用的真是的内存大小
+ * 
+ * @return int  
+ */
 ZEND_METHOD(wing_process, getMemory) {
 
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	}
-	else {
+	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
+	}
+
+	if (!process) {
+		RETURN_LONG(0);
 	}
 
 	PROCESS_MEMORY_COUNTERS pmc;
@@ -371,78 +380,14 @@ ZEND_METHOD(wing_process, getMemory) {
 	RETURN_LONG(pmc.WorkingSetSize);
 }
 
+/**
+ * 获取当前进程id
+ *
+ * @return int
+ */
 ZEND_METHOD(wing_process, getCurrentProcessId) {
 	ZVAL_LONG(return_value, GetCurrentProcessId());
 }
-
-
-jmp_buf j;
-void raise_exception(void)
-{
-	printf("exception raised\n");
-	longjmp(j, 1); /* jump to exception handler */
-	printf("this line should never appear\n");
-}
-
-
-DWORD WINAPI ThreadFuncFirst(LPVOID param)
-{
-	printf("thread is running\r\n");
-	//Sleep(1000000);
-	printf("exception raised\n");
-	longjmp(j, 1); /* jump to exception handler */
-	printf("this line should never appear\n");
-	return 0;
-}
-
-ZEND_FUNCTION(alarm) {
-	zval *ontimeout;
-	zval *retval_ptr;
-
-	//参数获取
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &ontimeout) != SUCCESS) {
-		RETURN_LONG(0);
-		return;
-	}
-	
-
-	DWORD dwThreadID = 0;
-    HANDLE handleFirst = NULL;
-	if (setjmp(j) == 0)
-	{
-		//printf("\''setjmp\'' is initializing \''j\''\n");
-		//Sleep(1000000);
-		//raise_exception();
-
-		handleFirst= CreateThread(NULL, 0, ThreadFuncFirst, 0, 0, &dwThreadID);
-	    if (!handleFirst)
-		{
-			RETURN_LONG(0);
-		}
-		
-		//raise_exception();
-		//HANDLE arrayHandle[] = {handleFirst, handleSecond};
-		//WaitForMultipleObjects(2, arrayHandle, TRUE, INFINITE);
-		
-
-		//printf("this line should never appear\n");
-	}
-	else
-	{
-	//	printf("''setjmp'' was just jumped into\n");
-
-		if (SUCCESS != call_user_function(EG(function_table), NULL, ontimeout, retval_ptr, 0, NULL)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "ontimeout callback fail");
-		}
-
-		/* this code is the exception handler */
-	}
-	WaitForSingleObject(handleFirst, INFINITE);//等待线程返回，用sleep()就太山寨了
-	CloseHandle(handleFirst);//句柄默认值2 这里减1，线程函数执行完后释放资源。
-	RETURN_LONG(1);
-
-}
-
 
 
 static zend_function_entry wing_process_methods[] = {
@@ -492,9 +437,9 @@ PHP_MINIT_FUNCTION(wing_process)
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
 	
-	if( PHP_PATH )
+	if (PHP_PATH) {
 		free(PHP_PATH);
-
+	}
 	return SUCCESS;
 }
 
@@ -522,7 +467,7 @@ PHP_MINFO_FUNCTION(wing_process)
 const zend_function_entry wing_process_functions[] = {
 //	PHP_FE(wing_process_wait,NULL)
 //	PHP_FE(wing_create_process_ex,NULL)
-	PHP_FE(alarm, NULL)
+	//PHP_FE(alarm, NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 
