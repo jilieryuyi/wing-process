@@ -7,9 +7,9 @@ dnl without editing.
 
 dnl If your extension references something external, use with:
 
-dnl PHP_ARG_WITH(wing_process, for wing_process support,
-dnl Make sure that the comment is aligned:
-dnl [  --with-wing_process             Include wing_process support])
+PHP_ARG_WITH(wing_process, for wing_process support,
+Make sure that the comment is aligned:
+[  --with-wing_process             Include wing_process support])
 
 dnl Otherwise use enable:
 
