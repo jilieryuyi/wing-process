@@ -75,7 +75,12 @@ BOOL wing_check_is_runable(const char *file) {
 
 	char *ext = (char*)emalloc(4);
 	memset(ext, 0, 4);
+
+	#ifdef PHP_WIN32
 	strncpy_s(ext, 4, p, 3);
+	#else
+	strncpy(ext, p, 3);
+	#endif
 
 	BOOL is_run = 0;
 	if (strcmp(ext, "exe") == 0 || strcmp(ext, "bat") == 0)
