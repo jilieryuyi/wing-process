@@ -28,11 +28,13 @@
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
 
+#ifdef PHP_WIN32
 #include "helper/wing_ntdll.h"
 #include "Shlwapi.h"
 #pragma comment(lib,"Shlwapi.lib")
 #include "Psapi.h"
 #pragma comment(lib,"Psapi.lib")
+#endif
 
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
@@ -46,9 +48,9 @@ char *PHP_PATH = NULL;
 zend_class_entry *wing_process_ce;
 
 /**
- * ¼ì²éÎÄ¼þÊÇ·ñÎª¿ÉÖ´ÐÐÎÄ¼þ
+ * ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ç·ï¿½Îªï¿½ï¿½Ö´ï¿½ï¿½ï¿½Ä¼ï¿½
  * 
- * @param string ÎÄ¼þÃû£¨¿ÉÒÔ´øÂ·¾¶£¬Ò²¿ÉÒÔ²»´øÂ·¾¶£©
+ * @param string ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½Â·ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
  * @return bool
  */
 BOOL wing_check_is_runable(const char *file) {
@@ -85,7 +87,7 @@ BOOL wing_check_is_runable(const char *file) {
 }
 
 /**
- * ¹¹Ôìº¯Êý
+ * ï¿½ï¿½ï¿½ìº¯ï¿½ï¿½
  * @param $file
  * @param $ouput
  */
@@ -110,7 +112,7 @@ ZEND_METHOD(wing_process, __construct)
 	int size = strlen(PHP_PATH) + file_len + 2;
 	char *command_line = NULL;
 
-	//Èç¹û²ÎÊýÊÇÊý×Ö ÔòÈÏÎªÐèÒªÍ¨¹ýÒÑÓÐ½ø³Ìid´´½¨½ø³Ì
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ÒªÍ¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½idï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
 		PROCESSINFO *item = new PROCESSINFO();
 		DWORD process_id  = zend_atoi(file, strlen(file));
@@ -135,7 +137,7 @@ ZEND_METHOD(wing_process, __construct)
 }
 
 /***
- * Îö¹¹º¯Êý
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 ZEND_METHOD(wing_process, __destruct) {
 	 
@@ -152,9 +154,9 @@ ZEND_METHOD(wing_process, __destruct) {
 }
 
 /**
- * ¿ªÊ¼Ö´ÐÐ
+ * ï¿½ï¿½Ê¼Ö´ï¿½ï¿½
  *
- * @param int ÊÇ·ñÖØ¶¨ÏòÊä³ö£¬¿ÉÒÔÀí½âÎª£¬Èç¹ûÖØ¶¨ÏòÊä³ö¼´ÎªÊØ»¤½ø³Ì£¬Ä¬ÈÏÊÇ1 ÖØ¶¨ÏòÊä³ö
+ * @param int ï¿½Ç·ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ø»ï¿½ï¿½ï¿½ï¿½Ì£ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½1 ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 ZEND_METHOD(wing_process, run) 
 {
@@ -168,12 +170,12 @@ ZEND_METHOD(wing_process, run)
 
 
 	STARTUPINFO sui;
-	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // ±£´æÁËËù´´½¨×Ó½ø³ÌµÄÐÅÏ¢
-	SECURITY_ATTRIBUTES sa;                            // ¸¸½ø³Ì´«µÝ¸ø×Ó½ø³ÌµÄÒ»Ð©ÐÅÏ¢
+	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ï¿½Ìµï¿½ï¿½ï¿½Ï¢
+	SECURITY_ATTRIBUTES sa;                            // ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½ï¿½Ý¸ï¿½ï¿½Ó½ï¿½ï¿½Ìµï¿½Ò»Ð©ï¿½ï¿½Ï¢
 
 
 
-	sa.bInheritHandle = TRUE;                         // À´ÔÊÐí×Ó½ø³Ì¼Ì³Ð¸¸½ø³ÌµÄ¹ÜµÀ¾ä±ú
+	sa.bInheritHandle = TRUE;                         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ï¿½Ì¼Ì³Ð¸ï¿½ï¿½ï¿½ï¿½ÌµÄ¹Üµï¿½ï¿½ï¿½ï¿½
 	sa.lpSecurityDescriptor = NULL;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
@@ -199,7 +201,7 @@ ZEND_METHOD(wing_process, run)
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 	SetLastError(0);
-	ZeroMemory(&sui, sizeof(STARTUPINFO));         // ¶ÔÒ»¸öÄÚ´æÇøÇåÁã£¬×îºÃÓÃZeroMemory, ËüµÄËÙ¶ÈÒª¿ìÓÚmemset
+	ZeroMemory(&sui, sizeof(STARTUPINFO));         // ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½ï¿½ï¿½ZeroMemory, ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½Òªï¿½ï¿½ï¿½ï¿½memset
 
 	sui.cb = sizeof(STARTUPINFO);
 	sui.dwFlags = STARTF_USESTDHANDLES;
@@ -232,9 +234,9 @@ ZEND_METHOD(wing_process, run)
 
 
 /**
- * µÈ´ý½ø³Ì½áÊø
+ * ï¿½È´ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½
  * 
- * @param int $timout µÈ´ý¶àÉÙÃë³¬Ê±£¬¿ÉÑ¡²ÎÊý£¬Ä¬ÈÏÎª INFINITE£¬ ÒâË¼ÎªÓÀ²»³¬Ê±
+ * @param int $timout ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë³¬Ê±ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Îª INFINITEï¿½ï¿½ ï¿½ï¿½Ë¼Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±
  * @return int
  */
 ZEND_METHOD(wing_process, wait) {
@@ -270,7 +272,7 @@ ZEND_METHOD(wing_process, wait) {
 }
 
 /**
- * »ñÈ¡½ø³Ìid
+ * ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½id
  *
  * @return int
  */
@@ -281,7 +283,7 @@ ZEND_METHOD(wing_process, getProcessId) {
 
 
 /**
- * »ñÈ¡Ïß³Ìid
+ * ï¿½ï¿½È¡ï¿½ß³ï¿½id
  *
  * @return int
  */
@@ -292,7 +294,7 @@ ZEND_METHOD(wing_process, getThreadId) {
 
 
 /**
- * »ñÈ¡½ø³ÌÆô¶¯²ÎÊý
+ * ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *
  * @return string
  */
@@ -323,7 +325,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 }
 
 /**
- * É±ËÀ½ø³Ì
+ * É±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *
  * @return int
  */
@@ -333,7 +335,7 @@ ZEND_METHOD(wing_process, kill)
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 	HANDLE process = NULL;
 
-	//ÅÐ¶Ï½ø³Ì²ÎÊýÊÇ·ñÎª´¿Êý×Ö Èç¹ûÊÇÊý×Ö ÔòÍ¨¹ý½ø³Ìid ´ò¿ª½ø³Ì
+	//ï¿½Ð¶Ï½ï¿½ï¿½Ì²ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id ï¿½ò¿ª½ï¿½ï¿½ï¿½
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	} else {
@@ -343,7 +345,7 @@ ZEND_METHOD(wing_process, kill)
 		process = pi->hProcess;
 	}
 
-	//ÖÕÖ¹½ø³Ì
+	//ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
 	if (!TerminateProcess(process, 0)) {
 
 		RETURN_LONG(WING_ERROR_FAILED);
@@ -353,7 +355,7 @@ ZEND_METHOD(wing_process, kill)
 }
 
 /**
- * »ñÈ¡½ø³ÌÕ¼ÓÃµÄÕæÊÇµÄÄÚ´æ´óÐ¡
+ * ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½Ãµï¿½ï¿½ï¿½ï¿½Çµï¿½ï¿½Ú´ï¿½ï¿½Ð¡
  * 
  * @return int  
  */
@@ -381,7 +383,7 @@ ZEND_METHOD(wing_process, getMemory) {
 }
 
 /**
- * »ñÈ¡µ±Ç°½ø³Ìid
+ * ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½id
  *
  * @return int
  */
