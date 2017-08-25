@@ -34,6 +34,10 @@
 #pragma comment(lib,"Shlwapi.lib")
 #include "Psapi.h"
 #pragma comment(lib,"Psapi.lib")
+#else
+typedef int BOOL;
+#define INFINITE 0
+#define MAX_PATH 256
 #endif
 
 #define WING_ERROR_FAILED  0
@@ -119,6 +123,7 @@ ZEND_METHOD(wing_process, __construct)
 
 	//������������� ����Ϊ��Ҫͨ�����н���id��������
 	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
+	    #ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
 		DWORD process_id  = zend_atoi(file, strlen(file));
 		WingQueryProcessByProcessID(item, process_id);
@@ -128,6 +133,7 @@ ZEND_METHOD(wing_process, __construct)
 			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
 			delete item;
 		}
+		#endif
 	} else {
 		if (!wing_check_is_runable((const char*)file)){
 			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
@@ -149,6 +155,7 @@ ZEND_METHOD(wing_process, __destruct) {
 	zval *_pi = zend_read_property(wing_process_ce, getThis(),
 		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
+    #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 
 	if (pi) {
@@ -156,6 +163,7 @@ ZEND_METHOD(wing_process, __destruct) {
 		CloseHandle(pi->hThread);
 		delete pi;
 	}
+	#endif
 }
 
 /**
@@ -174,6 +182,7 @@ ZEND_METHOD(wing_process, run)
 	char *command      = Z_STRVAL_P(_command);
 
 
+    #ifdef PHP_WIN32
 	STARTUPINFO sui;
 	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
 	SECURITY_ATTRIBUTES sa;                            // �����̴��ݸ��ӽ��̵�һЩ��Ϣ
@@ -235,6 +244,9 @@ ZEND_METHOD(wing_process, run)
 	zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), pi->dwThreadId TSRMLS_CC);
 
 	RETURN_LONG(pi->dwProcessId);
+	#else
+	RETURN_LONG(0);
+	#endif
 }
 
 
@@ -250,6 +262,7 @@ ZEND_METHOD(wing_process, wait) {
 
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
 
+    #ifdef PHP_WIN32
 	HANDLE process = NULL;
 	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 
@@ -274,6 +287,7 @@ ZEND_METHOD(wing_process, wait) {
 	}
 
 	RETURN_LONG(wait_result);
+	#endif
 }
 
 /**
@@ -308,6 +322,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
+		#ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
 		WingQueryProcessByProcessID(item, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 		if (item)
@@ -319,6 +334,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 			delete item;
 			RETURN_STRING(command_line);
 		}
+		#endif
 	}
 	else {
 
@@ -338,6 +354,7 @@ ZEND_METHOD(wing_process, kill)
 {
 
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
 	//�жϽ��̲����Ƿ�Ϊ������ ��������� ��ͨ������id �򿪽���
@@ -357,6 +374,7 @@ ZEND_METHOD(wing_process, kill)
 		return;
 	}
 	RETURN_LONG(WING_ERROR_SUCCESS);
+	#endif
 }
 
 /**
@@ -367,6 +385,7 @@ ZEND_METHOD(wing_process, kill)
 ZEND_METHOD(wing_process, getMemory) {
 
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
@@ -385,6 +404,7 @@ ZEND_METHOD(wing_process, getMemory) {
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo(process, &pmc, sizeof(pmc));
 	RETURN_LONG(pmc.WorkingSetSize);
+	#endif
 }
 
 /**
@@ -419,7 +439,9 @@ PHP_MINIT_FUNCTION(wing_process)
 
 	PHP_PATH = (char*)malloc(MAX_PATH);
 	memset(PHP_PATH, 0, MAX_PATH);
+	#ifdef PHP_WIN32
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
+	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
 	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );
