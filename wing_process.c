@@ -40,6 +40,76 @@ typedef int BOOL;
 #define MAX_PATH 256
 #include <sys/types.h>   // 提供类型 pid_t 的定义
 #include <unistd.h>
+#include <string.h>
+
+
+/**
+ * linux或者mac查找命令所在路径，使用完需要free释放资源
+ * 如：getCommandPath("php"); //返回 /usr/bin/php
+ */
+char* getCommandPath(const char* command) {
+
+    char *env = getenv("PATH");
+    unsigned long start = (unsigned long)env;
+    size_t len = strlen(env);
+    unsigned long pos = (unsigned long)env;
+    unsigned long size = 0;
+    char *temp = NULL;
+    unsigned long command_len = strlen(command)+1;
+    
+    while(1) {
+        char t = ((char*)start)[0];
+        
+        if (t == ':' ) {
+            size = start - pos;
+            temp = (char *)malloc(size+command_len+1);
+            memset(temp, 0, size+command_len+1);
+            strncpy(temp, (char*)pos, size);
+            char *base = (char*)((unsigned long)temp + strlen(temp));
+            strcpy(base, "/");
+            strcpy((char*)((unsigned long)base + 1), command);
+            
+            //std::cout << temp << "\r\n";
+            if (access(temp, F_OK) == 0) {
+                //std::cout << command << " path is : " << temp << "\r\n";
+                return temp;
+            }
+            
+            pos = start+1;
+            free(temp);
+            temp = NULL;
+        }
+        
+        if (start >= ((unsigned long)env+len) ) {
+            break;
+        }
+        
+        start++;
+    }
+    
+    
+    
+    size = (unsigned long)env+len - pos;
+    
+    temp = (char *)malloc(size+command_len+1);
+    memset(temp, 0, size+command_len+1);
+    strncpy(temp, (char*)pos, size);
+   
+    char *base = (char*)((unsigned long)temp + strlen(temp));
+    strcpy(base, "/");
+    strcpy((char*)((unsigned long)base + 1), command);
+    
+    //std::cout << temp << "\r\n";
+    if (access(temp, F_OK) == 0) {
+        //std::cout << command << " path is : " << temp << "\r\n";
+        return temp;
+    }
+    free(temp);
+    temp = NULL;
+    return NULL;
+}
+
+
 #endif
 
 #define WING_ERROR_FAILED  0
@@ -433,7 +503,11 @@ ZEND_METHOD(wing_process, getMemory) {
  * @return int
  */
 ZEND_METHOD(wing_process, getCurrentProcessId) {
+    #ifdef PHP_WIN32
 	ZVAL_LONG(return_value, GetCurrentProcessId());
+	#else
+
+	#endif
 }
 
 
@@ -457,10 +531,12 @@ static zend_function_entry wing_process_methods[] = {
 PHP_MINIT_FUNCTION(wing_process)
 {
 
+    #ifdef PHP_WIN32
 	PHP_PATH = (char*)malloc(MAX_PATH);
 	memset(PHP_PATH, 0, MAX_PATH);
-	#ifdef PHP_WIN32
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
+	#else
+	PHP_PATH = getCommandPath("php");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
