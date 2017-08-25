@@ -337,6 +337,7 @@ ZEND_METHOD(wing_process, run)
         }
     }
 
+	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
 	RETURN_LONG((int)childpid);
 	#endif
 }
