@@ -388,7 +388,7 @@ ZEND_METHOD(wing_process, wait) {
 	 int status;
 	 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
         pid_t childpid = Z_LVAL_P(process_id);
-	    waitpid(childpid, &status, timeout);
+	    pid_t epid = waitpid(childpid, &status, timeout);
 	    /*
 	    ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
         如果我们不想使用它们，也可以把options设为0，如：
@@ -397,7 +397,7 @@ ZEND_METHOD(wing_process, wait) {
         WUNTRACED 若子进程进入暂停状态，则马上返回，但子进程的结束状态不予以理会。
         WIFSTOPPED(status)宏确定返回值是否对应与一个暂停子进程。
 	    */
-	RETURN_LONG(childpid);
+	RETURN_LONG(epid);
 
 	#endif
 }
