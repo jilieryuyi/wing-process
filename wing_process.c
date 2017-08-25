@@ -174,9 +174,9 @@ BOOL wing_check_is_runable(const char *file) {
  */
 ZEND_METHOD(wing_process, __construct) 
 {
-	
+
 	char *file        = NULL;  
-	char *output_file = "";
+	char *output_file = NULL;
 	int file_len      = 0;
 	int output_len    = 0;
 	
@@ -185,10 +185,12 @@ ZEND_METHOD(wing_process, __construct)
 		return;
 	}
 
-	zend_update_property_string( wing_process_ce, getThis(), 
+	zend_update_property_string( wing_process_ce, getThis(),
 		"file", strlen("file"), file TSRMLS_CC );
-	zend_update_property_string( wing_process_ce, getThis(), 
-		"output_file", strlen("output_file"), output_file TSRMLS_CC );
+	if (output_file) {
+	    zend_update_property_string( wing_process_ce, getThis(),
+		    "output_file", strlen("output_file"), output_file TSRMLS_CC);
+	}
 
 	int size = strlen(PHP_PATH) + file_len + 2;
 	char *command_line = NULL;
@@ -214,13 +216,14 @@ ZEND_METHOD(wing_process, __construct)
 			spprintf(&command_line, size, "%s\0", file);
 		}
 		#else
-		spprintf(&command_line, size, "%s\0", file);
+		spprintf(&command_line, size, "%s", file);
 		#endif
 	}
 
 	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
-	if(command_line)
-	efree(command_line);
+	if (command_line) {
+	    efree(command_line);
+	}
 }
 
 /***
@@ -322,20 +325,23 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
-    pid_t childpid = fork();
-	if (childpid == 0){
-        //child process
-        if (execl("/usr/bin/echo","echo","executed by execl" ,NULL) < 0) {
-            //perror("error on exec");
-            exit(0);
-        }
-    }//else{
+    //pid_t childpid = 0;//fork();
+
+    php_printf(PHP_PATH);
+
+//	if (childpid == 0){
+//        //child process
+//        if (execl(PHP_PATH, "php", command ,NULL) < 0) {
+//            //perror("error on exec");
+//            exit(0);
+//        }
+//    }//else{
         //parent process
 //        wait(&childpid);
 //        printf("execv done\n\n");
    // }
 
-	RETURN_LONG((int)childpid);
+	RETURN_LONG(0);
 	#endif
 }
 
