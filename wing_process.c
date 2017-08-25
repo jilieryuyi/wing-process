@@ -135,11 +135,15 @@ ZEND_METHOD(wing_process, __construct)
 		}
 		#endif
 	} else {
+	    #ifdef PHP_WIN32
 		if (!wing_check_is_runable((const char*)file)){
 			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
 		} else {
 			spprintf(&command_line, size, "%s\0", file);
 		}
+		#else
+		spprintf(&command_line, size, "%s\0", file);
+		#endif
 	}
 
 	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
