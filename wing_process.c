@@ -38,6 +38,8 @@
 typedef int BOOL;
 #define INFINITE 0
 #define MAX_PATH 256
+#include <sys/types.h>   // 提供类型 pid_t 的定义
+#include <unistd.h>
 #endif
 
 #define WING_ERROR_FAILED  0
@@ -249,7 +251,21 @@ ZEND_METHOD(wing_process, run)
 
 	RETURN_LONG(pi->dwProcessId);
 	#else
-	RETURN_LONG(0);
+
+    pid_t childpid = fork();
+	if (childpid == 0){
+        //child process
+        if (execl("/usr/bin/echo","echo","executed by execl" ,NULL) < 0) {
+            //perror("error on exec");
+            exit(0);
+        }
+    }//else{
+        //parent process
+//        wait(&childpid);
+//        printf("execv done\n\n");
+   // }
+
+	RETURN_LONG((int)childpid);
 	#endif
 }
 
