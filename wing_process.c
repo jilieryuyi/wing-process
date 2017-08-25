@@ -325,23 +325,19 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
-    //pid_t childpid = 0;//fork();
+    pid_t childpid = fork();
 
-    php_printf(PHP_PATH);
+    printf(PHP_PATH);
 
-//	if (childpid == 0){
-//        //child process
-//        if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-//            //perror("error on exec");
-//            exit(0);
-//        }
-//    }//else{
-        //parent process
-//        wait(&childpid);
-//        printf("execv done\n\n");
-   // }
+	if (childpid == 0){
+        //child process
+        if (execl(PHP_PATH, "php", command ,NULL) < 0) {
+            //perror("error on exec");
+            exit(0);
+        }
+    }
 
-	RETURN_LONG(0);
+	RETURN_LONG((int)childpid);
 	#endif
 }
 
@@ -543,6 +539,8 @@ PHP_MINIT_FUNCTION(wing_process)
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
 	PHP_PATH = getCommandPath("php");
+	printf(PHP_PATH);
+	printf("\r\n");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );

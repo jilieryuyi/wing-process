@@ -8,4 +8,4 @@
 //echo WING_PROCESS_PHP, "\r\n";
 
 $process = new \wing\wing_process(__DIR__."/runner.php");
-echo $process->run(1),"\r\n";
+echo $process->run(1);//"\r\n";
