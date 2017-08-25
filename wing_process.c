@@ -41,7 +41,7 @@ typedef int BOOL;
 #include <sys/types.h>   // 提供类型 pid_t 的定义
 #include <unistd.h>
 #include <string.h>
-
+#include <sys/wait.h>
 
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
@@ -350,8 +350,12 @@ ZEND_METHOD(wing_process, run)
  * @return int
  */
 ZEND_METHOD(wing_process, wait) {
-	
+
+	#ifdef PHP_WIN32
 	int timeout = INFINITE;
+	#else
+	int timeout = 0;
+	#endif
 
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
 
@@ -380,6 +384,20 @@ ZEND_METHOD(wing_process, wait) {
 	}
 
 	RETURN_LONG(wait_result);
+	#else
+	 int status;
+	 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+        pid_t childpid = Z_LVAL_P(process_id);
+	    waitpid(childpid, &status, timeout);
+	    /*
+	    ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
+        如果我们不想使用它们，也可以把options设为0，如：
+        ret=waitpid(-1,NULL,0);
+        WNOHANG 若pid指定的子进程没有结束，则waitpid()函数返回0，不予以等待。若结束，则返回该子进程的ID。
+        WUNTRACED 若子进程进入暂停状态，则马上返回，但子进程的结束状态不予以理会。
+        WIFSTOPPED(status)宏确定返回值是否对应与一个暂停子进程。
+	    */
+
 	#endif
 }
 
