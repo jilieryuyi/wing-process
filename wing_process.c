@@ -28,8 +28,6 @@
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
 
-//typedef unsigned long ulong;
-
 #ifdef PHP_WIN32
 #include "helper/wing_ntdll.h"
 #include "Shlwapi.h"
@@ -44,7 +42,6 @@ typedef int BOOL;
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-//#include <process.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：getCommandPath("php"); //返回 /usr/bin/php
