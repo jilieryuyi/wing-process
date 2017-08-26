@@ -243,7 +243,7 @@ ZEND_METHOD(wing_process, __construct)
 		    if (PHP_PATH) {
 			    spprintf(&command_line, size, "%s %s\0", PHP_PATH, file);
 			} else {
-			    php_error_docref(NULL TSRMLS_CC, E_WARNING, "找不到php命令（could not find command php）");
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "找不到php命令(could not find command php)");
 			}
 		} else {
 			spprintf(&command_line, size, "%s\0", file);
