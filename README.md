@@ -1,6 +1,6 @@
 # wing\wing_process
 
-This library provides a better API to work with daemon processes on windows systems using PHP.
+This library provides a better API to work with daemon processes on windows、mac and linux systems using PHP.
 
 
 ## Interface
