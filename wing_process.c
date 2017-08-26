@@ -309,20 +309,16 @@ ZEND_METHOD(wing_process, run)
 	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
 	SECURITY_ATTRIBUTES sa;                            // �����̴��ݸ��ӽ��̵�һЩ��Ϣ
 
-
-
-	sa.bInheritHandle = TRUE;                         // �������ӽ��̼̳и����̵Ĺܵ����
+	sa.bInheritHandle       = TRUE;                         // �������ӽ��̼̳и����̵Ĺܵ����
 	sa.lpSecurityDescriptor = NULL;
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.nLength              = sizeof(SECURITY_ATTRIBUTES);
 
 	SECURITY_ATTRIBUTES *psa = NULL;
 	DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 	OSVERSIONINFO osVersion = { 0 };
 	osVersion.dwOSVersionInfoSize = sizeof(osVersion);
-	if (GetVersionEx(&osVersion))
-	{
-		if (osVersion.dwPlatformId == VER_PLATFORM_WIN32_NT)
-		{
+	if (GetVersionEx(&osVersion)) {
+		if (osVersion.dwPlatformId == VER_PLATFORM_WIN32_NT) {
 			psa = &sa;
 			dwShareMode |= FILE_SHARE_DELETE;
 		}
@@ -339,14 +335,15 @@ ZEND_METHOD(wing_process, run)
 	SetLastError(0);
 	ZeroMemory(&sui, sizeof(STARTUPINFO));         // ��һ���ڴ������㣬�����ZeroMemory, �����ٶ�Ҫ����memset
 
-	sui.cb = sizeof(STARTUPINFO);
-	sui.dwFlags = STARTF_USESTDHANDLES;
-	sui.hStdInput = NULL;//m_hRead;
+	sui.cb         = sizeof(STARTUPINFO);
+	sui.dwFlags    = STARTF_USESTDHANDLES;
+	sui.hStdInput  = NULL;//m_hRead;
 	sui.hStdOutput = hConsoleRedirect;//m_hWrite;
-	sui.hStdError = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
+	sui.hStdError  = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
 	//sui.wShowWindow = SW_SHOW;
-	if(!redirect_output)
-	sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
+	if(!redirect_output) {
+	    sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
+	}
 									 /*if( params_len >0 ) {
 									 DWORD byteWrite  = 0;
 									 if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
