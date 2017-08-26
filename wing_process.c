@@ -42,6 +42,7 @@ typedef int BOOL;
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <signal.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
@@ -305,7 +306,7 @@ ZEND_METHOD(wing_process, run)
 
     #ifdef PHP_WIN32
 	STARTUPINFO sui;
-	PROCESS_INFORMATION *pi=new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
+	PROCESS_INFORMATION *pi = new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
 	SECURITY_ATTRIBUTES sa;                            // �����̴��ݸ��ӽ��̵�һЩ��Ϣ
 
 	sa.bInheritHandle       = TRUE;                         // �������ӽ��̼̳и����̵Ĺܵ����
@@ -513,10 +514,29 @@ ZEND_METHOD(wing_process, kill)
 	}
     //非安全的方式直接退出 可能造成进程数据丢失
 	if (!TerminateProcess(process, 0)) {
-		RETURN_LONG(WING_ERROR_FAILED);
+		RETURN_FALSE;//LONG(WING_ERROR_FAILED);
 		return;
 	}
-	RETURN_LONG(WING_ERROR_SUCCESS);
+	//RETURN_LONG(WING_ERROR_SUCCESS);
+	RETURN_TRUE;
+	#else
+    int process_id = 0;
+    if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
+        process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
+    } else {
+        zval *_process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+        process_id = Z_LVAL_P(_process_id);
+    }
+    int status = kill(process_id, SIGKILL);
+    if (status == -1) {
+        RETURN_FALSE;
+    }
+    wait(&status);
+    if (WIFSIGNALED(status)) {
+        //printf("chile process receive signal %d\n",WTERMSIG(status));
+        RETURN_TRUE;
+    }
+    RETURN_FALSE;
 	#endif
 }
 

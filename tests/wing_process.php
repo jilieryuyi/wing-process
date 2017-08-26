@@ -41,10 +41,11 @@ class wing_process
 
 	/**
 	 * kill a process
+     * @return bool
      */
 	public function kill()
 	{
-
+        return true;
 	}
 
 	/**
