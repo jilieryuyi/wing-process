@@ -46,4 +46,12 @@ class wing_process
 	{
 
 	}
+	/**
+	 * 得到当前进程id
+     * @return int
+     */
+	public static function getCurrentProcessId()
+    {
+        return 0;
+    }
 }

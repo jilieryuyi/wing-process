@@ -10,3 +10,4 @@
 $process = new \wing\wing_process(__DIR__."/runner.php");
 echo $process->run(1),"\r\n";
 //echo $process->wait();
+echo \wing\wing_process::getCurrentProcessId();
