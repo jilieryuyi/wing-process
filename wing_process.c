@@ -565,7 +565,8 @@ ZEND_METHOD(wing_process, getCurrentProcessId) {
     #ifdef PHP_WIN32
 	ZVAL_LONG(return_value, GetCurrentProcessId());
 	#else
-
+    zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+	RETURN_ZVAL(process_id,0,0);
 	#endif
 }
 
