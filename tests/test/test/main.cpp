@@ -84,5 +84,27 @@ int main(int argc, const char * argv[]) {
     
     std::cout << "php path is => " << php << "\r\n";
     free(php);
+    
+    FILE *handle = fopen("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests//php_path.php", "r");
+    char *line1 = (char*)malloc(33);
+    memset(line1, 0 , 33);
+    fgets(line1, 32, handle);
+    std::cout << line1 << "\r\n";
+    char *find =strstr(line1, "<?php");
+    if(find == line1 ) {
+        std::cout << "line1是php文件\r\n";
+    }
+    
+    char *line2 = (char*)malloc(33);
+    memset(line2, 0 , 33);
+    fgets(line2, 32, handle);
+    std::cout << line2 << "\r\n";
+    char *find2 =strstr(line2, "<?php");
+    if(find2 == line2 ) {
+        std::cout << "line2是php文件\r\n";
+    }
+    fclose(handle);
+    free(line1);
+    free(line2);
     return 0;
 }
