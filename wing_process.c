@@ -213,15 +213,16 @@ ZEND_METHOD(wing_process, __construct)
 {
 
 	char *file        = NULL;
-    	char *output_file = NULL;
-    	int file_len      = 0;
-    	int output_len    = 0;
+    char *output_file = NULL;
+    int file_len      = 0;
+    int output_len    = 0;
 
-    	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-    		"s|s", &file, &file_len, &output_file, &output_len)) {
-    		return;
-    	}
+    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+        "s|s", &file, &file_len, &output_file, &output_len)) {
+        return;
+    }
 
+    //php_printf("%d=>%s\r\n%d=>%s\r\n", file_len, file, output_len, output_file);
 
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
 
@@ -489,16 +490,15 @@ ZEND_METHOD(wing_process, getCommandLine)
 		}
 		#endif
 	} else {
-		zval *command_line = zend_read_property(wing_process_ce, getThis(),
+		zval *command_line  = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	    char *file = Z_STRVAL_P(command_line);
+	    char *file          = Z_STRVAL_P(command_line);
 	    char *bcommand_line = NULL;
 	    if (file_is_php(file)) {
 	        int size = strlen(PHP_PATH) + strlen(file) + 3;
 	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
 	        if (bcommand_line) {
-	            RETVAL_STRING(bcommand_line);
-	            //ZVAL_STRING(return_value, bcommand_line, 1);
+	            ZVAL_STRING(return_value, bcommand_line);
                 efree(bcommand_line);
                 bcommand_line = NULL;
 	        }

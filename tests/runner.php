@@ -8,5 +8,5 @@
 while (1) {
     file_put_contents(__DIR__."/runner.log", date("Y-m-d H:i:s"));
     sleep(1);
-    //break;
+    break;
 }

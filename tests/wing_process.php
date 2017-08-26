@@ -1,4 +1,6 @@
 <?php namespace wing;
+define("WING_PROCESS_PHP", "/usr/bin/php");
+define("WING_PROCESS_VERSION", "2.0.0");
 class wing_process
 {
 	/**
@@ -20,9 +22,12 @@ class wing_process
         return 0;
 	}
 
+	/**
+	 * @return int
+     */
 	public function wait($timeout = 0)
 	{
-
+        return 0;
 	}
 	public function getProcessId()
 	{
