@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | php win32 deamon process support
+  | php windows、mac and linux daemon process support
   | Author: yuyi 
   | Email: 297341015@qq.com
   | Home: http://www.itdfy.com/
