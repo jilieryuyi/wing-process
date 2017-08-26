@@ -364,7 +364,7 @@ ZEND_METHOD(wing_process, run)
 
     pid_t childpid = fork();
 
-	if (childpid == 0){
+	if (childpid == 0) {
         if (file_is_php(command)) {
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {
                 exit(0);
@@ -407,7 +407,7 @@ ZEND_METHOD(wing_process, wait) {
 		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	    process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
 	} else {
-		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+		zval *_pi  = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process    = pi->hProcess;
@@ -430,14 +430,14 @@ ZEND_METHOD(wing_process, wait) {
 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
     pid_t childpid   = Z_LVAL_P(process_id);
 	pid_t epid       = waitpid(childpid, &status, timeout);
-	    /*
-	    ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
+    /*
+        ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
         如果我们不想使用它们，也可以把options设为0，如：
         ret=waitpid(-1,NULL,0);
         WNOHANG 若pid指定的子进程没有结束，则waitpid()函数返回0，不予以等待。若结束，则返回该子进程的ID。
         WUNTRACED 若子进程进入暂停状态，则马上返回，但子进程的结束状态不予以理会。
         WIFSTOPPED(status)宏确定返回值是否对应与一个暂停子进程。
-	    */
+    */
 	RETURN_LONG(epid);
 	#endif
 }
@@ -477,8 +477,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 		#ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
 		WingQueryProcessByProcessID(item, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-		if (item)
-		{
+		if (item) {
 			int size = strlen(item->command_line) + 1;
 			char *command_line = "";//(char*)emalloc(size);
 			memset(command_line, 0, size);
@@ -487,9 +486,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 			RETURN_STRING(command_line);
 		}
 		#endif
-	}
-	else {
-
+	} else {
 		zval *command_line = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	
@@ -510,12 +507,12 @@ ZEND_METHOD(wing_process, kill)
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+		process   = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-		process = pi->hProcess;
+		process   = pi->hProcess;
 	}
     //非安全的方式直接退出 可能造成进程数据丢失
 	if (!TerminateProcess(process, 0)) {
