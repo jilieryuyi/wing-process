@@ -271,14 +271,13 @@ ZEND_METHOD(wing_process, __construct)
 }
 
 /***
- * ��������
+ * 析构函数
+ * windows下面需要释放一些资源
  */
 ZEND_METHOD(wing_process, __destruct) {
-	 
+	#ifdef PHP_WIN32
 	zval *_pi = zend_read_property(wing_process_ce, getThis(),
 		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
-
-    #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 
 	if (pi) {
@@ -371,13 +370,9 @@ ZEND_METHOD(wing_process, run)
 
     pid_t childpid = fork();
 
-    //printf(PHP_PATH);
-
 	if (childpid == 0){
-        //child process
         if (file_is_php(command)) {
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-                //perror("error on exec");
                 exit(0);
             }
         } else {
@@ -394,9 +389,9 @@ ZEND_METHOD(wing_process, run)
 
 
 /**
- * �ȴ����̽���
+ * 等待进程退出，windows下面返回退出码
  * 
- * @param int $timout �ȴ������볬ʱ����ѡ������Ĭ��Ϊ INFINITE�� ��˼Ϊ������ʱ
+ * @param int $timout
  * @return int
  */
 ZEND_METHOD(wing_process, wait) {
@@ -411,35 +406,36 @@ ZEND_METHOD(wing_process, wait) {
 
     #ifdef PHP_WIN32
 	HANDLE process = NULL;
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
 
+    int process_id = 0;
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	}
-	else {
+		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+	    process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
+	} else {
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
-		process = pi->hProcess;
+		process    = pi->hProcess;
+		process_id = pi->dwProcessId;
 	}
 
 	DWORD wait_result = 0;
 	DWORD wait_status = WaitForSingleObject(process, timeout);
 
 	if (wait_status != WAIT_OBJECT_0) {
-		RETURN_LONG(wait_status);
+		RETURN_LONG(process_id);//wait_status);
 	}
 	if (GetExitCodeProcess(process, &wait_result) == 0) {
-		RETURN_LONG(WING_ERROR_FAILED);
+		RETURN_LONG(-1);
 	}
 
-	RETURN_LONG(wait_result);
+	RETURN_LONG(process_id);
 	#else
-	 int status;
-	 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
-        pid_t childpid = Z_LVAL_P(process_id);
-        //printf("---%d\r\n",childpid);
-	    pid_t epid = waitpid(childpid, &status, timeout);
+	int status;
+	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+    pid_t childpid   = Z_LVAL_P(process_id);
+	pid_t epid       = waitpid(childpid, &status, timeout);
 	    /*
 	    ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
         如果我们不想使用它们，也可以把options设为0，如：
@@ -449,12 +445,11 @@ ZEND_METHOD(wing_process, wait) {
         WIFSTOPPED(status)宏确定返回值是否对应与一个暂停子进程。
 	    */
 	RETURN_LONG(epid);
-
 	#endif
 }
 
 /**
- * ��ȡ����id
+ * 获取进程id
  *
  * @return int
  */
@@ -465,7 +460,7 @@ ZEND_METHOD(wing_process, getProcessId) {
 
 
 /**
- * ��ȡ�߳�id
+ * 获取线程id
  *
  * @return int
  */
@@ -476,7 +471,7 @@ ZEND_METHOD(wing_process, getThreadId) {
 
 
 /**
- * ��ȡ������������
+ * 获取命令行参数
  *
  * @return string
  */
