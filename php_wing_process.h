@@ -24,7 +24,7 @@
 extern zend_module_entry wing_process_module_entry;
 #define phpext_wing_process_ptr &wing_process_module_entry
 
-#define PHP_WING_PROCESS_VERSION "0.1.0" /* Replace with version number for your extension */
+#define PHP_WING_PROCESS_VERSION "2.0.0" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_WING_PROCESS_API __declspec(dllexport)

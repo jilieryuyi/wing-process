@@ -81,7 +81,7 @@ char* getCommandPath(const char* command) {
 
 int main(int argc, const char * argv[]) {
     
-    getpid()
+    getpid();
     // insert code here...
     char * php =  getCommandPath("php");
     
