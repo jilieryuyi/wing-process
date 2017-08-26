@@ -44,9 +44,9 @@ typedef int BOOL;
 #include <sys/wait.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
- * 如：getCommandPath("php"); //返回 /usr/bin/php
+ * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-char* getCommandPath(const char* command) {
+char* get_command_path(const char* command) {
 
     char *env         = getenv("PATH");
     ulong start       = (ulong)env;
@@ -592,7 +592,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	memset(PHP_PATH, 0, MAX_PATH);
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
-	PHP_PATH = getCommandPath("php");
+	PHP_PATH = get_command_path("php");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
