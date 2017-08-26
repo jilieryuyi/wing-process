@@ -357,7 +357,7 @@ ZEND_METHOD(wing_process, run)
 
     pid_t childpid = fork();
 
-    printf(PHP_PATH);
+    //printf(PHP_PATH);
 
 	if (childpid == 0){
         //child process
@@ -424,7 +424,7 @@ ZEND_METHOD(wing_process, wait) {
 	 int status;
 	 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
         pid_t childpid = Z_LVAL_P(process_id);
-        printf("---%d\r\n",childpid);
+        //printf("---%d\r\n",childpid);
 	    pid_t epid = waitpid(childpid, &status, timeout);
 	    /*
 	    ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
@@ -597,8 +597,8 @@ PHP_MINIT_FUNCTION(wing_process)
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
 	PHP_PATH = getCommandPath("php");
-	printf(PHP_PATH);
-	printf("\r\n");
+	//printf(PHP_PATH);
+	//printf("\r\n");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
