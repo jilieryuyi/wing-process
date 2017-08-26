@@ -210,15 +210,13 @@ ZEND_METHOD(wing_process, __construct)
 
 	char *file        = NULL;  
 	int file_len      = 0;
-	int output_len    = 0;
 	
 	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
-		"s", &file, &file_len, &output_len)) {
+		"s", &file, &file_len)) {
 		return;
 	}
 
-	zend_update_property_string( wing_process_ce, getThis(),
-		"file", strlen("file"), file TSRMLS_CC );
+	zend_update_property_string( wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC );
 
 	int size = file_len + 2;
 	if (PHP_PATH) {
@@ -232,7 +230,7 @@ ZEND_METHOD(wing_process, __construct)
 		PROCESSINFO *item = new PROCESSINFO();
 		DWORD process_id  = zend_atoi(file, strlen(file));
 		WingQueryProcessByProcessID(item, process_id);
-		if (item){
+		if (item) {
 			spprintf(&command_line, size, "%s", item->command_line);
 			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
 			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
@@ -268,7 +266,7 @@ ZEND_METHOD(wing_process, __construct)
 ZEND_METHOD(wing_process, __destruct) {
 	#ifdef PHP_WIN32
 	zval *_pi = zend_read_property(wing_process_ce, getThis(),
-		"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+	"process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 
 	if (pi) {
@@ -280,9 +278,10 @@ ZEND_METHOD(wing_process, __destruct) {
 }
 
 /**
- * ��ʼִ��
+ * 运行进程
  *
- * @param int �Ƿ��ض���������������Ϊ������ض��������Ϊ�ػ����̣�Ĭ����1 �ض������
+ * @param string $output_file 默认为null，如果不为null，则以守护进程方式运行
+ * @return int 返回进程id
  */
 ZEND_METHOD(wing_process, run) 
 {
