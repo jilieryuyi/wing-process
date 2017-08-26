@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
+//http://www.jb51.net/article/45012.htm c linux 根据进程id获取进程信息
 /**
  * 查找命令所在路径，使用完需要free释放资源
  */
