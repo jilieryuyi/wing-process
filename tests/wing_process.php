@@ -13,10 +13,11 @@ class wing_process
 	}
 	/**
 	 * run as daemon process if $output_file was set
+     * @return int
 	 */
 	public function run($output_file = null)
 	{
-
+        return 0;
 	}
 
 	public function wait($timeout = 0)

@@ -212,15 +212,18 @@ zend_class_entry *wing_process_ce;
 ZEND_METHOD(wing_process, __construct) 
 {
 
-	char *file        = NULL;  
-	int file_len      = 0;
-	
-	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
-		"s", &file, &file_len)) {
-		return;
-	}
+	char *file        = NULL;
+    	char *output_file = NULL;
+    	int file_len      = 0;
+    	int output_len    = 0;
 
-	zend_update_property_string( wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC );
+    	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+    		"s|s", &file, &file_len, &output_file, &output_len)) {
+    		return;
+    	}
+
+
+	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
 
 	int size = file_len + 2;
 	if (PHP_PATH) {
@@ -290,8 +293,9 @@ ZEND_METHOD(wing_process, __destruct) {
 ZEND_METHOD(wing_process, run) 
 {
     char *output_file = NULL;
+    int olen = 0;
 
-	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file);
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file, &olen);
 
 	int redirect_output = 1;
 	if (output_file == NULL) {
