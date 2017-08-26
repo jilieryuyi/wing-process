@@ -78,6 +78,100 @@ char* getCommandPath(const char* command) {
     return NULL;
 
 }
+typedef unsigned long ulong;
+#define MAX_PATH 256
+
+
+char* get_command_path(const char* command) {
+    
+    char *env           = getenv("PATH");
+    ulong start         = (ulong)env;
+    size_t len          = strlen(env);
+    ulong pos           = (ulong)env;
+    ulong size          = 0;
+    char temp[MAX_PATH] = {0};
+    char *res           = NULL;
+    ulong command_len   = strlen(command)+1;
+    
+    while (1) {
+        char t = ((char*)start)[0];
+        
+        if (t == ':' ) {
+            size = start - pos;
+            //temp = (char *)malloc(size+command_len+1);
+            memset(temp, 0, MAX_PATH);
+            strncpy(temp, (char*)pos, size);
+            char *base = (char*)((unsigned long)temp + strlen(temp));
+            strcpy(base, "/");
+            strcpy((char*)((unsigned long)base + 1), command);
+            
+            if (access(temp, F_OK) == 0) {
+                res = (char *)malloc(size+command_len);
+                memset(res, 0, size+command_len);
+                strcpy(res, temp);
+                return res;
+            }
+            
+            pos = start+1;
+           // free(temp);
+           // temp = NULL;
+        }
+        
+        if (start >= ((unsigned long)env+len) ) {
+            break;
+        }
+        
+        start++;
+    }
+    
+    size = (ulong)env+len - pos;
+   // temp = (char *)malloc(size+command_len+1);
+    memset(temp, 0, MAX_PATH);
+    strncpy(temp, (char*)pos, size);
+    
+    char *base = (char*)((unsigned long)temp + strlen(temp));
+    strcpy(base, "/");
+    strcpy((char*)((unsigned long)base + 1), command);
+    
+    if (access(temp, F_OK) == 0) {
+        char *res = (char *)malloc(size+command_len);
+        memset(res, 0, size+command_len);
+        strcpy(res, temp);
+        return res;
+    }
+    
+    return NULL;
+}
+
+
+int file_is_php(const char *file)
+{
+    FILE *handle = fopen(file, "r");
+    if (!handle) {
+        return 0;
+    }
+    char *find = NULL;
+    char line[8] = {0};//  = (char*)malloc(8);
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+    
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+    
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+    fclose(handle);
+    
+    return 0;
+}
 
 int main(int argc, const char * argv[]) {
     
@@ -109,5 +203,18 @@ int main(int argc, const char * argv[]) {
     fclose(handle);
     free(line1);
     free(line2);
+    
+    
+    
+    int is = file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests//php_path.php");
+    if (is == 1) {
+        std::cout << "is php file\r\n";
+    } else {
+        std::cout << "not php \r\n";
+    }
+    
+    std::cout << get_command_path("php");
+    
+    
     return 0;
 }
