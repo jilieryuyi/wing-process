@@ -7,19 +7,19 @@ class wing_process
 	 * @param string|int $mixed command or process_id
 	 * @param string $output_file process output will write into this file
 	 */
-	public function __construct( $mixed, $output_file = '')
+	public function __construct($mixed)
 	{
 
 	}
 	/**
-	 * @run as deamon process
+	 * run as daemon process if $output_file was set
 	 */
-	public function run( $redirect_ouput = 1)
+	public function run($output_file = null)
 	{
 
 	}
 
-	public function wait()
+	public function wait($timeout = 0)
 	{
 
 	}
@@ -38,13 +38,21 @@ class wing_process
 	{
 		return "";
 	}
+
+	/**
+	 * kill a process
+     */
 	public function kill()
 	{
 
 	}
+
+	/**
+	 * @return int memory use byte
+     */
 	public function getMemory()
 	{
-
+        return 0;
 	}
 	/**
 	 * 得到当前进程id

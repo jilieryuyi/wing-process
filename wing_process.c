@@ -207,27 +207,21 @@ zend_class_entry *wing_process_ce;
  * 如果传入的文件是一个数字，则认为根据进程id打开进程，后续可以对此进程进行控制，比如kill
  *
  * @param string $file
- * @param string $output_file_path
  */
 ZEND_METHOD(wing_process, __construct) 
 {
 
 	char *file        = NULL;  
-	char *output_file = NULL;
 	int file_len      = 0;
 	int output_len    = 0;
 	
 	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, 
-		"s|s", &file, &file_len, &output_file, &output_len)) {
+		"s", &file, &file_len, &output_len)) {
 		return;
 	}
 
 	zend_update_property_string( wing_process_ce, getThis(),
 		"file", strlen("file"), file TSRMLS_CC );
-	if (output_file) {
-	    zend_update_property_string( wing_process_ce, getThis(),
-		    "output_file", strlen("output_file"), output_file TSRMLS_CC);
-	}
 
 	int size = file_len + 2;
 	if (PHP_PATH) {
@@ -295,11 +289,17 @@ ZEND_METHOD(wing_process, __destruct) {
  */
 ZEND_METHOD(wing_process, run) 
 {
+    char *output_file = NULL;
+
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file);
+
 	int redirect_output = 1;
-	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &redirect_output);
+	if (output_file == NULL) {
+	    redirect_output = 0;
+	}
 	
-	zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
-	char *output_file  = Z_STRVAL_P(_output_file);
+	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
+	//char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	char *command      = Z_STRVAL_P(_command);
 
