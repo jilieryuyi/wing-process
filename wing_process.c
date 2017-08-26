@@ -42,7 +42,7 @@ typedef int BOOL;
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-
+//#include <process.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：getCommandPath("php"); //返回 /usr/bin/php
@@ -565,8 +565,7 @@ ZEND_METHOD(wing_process, getCurrentProcessId) {
     #ifdef PHP_WIN32
 	ZVAL_LONG(return_value, GetCurrentProcessId());
 	#else
-    zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
-	RETURN_ZVAL(process_id,0,0);
+	ZVAL_LONG(return_value, getpid());
 	#endif
 }
 
