@@ -366,6 +366,10 @@ ZEND_METHOD(wing_process, run)
                 //perror("error on exec");
                 exit(0);
             }
+        } else {
+            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
+                exit(0);
+            }
         }
     }
 
