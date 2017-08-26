@@ -1,0 +1,6 @@
+
+---- EXPECTED OUTPUT
+wing_process extension is available
+---- ACTUAL OUTPUT
+Termsig=11
+---- FAILED

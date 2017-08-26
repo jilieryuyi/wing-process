@@ -28,6 +28,8 @@
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
 
+//typedef unsigned long ulong;
+
 #ifdef PHP_WIN32
 #include "helper/wing_ntdll.h"
 #include "Shlwapi.h"
@@ -38,7 +40,7 @@
 typedef int BOOL;
 #define INFINITE 0
 #define MAX_PATH 256
-#include <sys/types.h>   // 提供类型 pid_t 的定义
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -49,15 +51,15 @@ typedef int BOOL;
  */
 char* getCommandPath(const char* command) {
 
-    char *env = getenv("PATH");
-    unsigned long start = (unsigned long)env;
-    size_t len = strlen(env);
-    unsigned long pos = (unsigned long)env;
-    unsigned long size = 0;
-    char *temp = NULL;
-    unsigned long command_len = strlen(command)+1;
+    char *env         = getenv("PATH");
+    ulong start       = (ulong)env;
+    size_t len        = strlen(env);
+    ulong pos         = (ulong)env;
+    ulong size        = 0;
+    char *temp        = NULL;
+    ulong command_len = strlen(command)+1;
     
-    while(1) {
+    while (1) {
         char t = ((char*)start)[0];
         
         if (t == ':' ) {
@@ -69,9 +71,7 @@ char* getCommandPath(const char* command) {
             strcpy(base, "/");
             strcpy((char*)((unsigned long)base + 1), command);
             
-            //std::cout << temp << "\r\n";
             if (access(temp, F_OK) == 0) {
-                //std::cout << command << " path is : " << temp << "\r\n";
                 return temp;
             }
             
@@ -86,11 +86,8 @@ char* getCommandPath(const char* command) {
         
         start++;
     }
-    
-    
-    
-    size = (unsigned long)env+len - pos;
-    
+
+    size = (ulong)env+len - pos;
     temp = (char *)malloc(size+command_len+1);
     memset(temp, 0, size+command_len+1);
     strncpy(temp, (char*)pos, size);
@@ -99,9 +96,7 @@ char* getCommandPath(const char* command) {
     strcpy(base, "/");
     strcpy((char*)((unsigned long)base + 1), command);
     
-    //std::cout << temp << "\r\n";
     if (access(temp, F_OK) == 0) {
-        //std::cout << command << " path is : " << temp << "\r\n";
         return temp;
     }
     free(temp);
@@ -115,31 +110,40 @@ char* getCommandPath(const char* command) {
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
 
+/**
+ * 判断是否为可执行文件，此方法一句后缀识别，不是很好
+ *
+ * @param char* file
+ * @return BOOL
+ */
+//BOOL wing_check_is_runable(const char *file);
 
-BOOL wing_check_is_runable(const char *file);
+/**
+ * 判断是否为php文件，此方法依据php文件开头的 <?php 识别
+ *
+ * @param char* file
+ * @return BOOL
+ */
 BOOL file_is_php(const char *file)
 {
     FILE *handle = fopen(file, "r");
     char *line1 = (char*)malloc(8);
     memset(line1, 0 , 7);
     fgets(line1, 7, handle);
-    //std::cout << line1 << "\r\n";
     char *find = strstr(line1, "<?php");
     if(find == line1 ) {
         free(line1);
         fclose(handle);
-        return 1;//std::cout << "line1是php文件\r\n";
+        return 1;
     }
 
     char *line2 = (char*)malloc(8);
     memset(line2, 0 , 7);
     fgets(line2, 7, handle);
-    //std::cout << line2 << "\r\n";
     char *find2 =strstr(line2, "<?php");
     if(find2 == line2 ) {
         free(line2);
         fclose(handle);
-        //std::cout << "line2是php文件\r\n";
         return 1;
     }
     fclose(handle);
@@ -154,53 +158,56 @@ char *PHP_PATH = NULL;
 zend_class_entry *wing_process_ce;
 
 /**
- * ����ļ��Ƿ�Ϊ��ִ���ļ�
- * 
- * @param string �ļ��������Դ�·����Ҳ���Բ���·����
- * @return bool
+ * 判断是否为可执行文件，此方法一句后缀识别，不是很好
+ *
+ * @param char* file
+ * @return BOOL
  */
-BOOL wing_check_is_runable(const char *file) {
-
-	char *begin = NULL;
-	char *find = NULL;
-
-	if (file[0] == '\'' || file[0] == '\"') {
-		begin = (char*)(file + 1);
-	}
-	else {
-		begin = (char*)file;
-	}
-
-
-	find = strchr(begin, '.');
-	if (!find)
-	{
-		return 0;
-	}
-	const char *p = strchr(begin, '.') + 1;
-
-	char *ext = (char*)emalloc(4);
-	memset(ext, 0, 4);
-
-	#ifdef PHP_WIN32
-	strncpy_s(ext, 4, p, 3);
-	#else
-	strncpy(ext, p, 3);
-	#endif
-
-	BOOL is_run = 0;
-	if (strcmp(ext, "exe") == 0 || strcmp(ext, "bat") == 0)
-	{
-		is_run = 1;
-	}
-	efree(ext);
-	return is_run;
-}
+//BOOL wing_check_is_runable(const char *file) {
+//
+//	char *begin = NULL;
+//	char *find = NULL;
+//
+//	if (file[0] == '\'' || file[0] == '\"') {
+//		begin = (char*)(file + 1);
+//	}
+//	else {
+//		begin = (char*)file;
+//	}
+//
+//
+//	find = strchr(begin, '.');
+//	if (!find)
+//	{
+//		return 0;
+//	}
+//	const char *p = strchr(begin, '.') + 1;
+//
+//	char *ext = (char*)emalloc(4);
+//	memset(ext, 0, 4);
+//
+//	#ifdef PHP_WIN32
+//	strncpy_s(ext, 4, p, 3);
+//	#else
+//	strncpy(ext, p, 3);
+//	#endif
+//
+//	BOOL is_run = 0;
+//	if (strcmp(ext, "exe") == 0 || strcmp(ext, "bat") == 0)
+//	{
+//		is_run = 1;
+//	}
+//	efree(ext);
+//	return is_run;
+//}
 
 /**
- * ���캯��
- * @param $file
- * @param $ouput
+ * 构造函数，第一个参数为需要以守护进程执行的php文件或者是其他可执行的命令和文件
+ * 第二个参数为重定向输出的文件路径
+ * 如果传入的文件是一个数字，则认为根据进程id打开进程，后续可以对此进程进行控制，比如kill
+ *
+ * @param string $file
+ * @param string $output_file_path
  */
 ZEND_METHOD(wing_process, __construct) 
 {
@@ -222,10 +229,13 @@ ZEND_METHOD(wing_process, __construct)
 		    "output_file", strlen("output_file"), output_file TSRMLS_CC);
 	}
 
-	int size = strlen(PHP_PATH) + file_len + 2;
+	int size = file_len + 2;
+	if (PHP_PATH) {
+	    size += strlen(PHP_PATH);
+	}
 	char *command_line = NULL;
 
-	//������������� ����Ϊ��Ҫͨ�����н���id��������
+	//如果传入的文件是一个数字，则认为此数字为进程id
 	if (is_numeric_string(file, strlen(file), NULL, NULL, 0)) {
 	    #ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
@@ -240,18 +250,22 @@ ZEND_METHOD(wing_process, __construct)
 		#endif
 	} else {
 	    #ifdef PHP_WIN32
-		if (!wing_check_is_runable((const char*)file)){
-			spprintf(&command_line,size,"%s %s\0", PHP_PATH, file);
+		if (file_is_php((const char*)file)){
+		    if (PHP_PATH) {
+			    spprintf(&command_line, size, "%s %s\0", PHP_PATH, file);
+			} else {
+			    php_error_docref(NULL TSRMLS_CC, E_WARNING, "找不到php命令（could not find command php）");
+			}
 		} else {
 			spprintf(&command_line, size, "%s\0", file);
 		}
 		#else
-		spprintf(&command_line, size, "%s", file);
+		spprintf(&command_line, size, "%s\0", file);
 		#endif
 	}
 
-	zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
 	if (command_line) {
+		zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
 	    efree(command_line);
 	}
 }
@@ -596,8 +610,6 @@ PHP_MINIT_FUNCTION(wing_process)
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
 	PHP_PATH = getCommandPath("php");
-	//printf(PHP_PATH);
-	//printf("\r\n");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
