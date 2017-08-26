@@ -117,6 +117,36 @@ char* getCommandPath(const char* command) {
 
 
 BOOL wing_check_is_runable(const char *file);
+BOOL file_is_php(const char *file)
+{
+    FILE *handle = fopen(file, "r");
+    char *line1 = (char*)malloc(8);
+    memset(line1, 0 , 7);
+    fgets(line1, 7, handle);
+    //std::cout << line1 << "\r\n";
+    char *find = strstr(line1, "<?php");
+    if(find == line1 ) {
+        free(line1);
+        fclose(handle);
+        return 1;//std::cout << "line1是php文件\r\n";
+    }
+
+    char *line2 = (char*)malloc(8);
+    memset(line2, 0 , 7);
+    fgets(line2, 7, handle);
+    //std::cout << line2 << "\r\n";
+    char *find2 =strstr(line2, "<?php");
+    if(find2 == line2 ) {
+        free(line2);
+        fclose(handle);
+        //std::cout << "line2是php文件\r\n";
+        return 1;
+    }
+    fclose(handle);
+    free(line1);
+    free(line2);
+    return 0;
+}
 
 static int le_wing_process;
 char *PHP_PATH = NULL;
@@ -331,9 +361,11 @@ ZEND_METHOD(wing_process, run)
 
 	if (childpid == 0){
         //child process
-        if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-            //perror("error on exec");
-            exit(0);
+        if (file_is_php(command)) {
+            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
+                //perror("error on exec");
+                exit(0);
+            }
         }
     }
 
