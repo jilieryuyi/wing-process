@@ -487,8 +487,20 @@ ZEND_METHOD(wing_process, getCommandLine)
 	} else {
 		zval *command_line = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
-	
-		ZVAL_ZVAL(return_value, command_line, 0, 0);
+	    char *file = Z_STRVAL_P(command_line);
+	    char *bcommand_line = NULL;
+	    if (file_is_php(file)) {
+	        int size = strlen(PHP_PATH) + strlen(file) + 3;
+	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
+	        if (bcommand_line) {
+	            RETVAL_STRING(bcommand_line);
+	            //ZVAL_STRING(return_value, bcommand_line, 1);
+                efree(bcommand_line);
+                bcommand_line = NULL;
+	        }
+	    } else {
+		    ZVAL_ZVAL(return_value, command_line, 0, 0);
+		}
 	}
 }
 
