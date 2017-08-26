@@ -389,9 +389,9 @@ ZEND_METHOD(wing_process, run)
 
 
 /**
- * 等待进程退出，windows下面返回退出码
+ * 等待进程退出，直接返回退出的进程id
  * 
- * @param int $timout
+ * @param int $timout windows下面的意思为等待超时时间，linux下面的意思为是否等待，可选参数如 WNOHANG | WUNTRACED
  * @return int
  */
 ZEND_METHOD(wing_process, wait) {
@@ -504,7 +504,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 }
 
 /**
- * ɱ������
+ * 杀死进程
  *
  * @return int
  */
@@ -515,7 +515,6 @@ ZEND_METHOD(wing_process, kill)
 	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
-	//�жϽ��̲����Ƿ�Ϊ������ ��������� ��ͨ������id �򿪽���
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	} else {
@@ -524,10 +523,8 @@ ZEND_METHOD(wing_process, kill)
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
 	}
-
-	//��ֹ����
+    //非安全的方式直接退出 可能造成进程数据丢失
 	if (!TerminateProcess(process, 0)) {
-
 		RETURN_LONG(WING_ERROR_FAILED);
 		return;
 	}
@@ -536,7 +533,7 @@ ZEND_METHOD(wing_process, kill)
 }
 
 /**
- * ��ȡ����ռ�õ����ǵ��ڴ��С
+ * 返回进程占用的实际内存，单位为字节
  * 
  * @return int  
  */
@@ -566,7 +563,7 @@ ZEND_METHOD(wing_process, getMemory) {
 }
 
 /**
- * ��ȡ��ǰ����id
+ * 静态方法，获取当前进程id
  *
  * @return int
  */
@@ -611,14 +608,12 @@ PHP_MINIT_FUNCTION(wing_process)
 	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );
 
 	zend_class_entry _wing_process_ce;
-	//INIT_CLASS_ENTRY(_wing_process_ce, "wing_process", wing_process_methods);
 	INIT_NS_CLASS_ENTRY(_wing_process_ce, "wing", "wing_process", wing_process_methods);
 	wing_process_ce = zend_register_internal_class(&_wing_process_ce TSRMLS_CC);
 	
 	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-	//zend_declare_property_long(wing_process_ce, "redirect_handler", strlen("redirect_handler"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_string(wing_process_ce, "command_line", strlen("command_line"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_long(wing_process_ce, "process_id", strlen("process_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_long(wing_process_ce, "thread_id", strlen("thread_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
