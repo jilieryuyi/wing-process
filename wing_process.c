@@ -123,12 +123,13 @@ ZEND_METHOD(wing_process, __construct)
 
 	if (command_line) {
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
+	    //memset(info->command, 0, strlen(command_line)+1);
 	    strcpy(info->command, command_line);
         printf("command==>%s\r\n", info->command);
 	    efree(command_line);
 	}
 
-    printf("%l=>%s\r\n",(unsigned long)info, info->command);
+    printf("%d=>%s\r\n",(unsigned long)info, info->command);
 
 	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
 
@@ -186,7 +187,7 @@ ZEND_METHOD(wing_process, run)
 
 	zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
-    printf("%l=>%s\r\n",(unsigned long)info, info->command);
+    printf("%d==%d=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)info, info->command);
 
 //    #ifdef PHP_WIN32
 //	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
