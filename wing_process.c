@@ -36,8 +36,8 @@
 #pragma comment(lib,"Psapi.lib")
 #else
 
-#define INFINITE 0
-#define MAX_PATH 256
+//#define INFINITE 0
+//#define MAX_PATH 256
 
 //#include <unistd.h>
 //#include <string.h>
