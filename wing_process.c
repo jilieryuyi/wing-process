@@ -35,6 +35,7 @@
 #include "Psapi.h"
 #pragma comment(lib,"Psapi.lib")
 #else
+extern "c"
 
 #define INFINITE 0
 #define MAX_PATH 256
