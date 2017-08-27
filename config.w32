@@ -8,6 +8,6 @@
 // ARG_ENABLE("wing_process", "enable wing_process support", "no");
 
 if (PHP_WING_PROCESS != "no") {
-	EXTENSION("wing_process", "wing_process.cpp", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+	EXTENSION("wing_process", "wing_process.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
 }
 
