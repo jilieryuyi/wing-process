@@ -383,11 +383,11 @@ ZEND_METHOD(wing_process, getCommandLine)
 	        int size = strlen(PHP_PATH) + strlen(file) + 3;
 	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
 	        if (bcommand_line) {
-	        #if PHP_MAJOR_VERSION >= 7
-	            ZVAL_STRING(return_value, bcommand_line);
-	            #else
-	            ZVAL_STRING(return_value, bcommand_line, 1);
-	            #endif
+                #if PHP_MAJOR_VERSION >= 7
+                ZVAL_STRING(return_value, bcommand_line);
+                #else
+                ZVAL_STRING(return_value, bcommand_line, 1);
+                #endif
                 efree(bcommand_line);
                 bcommand_line = NULL;
 	        }
