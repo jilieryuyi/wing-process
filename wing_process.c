@@ -321,7 +321,11 @@ ZEND_METHOD(wing_process, run)
 
 	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	//char *output_file  = Z_STRVAL_P(_output_file);
+	#if PHP_MAJOR_VERSION >= 7
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+	#else
+	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0 TSRMLS_CC);
+	#endif
 	char *command      = Z_STRVAL_P(_command);
 
 
@@ -458,15 +462,21 @@ ZEND_METHOD(wing_process, wait) {
 
     #ifdef PHP_WIN32
 	HANDLE process = NULL;
+	#if PHP_MAJOR_VERSION >= 7
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
-
+    #else
+    zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0 TSRMLS_CC);
+    #endif
     int process_id = 0;
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	    process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
 	} else {
+		#if PHP_MAJOR_VERSION >= 7
 		zval *_pi  = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
-
+        #else
+		zval *_pi  = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0 TSRMLS_CC);
+        #endif
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process    = pi->hProcess;
 		process_id = pi->dwProcessId;
@@ -485,7 +495,11 @@ ZEND_METHOD(wing_process, wait) {
 	RETURN_LONG(process_id);
 	#else
 	int status;
+	#if PHP_MAJOR_VERSION >= 7
 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+    #else
+    zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0 TSRMLS_CC);
+    #endif
     pid_t childpid   = Z_LVAL_P(process_id);
 	pid_t epid       = waitpid(childpid, &status, timeout);
     /*
@@ -506,7 +520,13 @@ ZEND_METHOD(wing_process, wait) {
  * @return int
  */
 ZEND_METHOD(wing_process, getProcessId) {
+	#if PHP_MAJOR_VERSION >= 7
+
 	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+	#else
+	zval *process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0 TSRMLS_CC);
+
+	#endif
 	RETURN_ZVAL(process_id,0,0);
 }
 
@@ -517,7 +537,11 @@ ZEND_METHOD(wing_process, getProcessId) {
  * @return int
  */
 ZEND_METHOD(wing_process, getThreadId) {
+	#if PHP_MAJOR_VERSION >= 7
 	zval *thread_id = zend_read_property(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0, 0 TSRMLS_CC);
+	#else
+	zval *thread_id = zend_read_property(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
+	#endif
 	RETURN_ZVAL(thread_id,0,0);
 }
 
@@ -529,8 +553,13 @@ ZEND_METHOD(wing_process, getThreadId) {
  */
 ZEND_METHOD(wing_process, getCommandLine)
 {
-	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	#if PHP_MAJOR_VERSION >= 7
 
+	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+    #else
+	zval *file = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0 TSRMLS_CC);
+
+    #endif
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		#ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
@@ -545,8 +574,15 @@ ZEND_METHOD(wing_process, getCommandLine)
 		}
 		#endif
 	} else {
+		#if PHP_MAJOR_VERSION >= 7
+
 		zval *command_line  = zend_read_property(wing_process_ce, getThis(),
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
+	    #else
+	    zval *command_line  = zend_read_property(wing_process_ce, getThis(),
+        			"command_line", strlen("command_line"), 0 TSRMLS_CC);
+	    #endif
+
 	    char *file          = Z_STRVAL_P(command_line);
 	    char *bcommand_line = NULL;
 	    if (file_is_php(file) && PHP_PATH != NULL) {
@@ -575,15 +611,25 @@ ZEND_METHOD(wing_process, getCommandLine)
 ZEND_METHOD(wing_process, kill)
 {
 
+	#if PHP_MAJOR_VERSION >= 7
+
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	#else
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0 TSRMLS_CC);
+
+	#endif
 	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process   = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	} else {
+		#if PHP_MAJOR_VERSION >= 7
 		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+        #else
+		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0 TSRMLS_CC);
 
+        #endif
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process   = pi->hProcess;
 	}
@@ -599,7 +645,11 @@ ZEND_METHOD(wing_process, kill)
     if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
         process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
     } else {
+    	#if PHP_MAJOR_VERSION >= 7
         zval *_process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0, 0 TSRMLS_CC);
+        #else
+        zval *_process_id = zend_read_property(wing_process_ce, getThis(), "process_id", strlen("process_id"), 0 TSRMLS_CC);
+        #endif
         process_id = Z_LVAL_P(_process_id);
     }
     int status = kill(process_id, SIGKILL);
@@ -621,16 +671,25 @@ ZEND_METHOD(wing_process, kill)
  * @return int
  */
 ZEND_METHOD(wing_process, getMemory) {
-
+    #if PHP_MAJOR_VERSION >= 7
 	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0, 0 TSRMLS_CC);
+	#else
+	zval *file     = zend_read_property(wing_process_ce, getThis(), "file", strlen("file"), 0 TSRMLS_CC);
+	#endif
+
 	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
 	} else {
-		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+	    #if PHP_MAJOR_VERSION >= 7
 
+		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0, 0 TSRMLS_CC);
+        #else
+		zval *_pi = zend_read_property(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), 0 TSRMLS_CC);
+
+        #endif
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
 		process = pi->hProcess;
 	}
