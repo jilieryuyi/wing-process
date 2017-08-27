@@ -33,8 +33,6 @@
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
 
-
-
 static int le_wing_process;
 char *PHP_PATH = NULL;
 
