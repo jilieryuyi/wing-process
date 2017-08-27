@@ -203,17 +203,8 @@ zend_class_entry *wing_process_ce;
 ZEND_METHOD(wing_process, __construct) 
 {
 
+#if PHP_MAJOR_VERSION >= 7
 	zend_string *_file        = NULL;
-    //int file_len      = 0;
-    //    char *output_file = NULL;
-
-//    int output_len    = 0;
-
-//    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-//        "S", &file, &file_len)) {
-//        return;
-//    }
-
     if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
             "S", &_file)) {
             return;
@@ -226,6 +217,19 @@ ZEND_METHOD(wing_process, __construct)
     }
 
     int file_len = strlen(file);
+    #else
+
+    char *file    = NULL;
+    int file_len  = 0;
+
+    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+        "s", &file, &file_len)) {
+        return;
+    }
+
+    #endif
+
+
     php_printf("=====>%s\r\n", file);
 
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
@@ -297,22 +301,29 @@ ZEND_METHOD(wing_process, __destruct) {
  */
 ZEND_METHOD(wing_process, run) 
 {
-   // php_printf(zend_get_executed_filename());
-   //这里需要判别php版本
-    zend_string *_output_file = NULL;//[MAX_PATH] = {0};
+   //php_printf(zend_get_executed_filename());
+   char *output_file = NULL;
 
+    #if PHP_MAJOR_VERSION >= 7
+
+    zend_string *_output_file = NULL;
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|S", &_output_file);
 
-    char *output_file = NULL;
     if (_output_file) {
         output_file = ZSTR_VAL(_output_file);
         efree(_output_file);
     }
 
+	#else
+    int output_file_len = 0;
+    zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file, &output_file_len);
+	#endif
+
 	int redirect_output = 1;
-	if (output_file == NULL) {
-	    redirect_output = 0;
-	}
+    if (output_file == NULL) {
+        redirect_output = 0;
+    }
+
 	zend_printf("==========%s", output_file);
 	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	//char *output_file  = Z_STRVAL_P(_output_file);
