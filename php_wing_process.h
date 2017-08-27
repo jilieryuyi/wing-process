@@ -28,7 +28,7 @@ extern zend_module_entry wing_process_module_entry;
 
 #ifdef PHP_WIN32
 #define PHP_WING_PROCESS_API __declspec(dllexport)
-#else if defined(__GNUC__) && __GNUC__ >= 4
+#elseif defined(__GNUC__) && __GNUC__ >= 4
 #define PHP_WING_PROCESS_API __attribute__ ((visibility("default")))
 #else
 #define PHP_WING_PROCESS_API

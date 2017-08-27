@@ -13,7 +13,7 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | php windows、mac and linux daemon process support
-  | Author: yuyi 
+  | Author: yuyi
   | Email: 297341015@qq.com
   | Home: http://www.itdfy.com/
   +----------------------------------------------------------------------+
@@ -36,111 +36,111 @@
 #pragma comment(lib,"Psapi.lib")
 #else
 
-//#define INFINITE 0
-//#define MAX_PATH 256
+#define INFINITE 0
+#define MAX_PATH 256
 
-//#include <unistd.h>
-//#include <string.h>
-//#include <sys/wait.h>
-//#include <signal.h>
-//#include <sys/param.h>
-//#include <sys/stat.h>
-//#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-//char* get_command_path(const char* command)
-//{
-//
-//    char *env           = getenv("PATH");
-//    ulong start         = (ulong)env;
-//    size_t len          = strlen(env);
-//    ulong pos           = (ulong)env;
-//    ulong size          = 0;
-//    char temp[MAX_PATH] = {0};
-//    char *res           = NULL;
-//    ulong command_len   = strlen(command)+1;
-//
-//    while (1) {
-//        char t = ((char*)start)[0];
-//
-//        if (t == ':' ) {
-//            size = start - pos;
-//            memset(temp, 0, MAX_PATH);
-//            strncpy(temp, (char*)pos, size);
-//            char *base = (char*)((unsigned long)temp + strlen(temp));
-//            strcpy(base, "/");
-//            strcpy((char*)((unsigned long)base + 1), command);
-//
-//            if (access(temp, F_OK) == 0) {
-//                res = (char *)malloc(size+command_len);
-//                memset(res, 0, size+command_len);
-//                strcpy(res, temp);
-//                return res;
-//            }
-//
-//            pos = start+1;
-//        }
-//
-//        if (start >= ((unsigned long)env+len) ) {
-//            break;
-//        }
-//
-//        start++;
-//    }
-//
-//    size = (ulong)env+len - pos;
-//    memset(temp, 0, MAX_PATH);
-//    strncpy(temp, (char*)pos, size);
-//
-//    char *base = (char*)((unsigned long)temp + strlen(temp));
-//    strcpy(base, "/");
-//    strcpy((char*)((unsigned long)base + 1), command);
-//
-//    if (access(temp, F_OK) == 0) {
-//        res = (char *)malloc(size+command_len);
-//        memset(res, 0, size+command_len);
-//        strcpy(res, temp);
-//        return res;
-//    }
-//    return NULL;
-//}
+char* get_command_path(const char* command)
+{
 
-//void init_daemon(const char* dir)
-//{
-//    int pid = fork();
-//    int i;
-//    if (pid > 0) {
-//        exit(0);//是父进程，结束父进程
+    char *env           = getenv("PATH");
+    ulong start         = (ulong)env;
+    size_t len          = strlen(env);
+    ulong pos           = (ulong)env;
+    ulong size          = 0;
+    char temp[MAX_PATH] = {0};
+    char *res           = NULL;
+    ulong command_len   = strlen(command)+1;
+
+    while (1) {
+        char t = ((char*)start)[0];
+
+        if (t == ':' ) {
+            size = start - pos;
+            memset(temp, 0, MAX_PATH);
+            strncpy(temp, (char*)pos, size);
+            char *base = (char*)((unsigned long)temp + strlen(temp));
+            strcpy(base, "/");
+            strcpy((char*)((unsigned long)base + 1), command);
+
+            if (access(temp, F_OK) == 0) {
+                res = (char *)malloc(size+command_len);
+                memset(res, 0, size+command_len);
+                strcpy(res, temp);
+                return res;
+            }
+
+            pos = start+1;
+        }
+
+        if (start >= ((unsigned long)env+len) ) {
+            break;
+        }
+
+        start++;
+    }
+
+    size = (ulong)env+len - pos;
+    memset(temp, 0, MAX_PATH);
+    strncpy(temp, (char*)pos, size);
+
+    char *base = (char*)((unsigned long)temp + strlen(temp));
+    strcpy(base, "/");
+    strcpy((char*)((unsigned long)base + 1), command);
+
+    if (access(temp, F_OK) == 0) {
+        res = (char *)malloc(size+command_len);
+        memset(res, 0, size+command_len);
+        strcpy(res, temp);
+        return res;
+    }
+    return NULL;
+}
+
+void init_daemon(const char* dir)
+{
+    int pid = fork();
+    int i;
+    if (pid > 0) {
+        exit(0);//是父进程，结束父进程
+    }
+    if (pid < 0) {
+        exit(1);//fork失败，退出
+    }
+    //是第一子进程，后台继续执行
+    setsid();//第一子进程成为新的会话组长和进程组长
+    //并与控制终端分离
+    pid = fork();
+    if (pid > 0) {
+        exit(0);//是第一子进程，结束第一子进程
+    }
+    if (pid < 0) {
+        exit(1);//fork失败，退出
+    }
+    //是第二子进程，继续
+    //第二子进程不再是会话组长
+//    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+//        close(i);
 //    }
-//    if (pid < 0) {
-//        exit(1);//fork失败，退出
-//    }
-//    //是第一子进程，后台继续执行
-//    setsid();//第一子进程成为新的会话组长和进程组长
-//    //并与控制终端分离
-//    pid = fork();
-//    if (pid > 0) {
-//        exit(0);//是第一子进程，结束第一子进程
-//    }
-//    if (pid < 0) {
-//        exit(1);//fork失败，退出
-//    }
-//    //是第二子进程，继续
-//    //第二子进程不再是会话组长
-////    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
-////        close(i);
-////    }
-//    chdir(dir);//改变工作目录到/tmp
-//    umask(0);//重设文件创建掩模
-//    return;
-//}
+    chdir(dir);//改变工作目录到/tmp
+    umask(0);//重设文件创建掩模
+    return;
+}
 
 #endif
 
-//#define WING_ERROR_FAILED  0
-//#define WING_ERROR_SUCCESS 1
+#define WING_ERROR_FAILED  0
+#define WING_ERROR_SUCCESS 1
 
 /**
  * 判断是否为可执行文件，此方法一句后缀识别，不是很好
@@ -156,34 +156,34 @@
  * @param char* file
  * @return BOOL
  */
-//int file_is_php(const char *file)
-//{
-//    FILE *handle = fopen(file, "r");
-//    if (!handle) {
-//        return 0;
-//    }
-//    char *find = NULL;
-//    char line[8] = {0};
-//    memset(line, 0, 8);
-//    fgets(line, 7, handle);
-//
-//    find = strstr(line, "<?php");
-//    if (find == line) {
-//        fclose(handle);
-//        return 1;
-//    }
-//
-//    memset(line, 0, 8);
-//    fgets(line, 7, handle);
-//    find = strstr(line, "<?php");
-//    if (find == line) {
-//        fclose(handle);
-//        return 1;
-//    }
-//    fclose(handle);
-//
-//    return 0;
-//}
+int file_is_php(const char *file)
+{
+    FILE *handle = fopen(file, "r");
+    if (!handle) {
+        return 0;
+    }
+    char *find = NULL;
+    char line[8] = {0};
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+    fclose(handle);
+
+    return 0;
+}
 
 static int le_wing_process;
 char *PHP_PATH = NULL;
@@ -197,7 +197,7 @@ zend_class_entry *wing_process_ce;
  *
  * @param string $file
  */
-ZEND_METHOD(wing_process, __construct) 
+ZEND_METHOD(wing_process, __construct)
 {
 
 #if PHP_MAJOR_VERSION >= 7
@@ -293,7 +293,7 @@ ZEND_METHOD(wing_process, __destruct) {
  * @param string $output_file 默认为null，如果不为null，则以守护进程方式运行
  * @return int 返回进程id
  */
-ZEND_METHOD(wing_process, run) 
+ZEND_METHOD(wing_process, run)
 {
    //php_printf(zend_get_executed_filename());
    char *output_file = NULL;
@@ -399,7 +399,7 @@ ZEND_METHOD(wing_process, run)
 
         strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
 
-        //init_daemon((const char*)path);
+        init_daemon((const char*)path);
 
         FILE *handle = fopen(output_file, "a+");
 
@@ -446,7 +446,7 @@ ZEND_METHOD(wing_process, run)
 
 /**
  * 等待进程退出，直接返回退出的进程id
- * 
+ *
  * @param int $timout windows下面的意思为等待超时时间，linux下面的意思为是否等待，可选参数如 WNOHANG | WUNTRACED
  * @return int
  */
@@ -612,8 +612,8 @@ ZEND_METHOD(wing_process, kill)
 
 /**
  * 返回进程占用的实际内存，单位为字节
- * 
- * @return int  
+ *
+ * @return int
  */
 ZEND_METHOD(wing_process, getMemory) {
 
@@ -679,7 +679,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	memset(PHP_PATH, 0, MAX_PATH);
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
-	PHP_PATH = NULL;//get_command_path("php");
+	PHP_PATH = get_command_path("php");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
@@ -688,7 +688,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	zend_class_entry _wing_process_ce;
 	INIT_NS_CLASS_ENTRY(_wing_process_ce, "wing", "wing_process", wing_process_methods);
 	wing_process_ce = zend_register_internal_class(&_wing_process_ce TSRMLS_CC);
-	
+
 	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
@@ -702,7 +702,7 @@ PHP_MINIT_FUNCTION(wing_process)
 
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
-	
+
 	if (PHP_PATH) {
 		free(PHP_PATH);
 	}
