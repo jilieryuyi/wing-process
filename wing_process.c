@@ -36,8 +36,8 @@
 #pragma comment(lib,"Psapi.lib")
 #else
 
-#define INFINITE 0;
-#define MAX_PATH 256;
+#define INFINITE 0
+#define MAX_PATH 256
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
@@ -138,8 +138,8 @@ void init_daemon(const char* dir)
 
 #endif
 
-#define WING_ERROR_FAILED  0;
-#define WING_ERROR_SUCCESS 1;
+#define WING_ERROR_FAILED  0
+#define WING_ERROR_SUCCESS 1
 
 /**
  * 判断是否为可执行文件，此方法一句后缀识别，不是很好
