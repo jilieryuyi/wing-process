@@ -35,7 +35,7 @@
 #include "Psapi.h"
 #pragma comment(lib,"Psapi.lib")
 #else
-typedef int BOOL;
+
 #define INFINITE 0
 #define MAX_PATH 256
 #include <sys/types.h>
@@ -155,7 +155,7 @@ void init_daemon(const char* dir)
  * @param char* file
  * @return BOOL
  */
-BOOL file_is_php(const char *file)
+int file_is_php(const char *file)
 {
     FILE *handle = fopen(file, "r");
     if (!handle) {
