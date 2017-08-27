@@ -16,7 +16,6 @@ echo 3436;
 echo \wing\wing_process::getCurrentProcessId(),"\r\n";
 echo $process->getCommandLine(),"\r\n";
 //$process->kill();
-echo $process->run(__DIR__."/log.log"),"\r\n";
 
 
 //$process = new \wing\wing_process("ls");
