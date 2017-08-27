@@ -308,8 +308,12 @@ ZEND_METHOD(wing_process, getProcessId) {
  * @return int
  */
 ZEND_METHOD(wing_process, getThreadId) {
+    #ifdef PHP_WIN32
 	zval *thread_id = wing_zend_read_property(wing_process_ce, getThis(), "thread_id");
 	RETURN_ZVAL(thread_id,0,0);
+	#else
+	RETURN_LONG(0);
+	#endif
 }
 
 
@@ -475,10 +479,12 @@ PHP_MINIT_FUNCTION(wing_process)
 
 	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
+	#ifdef PHP_WIN32
 	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_long(wing_process_ce, "thread_id", strlen("thread_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+    #endif
 	zend_declare_property_string(wing_process_ce, "command_line", strlen("command_line"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	zend_declare_property_long(wing_process_ce, "process_id", strlen("process_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_long(wing_process_ce, "thread_id", strlen("thread_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 
 
 	return SUCCESS;
