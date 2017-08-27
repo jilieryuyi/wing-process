@@ -6,7 +6,9 @@
  * Time: 20:12
  */
 while (1) {
+    echo date("Y-m-d H:i:s"),"\r\n";
     file_put_contents(__DIR__."/runner.log", date("Y-m-d H:i:s"));
     sleep(1);
-    break;
+    //break;
+    echo date("Y-m-d H:i:s"),"\r\n";
 }

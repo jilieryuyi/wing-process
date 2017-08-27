@@ -9,6 +9,10 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 //http://www.jb51.net/article/45012.htm c linux 根据进程id获取进程信息
 /**
@@ -199,9 +203,39 @@ int file_is_php(const char *file)
     return 0;
 }
 
+void init_daemon(const char* dir)
+{
+    int pid = fork();
+    int i;
+    if (pid) {
+        exit(0);//是父进程，结束父进程
+    }
+    if (pid< 0) {
+        exit(1);//fork失败，退出
+    }
+    //是第一子进程，后台继续执行
+    setsid();//第一子进程成为新的会话组长和进程组长
+    //并与控制终端分离
+    pid = fork();
+    if (pid) {
+        exit(0);//是第一子进程，结束第一子进程
+    }
+    if (pid< 0) {
+        exit(1);//fork失败，退出
+    }
+    //是第二子进程，继续
+    //第二子进程不再是会话组长
+    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+        close(i);
+    }
+    chdir(dir);//改变工作目录到/tmp
+    umask(0);//重设文件创建掩模 
+    return; 
+}
+
 int main(int argc, const char * argv[]) {
     
-    getpid();
+    //getpid();
     // insert code here...
     /*char * php =  getCommandPath("php");
     
@@ -232,15 +266,31 @@ int main(int argc, const char * argv[]) {
     
     */
     
-    int is = file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests//php_path.php");
-    if (is == 1) {
-        std::cout << "is php file\r\n";
-    } else {
-        std::cout << "not php \r\n";
+//    int is = file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests//php_path.php");
+//    if (is == 1) {
+//        std::cout << "is php file\r\n";
+//    } else {
+//        std::cout << "not php \r\n";
+//    }
+//    
+//    std::cout << get_command_path("php");
+    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php";
+    char find_str[] = "/";
+    char *find = strstr((const char*)str, find_str);
+    char *last_pos = NULL;
+    while(find) {
+        last_pos = find;
+        find++;
+        find = strstr((const char*)find, find_str);
     }
+    char path[MAX_PATH] = {0};
     
-    std::cout << get_command_path("php");
+   // strncpy(<#char *__dst#>, <#const char *__src#>, <#size_t __n#>)
+    strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
+    std::cout <<"===>"<< last_pos <<"\r\n";
+    std::cout <<"===>"<< (size_t)(last_pos-str) <<"---"<< path <<"\r\n";
     
-    std::cout << get_phy_mem(getpid())<<"\r\n";
+    init_daemon((const char*)path);
+    
     return 0;
 }

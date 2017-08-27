@@ -43,6 +43,8 @@ typedef int BOOL;
 #include <string.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
@@ -103,7 +105,39 @@ char* get_command_path(const char* command) {
     return NULL;
 }
 
-
+void init_daemon(const char* dir)
+{
+    int pid = fork();
+    int i;
+    if (pid > 0) {
+        printf("父进程退出1\r\n");
+        exit(0);//是父进程，结束父进程
+    }
+    if (pid < 0) {
+    printf("fork出错1\r\n");
+        exit(1);//fork失败，退出
+    }
+    //是第一子进程，后台继续执行
+    setsid();//第一子进程成为新的会话组长和进程组长
+    //并与控制终端分离
+    pid = fork();
+    if (pid > 0) {
+    printf("父进程退出2\r\n");
+        exit(0);//是第一子进程，结束第一子进程
+    }
+    if (pid < 0) {
+    printf("fork出错2\r\n");
+        exit(1);//fork失败，退出
+    }
+    //是第二子进程，继续
+    //第二子进程不再是会话组长
+//    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+//        close(i);
+//    }
+    chdir(dir);//改变工作目录到/tmp
+    umask(0);//重设文件创建掩模
+    return;
+}
 
 #endif
 
@@ -293,16 +327,23 @@ ZEND_METHOD(wing_process, __destruct) {
  */
 ZEND_METHOD(wing_process, run) 
 {
-    char *output_file = NULL;
-    int olen = 0;
+   // php_printf(zend_get_executed_filename());
+   //这里需要判别php版本
+    zend_string *_output_file = NULL;//[MAX_PATH] = {0};
 
-	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file, &olen);
+	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|S", &_output_file);
+
+    char *output_file = NULL;
+    if (_output_file) {
+        output_file = ZSTR_VAL(_output_file);
+        efree(_output_file);
+    }
 
 	int redirect_output = 1;
 	if (output_file == NULL) {
 	    redirect_output = 0;
 	}
-	
+	zend_printf("==========%s", output_file);
 	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	//char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
@@ -370,6 +411,42 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
+    if (redirect_output) {
+        const char *str = zend_get_executed_filename();//"/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php";
+        char find_str[] = "/";
+        char *find      = strstr((const char*)str, find_str);
+        char *last_pos  = NULL;
+        while(find) {
+            last_pos = find;
+            find++;
+            find = strstr((const char*)find, find_str);
+        }
+        char path[MAX_PATH] = {0};
+
+        strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
+
+        init_daemon((const char*)path);
+    }
+
+    if (output_file != NULL) {
+        int i = 0;
+        FILE *handle = fopen(output_file, "a+");
+
+        if (handle) {
+//            fclose(stdout);
+//            fclose(stderr);
+//            stdout = handle;
+//            stderr = handle;
+// for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+//        i = handle;//close(i);
+//    }
+        } else {
+            php_printf("open file error : %s", output_file);
+        }
+        //else {
+//            php_error_docref(NULL TSRMLS_CC, E_WARNING, "无法打开文件(could not open file)：%s", output_file);
+//        }
+    }
     pid_t childpid = fork();
 
 	if (childpid == 0) {
