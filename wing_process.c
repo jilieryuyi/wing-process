@@ -29,41 +29,6 @@
 #include "php_wing_process.h"
 #include "wing_api.h"
 
-#ifdef PHP_WIN32
-
-#else
-
-void init_daemon(const char* dir)
-{
-    int pid = fork();
-    int i;
-    if (pid > 0) {
-        exit(0);//是父进程，结束父进程
-    }
-    if (pid < 0) {
-        exit(1);//fork失败，退出
-    }
-    //是第一子进程，后台继续执行
-    setsid();//第一子进程成为新的会话组长和进程组长
-    //并与控制终端分离
-    pid = fork();
-    if (pid > 0) {
-        exit(0);//是第一子进程，结束第一子进程
-    }
-    if (pid < 0) {
-        exit(1);//fork失败，退出
-    }
-    //是第二子进程，继续
-    //第二子进程不再是会话组长
-//    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
-//        close(i);
-//    }
-    chdir(dir);//改变工作目录到/tmp
-    umask(0);//重设文件创建掩模
-    return;
-}
-
-#endif
 
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
@@ -272,63 +237,8 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
-    if (redirect_output) {
-    	#if PHP_MAJOR_VERSION >= 7
-        const char *str = zend_get_executed_filename();//"/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php";
-        #else
-        const char *str = zend_get_executed_filename(TSRMLS_C);
-        #endif
-        char find_str[] = "/";
-        char *find      = strstr((const char*)str, find_str);
-        char *last_pos  = NULL;
-        while(find) {
-            last_pos = find;
-            find++;
-            find = strstr((const char*)find, find_str);
-        }
-        char path[MAX_PATH] = {0};
-
-        strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
-
-        init_daemon((const char*)path);
-
-        FILE *handle = fopen(output_file, "a+");
-
-        if (handle) {
-            fclose(handle);
-            fclose((FILE*)stdout);
-            stdout = fopen(output_file, "a+");
-
-            fclose((FILE*)stderr);
-            stderr = fopen(output_file, "a+");
-        } else {
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "无法打开文件(could not open file)：%s", output_file);
-        }
-    }
-
-    pid_t childpid = fork();
-
-    if (childpid == 0) {
-        if (file_is_php(command)) {
-            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-                exit(0);
-            }
-        } else {
-            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
-                exit(0);
-            }
-        }
-    } else if(childpid > 0) {
-    	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
-    	if (redirect_output) {
-    	    //如果以守护进程方式启动，则等待子进程退出，防止子进程变成僵尸进程
-            int status;
-            pid_t epid = waitpid(childpid, &status, 0);
-            RETURN_LONG(epid);
-        }
-    } else {
-         php_error_docref(NULL TSRMLS_CC, E_WARNING, "创建进程错误(fork a process error)");
-    }
+    pid_t childpid = create_process(command, output_file);
+    zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
 
 	RETURN_LONG((int)childpid);
 	#endif
