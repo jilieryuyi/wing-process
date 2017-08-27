@@ -27,86 +27,11 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_wing_process.h"
-
+#include "wing_api.h"
 
 #ifdef PHP_WIN32
-#include "helper/wing_ntdll.h"
-#include "Shlwapi.h"
-#pragma comment(lib,"Shlwapi.lib")
-#include "Psapi.h"
-#pragma comment(lib,"Psapi.lib")
+
 #else
-
-#define INFINITE 0
-#define MAX_PATH 256
-
-#include <unistd.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-/**
- * linux或者mac查找命令所在路径，使用完需要free释放资源
- * 如：get_command_path("php"); //返回 /usr/bin/php
- */
-char* get_command_path(const char* command)
-{
-
-    char *env           = getenv("PATH");
-    ulong start         = (ulong)env;
-    size_t len          = strlen(env);
-    ulong pos           = (ulong)env;
-    ulong size          = 0;
-    char temp[MAX_PATH] = {0};
-    char *res           = NULL;
-    ulong command_len   = strlen(command)+1;
-
-    while (1) {
-        char t = ((char*)start)[0];
-
-        if (t == ':' ) {
-            size = start - pos;
-            memset(temp, 0, MAX_PATH);
-            strncpy(temp, (char*)pos, size);
-            char *base = (char*)((unsigned long)temp + strlen(temp));
-            strcpy(base, "/");
-            strcpy((char*)((unsigned long)base + 1), command);
-
-            if (access(temp, F_OK) == 0) {
-                res = (char *)malloc(size+command_len);
-                memset(res, 0, size+command_len);
-                strcpy(res, temp);
-                return res;
-            }
-
-            pos = start+1;
-        }
-
-        if (start >= ((unsigned long)env+len) ) {
-            break;
-        }
-
-        start++;
-    }
-
-    size = (ulong)env+len - pos;
-    memset(temp, 0, MAX_PATH);
-    strncpy(temp, (char*)pos, size);
-
-    char *base = (char*)((unsigned long)temp + strlen(temp));
-    strcpy(base, "/");
-    strcpy((char*)((unsigned long)base + 1), command);
-
-    if (access(temp, F_OK) == 0) {
-        res = (char *)malloc(size+command_len);
-        memset(res, 0, size+command_len);
-        strcpy(res, temp);
-        return res;
-    }
-    return NULL;
-}
 
 void init_daemon(const char* dir)
 {
@@ -143,48 +68,7 @@ void init_daemon(const char* dir)
 #define WING_ERROR_FAILED  0
 #define WING_ERROR_SUCCESS 1
 
-/**
- * 判断是否为可执行文件，此方法一句后缀识别，不是很好
- *
- * @param char* file
- * @return BOOL
- */
-//BOOL wing_check_is_runable(const char *file);
 
-/**
- * 判断是否为php文件，此方法依据php文件开头的 <?php 识别
- *
- * @param char* file
- * @return BOOL
- */
-int file_is_php(const char *file)
-{
-    FILE *handle = fopen(file, "r");
-    if (!handle) {
-        return 0;
-    }
-    char *find = NULL;
-    char line[8] = {0};
-    memset(line, 0, 8);
-    fgets(line, 7, handle);
-
-    find = strstr(line, "<?php");
-    if (find == line) {
-        fclose(handle);
-        return 1;
-    }
-
-    memset(line, 0, 8);
-    fgets(line, 7, handle);
-    find = strstr(line, "<?php");
-    if (find == line) {
-        fclose(handle);
-        return 1;
-    }
-    fclose(handle);
-
-    return 0;
-}
 
 static int le_wing_process;
 char *PHP_PATH = NULL;
@@ -201,30 +85,28 @@ zend_class_entry *wing_process_ce;
 ZEND_METHOD(wing_process, __construct)
 {
 
-#if PHP_MAJOR_VERSION >= 7
-	zend_string *_file        = NULL;
-    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-            "S", &_file)) {
-            return;
-        }
+    #if PHP_MAJOR_VERSION >= 7
+	zend_string *_file = NULL;
+	char *file         = NULL;
+    int file_len       = 0;
 
-    char *file = NULL;
+    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &_file)) {
+        return;
+    }
+
     if (_file) {
         file = ZSTR_VAL(_file);
         efree(_file);
     }
 
-    int file_len = strlen(file);
+    file_len      = strlen(file);
     #else
-
     char *file    = NULL;
     int file_len  = 0;
 
-    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-        "s", &file, &file_len)) {
+    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &file, &file_len)) {
         return;
     }
-
     #endif
 
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
