@@ -34,3 +34,13 @@ int wing_file_is_php(const char *file)
 
     return 0;
 }
+
+
+ZEND_API zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name)
+{
+    #if PHP_MAJOR_VERSION >= 7
+	return zend_read_property(scope, object, name, strlen(name), 0, 0 TSRMLS_CC);
+	#else
+	return zend_read_property(scope, object, name, strlen(name), 0 TSRMLS_CC);
+	#endif
+}
