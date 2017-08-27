@@ -45,6 +45,7 @@ typedef int BOOL;
 #include <signal.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
@@ -427,41 +428,33 @@ ZEND_METHOD(wing_process, run)
 
         init_daemon((const char*)path);
 
-        int i = 0;
-                FILE *handle = fopen(output_file, "a+");
+        FILE *handle = fopen(output_file, "a+");
 
-                if (handle) {
-                    fclose(stdout);
-                    fclose(stderr);
-                    stdout = handle;
-                    stderr = handle;
-        // for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
-        //        i = handle;//close(i);
-        //    }
-                } else {
-                    php_printf("open file error : %s", output_file);
-                }
-                //else {
-        //            php_error_docref(NULL TSRMLS_CC, E_WARNING, "无法打开文件(could not open file)：%s", output_file);
-        //        }
+        if (handle) {
+            fclose(handle);
+            fclose((FILE*)stdout);
+            stdout = fopen(output_file, "a+");
 
-
+            fclose((FILE*)stderr);
+            stderr = fopen(output_file, "a+");
+        } else {
+            php_error_docref(NULL TSRMLS_CC, E_WARNING, "无法打开文件(could not open file)：%s", output_file);
+        }
     }
 
-        pid_t childpid = fork();
+    pid_t childpid = fork();
 
-        if (childpid == 0) {
-            if (file_is_php(command)) {
-                if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-                    exit(0);
-                }
-            } else {
-                if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
-                    exit(0);
-                }
+    if (childpid == 0) {
+        if (file_is_php(command)) {
+            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
+                exit(0);
+            }
+        } else {
+            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
+                exit(0);
             }
         }
-
+    }
 
 	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
 	RETURN_LONG((int)childpid);

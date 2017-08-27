@@ -10,8 +10,6 @@ echo WING_PROCESS_VERSION, "\r\n";
 
 $process = new \wing\wing_process(__DIR__."/runner.php");
 echo $process->run(__DIR__."/log.log"),"\r\n";//
-echo 123;
-echo 3436;
 //echo $process->wait(),"\r\n";
 echo \wing\wing_process::getCurrentProcessId(),"\r\n";
 echo $process->getCommandLine(),"\r\n";
