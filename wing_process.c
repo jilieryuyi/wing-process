@@ -547,7 +547,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 			"command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
 	    char *file          = Z_STRVAL_P(command_line);
 	    char *bcommand_line = NULL;
-	    if (file_is_php(file)) {
+	    if (file_is_php(file) && PHP_PATH != NULL) {
 	        int size = strlen(PHP_PATH) + strlen(file) + 3;
 	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
 	        if (bcommand_line) {
