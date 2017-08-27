@@ -2,10 +2,12 @@
 #ifndef PHP_WING_API_H
 #define PHP_WING_API_H
 
-char* get_command_path(const char* command);
-int file_is_php(const char *file);
-int create_process(const char *command, char* output_file);
-int get_process_id();
+char* wing_get_command_path(const char* command);
+int wing_file_is_php(const char *file);
+int wing_create_process(const char *command, char* output_file);
+int wing_get_process_id();
+unsigned long get_memory(int process_id);
+int wing_kill(int process_id);
 #ifdef PHP_WIN32
 #include "win32/win_api.c"
 #else

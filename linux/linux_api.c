@@ -4,7 +4,7 @@ extern char* PHP_PATH;
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-char* get_command_path(const char* command)
+char* wing_get_command_path(const char* command)
 {
 
     char *env           = getenv("PATH");
@@ -92,7 +92,7 @@ void init_daemon(const char* dir)
     return;
 }
 
-int create_process(const char *command, char* output_file)
+int wing_create_process(const char *command, char* output_file)
 {
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
@@ -132,7 +132,7 @@ int create_process(const char *command, char* output_file)
     pid_t childpid = fork();
 
     if (childpid == 0) {
-        if (file_is_php(command)) {
+        if (wing_file_is_php(command)) {
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {
                 exit(0);
             }
@@ -153,7 +153,17 @@ int create_process(const char *command, char* output_file)
     return childpid;
 }
 
-int get_process_id()
+int wing_get_process_id()
 {
     return getpid();
+}
+
+unsigned long get_memory(int process_id)
+{
+    return 0;
+}
+
+int wing_kill(int process_id)
+{
+    return 0;
 }

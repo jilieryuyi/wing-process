@@ -6,7 +6,7 @@
  * @param char* file
  * @return BOOL
  */
-int file_is_php(const char *file)
+int wing_file_is_php(const char *file)
 {
     FILE *handle = fopen(file, "r");
     if (!handle) {

@@ -97,7 +97,7 @@ ZEND_METHOD(wing_process, __construct)
 		#endif
 	} else {
 	    #ifdef PHP_WIN32
-		if (file_is_php((const char*)file)){
+		if (wing_file_is_php((const char*)file)){
 		    if (PHP_PATH) {
 			    spprintf(&command_line, size, "%s %s\0", PHP_PATH, file);
 			} else {
@@ -237,7 +237,7 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
-    pid_t childpid = create_process(command, output_file);
+    pid_t childpid = wing_create_process(command, output_file);
     zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
 
 	RETURN_LONG((int)childpid);
@@ -381,7 +381,7 @@ ZEND_METHOD(wing_process, getCommandLine)
 
 	    char *file          = Z_STRVAL_P(command_line);
 	    char *bcommand_line = NULL;
-	    if (file_is_php(file) && PHP_PATH != NULL) {
+	    if (wing_file_is_php(file) && PHP_PATH != NULL) {
 	        int size = strlen(PHP_PATH) + strlen(file) + 3;
 	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
 	        if (bcommand_line) {
@@ -506,7 +506,7 @@ ZEND_METHOD(wing_process, getMemory) {
  * @return int
  */
 ZEND_METHOD(wing_process, getCurrentProcessId) {
-	ZVAL_LONG(return_value, get_process_id());
+	ZVAL_LONG(return_value, wing_get_process_id());
 }
 
 
@@ -530,7 +530,7 @@ static zend_function_entry wing_process_methods[] = {
 PHP_MINIT_FUNCTION(wing_process)
 {
 
-	PHP_PATH = get_command_path("php");
+	PHP_PATH = wing_get_command_path("php");
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
 	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );
