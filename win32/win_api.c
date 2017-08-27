@@ -8,3 +8,8 @@ char* get_command_path(const char* command)
 
     return PHP_PATH;
 }
+
+int get_process_id()
+{
+    return GetCurrentProcessId();
+}

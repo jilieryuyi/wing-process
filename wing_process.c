@@ -506,11 +506,7 @@ ZEND_METHOD(wing_process, getMemory) {
  * @return int
  */
 ZEND_METHOD(wing_process, getCurrentProcessId) {
-    #ifdef PHP_WIN32
-	ZVAL_LONG(return_value, GetCurrentProcessId());
-	#else
-	ZVAL_LONG(return_value, getpid());
-	#endif
+	ZVAL_LONG(return_value, get_process_id());
 }
 
 
@@ -534,13 +530,7 @@ static zend_function_entry wing_process_methods[] = {
 PHP_MINIT_FUNCTION(wing_process)
 {
 
-    #ifdef PHP_WIN32
-	PHP_PATH = (char*)malloc(MAX_PATH);
-	memset(PHP_PATH, 0, MAX_PATH);
-	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
-	#else
 	PHP_PATH = get_command_path("php");
-	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
 	REGISTER_STRING_CONSTANT("WING_PROCESS_VERSION", PHP_WING_PROCESS_VERSION, CONST_CS | CONST_PERSISTENT );

@@ -152,3 +152,8 @@ int create_process(const char *command, char* output_file)
     }
     return childpid;
 }
+
+int get_process_id()
+{
+    return getpid();
+}
