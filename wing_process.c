@@ -552,7 +552,6 @@ PHP_MINIT_FUNCTION(wing_process)
 
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
-
 	if (PHP_PATH) {
 		free(PHP_PATH);
 	}
