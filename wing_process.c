@@ -50,7 +50,8 @@
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-char* get_command_path(const char* command) {
+char* get_command_path(const char* command)
+{
 
     char *env           = getenv("PATH");
     ulong start         = (ulong)env;
