@@ -59,5 +59,5 @@ if test "$PHP_WING_PROCESS" != "no"; then
   dnl
   dnl PHP_SUBST(WING_PROCESS_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(wing_process, wing_process.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+  PHP_NEW_EXTENSION(wing_process, wing_process.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
 fi
