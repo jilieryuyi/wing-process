@@ -8,7 +8,7 @@ dnl without editing.
 dnl If your extension references something external, use with:
 
 PHP_ARG_WITH(wing_process, for wing_process support,
-Make sure that the comment is aligned:
+dnl Make sure that the comment is aligned:
 [  --with-wing_process             Include wing_process support])
 
 dnl Otherwise use enable:
@@ -59,5 +59,8 @@ if test "$PHP_WING_PROCESS" != "no"; then
   dnl
   dnl PHP_SUBST(WING_PROCESS_SHARED_LIBADD)
 
+  PHP_REQUIRE_CXX()
+  PHP_SUBST(WING_PROCESS_SHARED_LIBADD)
+  PHP_ADD_LIBRARY(stdc++,1,WING_PROCESS_SHARED_LIBADD)
   PHP_NEW_EXTENSION(wing_process, wing_process.c, $ext_shared)
 fi
