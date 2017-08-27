@@ -38,6 +38,12 @@ char *PHP_PATH = NULL;
 
 zend_class_entry *wing_process_ce;
 
+typedef struct _WING_PROCESS_INFO {
+    unsigned long process_id;
+    unsigned long thread_id;
+    char* command;
+} WING_PROCESS_INFO;
+
 /**
  * 构造函数，第一个参数为需要以守护进程执行的php文件或者是其他可执行的命令和文件
  * 第二个参数为重定向输出的文件路径
@@ -74,6 +80,12 @@ ZEND_METHOD(wing_process, __construct)
 
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
 
+	WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)emalloc(sizeof(WING_PROCESS_INFO)+1);
+	info->process_id = 0;
+	info->thread_id  = 0;
+	info->command    = NULL;
+	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
+
 	int size = file_len + 2;
 	if (PHP_PATH) {
 	    size += strlen(PHP_PATH);
@@ -85,10 +97,12 @@ ZEND_METHOD(wing_process, __construct)
 	    #ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
 		DWORD process_id  = zend_atoi(file, strlen(file));
+
+		info->process_id  = (unsigned long)process_id;
+
 		WingQueryProcessByProcessID(item, process_id);
 		if (item) {
 			spprintf(&command_line, size, "%s", item->command_line);
-			zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), process_id TSRMLS_CC);
 			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
 			delete item;
 		}
@@ -110,6 +124,9 @@ ZEND_METHOD(wing_process, __construct)
 	}
 
 	if (command_line) {
+	    info->command  = (char*)emalloc(strlen(command_line)+1);
+	    strcpy(info->command, command_line);
+
 		zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
 	    efree(command_line);
 	}
@@ -129,6 +146,13 @@ ZEND_METHOD(wing_process, __destruct) {
 		CloseHandle(pi->hThread);
 		delete pi;
 	}
+
+	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    if (info->command) {
+        efree(info->command);
+    }
+	efree(info);
 	#endif
 }
 
@@ -224,15 +248,20 @@ ZEND_METHOD(wing_process, run)
 
 	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
 	//zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
-	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), pi->dwProcessId TSRMLS_CC);
 	zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), pi->dwThreadId TSRMLS_CC);
 
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    info->process_id = pi->dwProcessId;
+    info->thread_id  = pi->dwThreadId;
 	RETURN_LONG(pi->dwProcessId);
 	#else
 
     unsigned long childpid = wing_create_process(command, output_file);
-    zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), childpid TSRMLS_CC);
 
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    info->process_id = childpid;
 	RETURN_LONG(childpid);
 	#endif
 }
@@ -276,9 +305,11 @@ ZEND_METHOD(wing_process, wait) {
 	RETURN_LONG(process_id);
 	#else
 	int status;
-	zval *process_id = wing_zend_read_property(wing_process_ce, getThis(), "process_id");
-    pid_t childpid   = Z_LVAL_P(process_id);
-	pid_t epid       = waitpid(childpid, &status, timeout);
+
+	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+
+	pid_t epid = waitpid(info->process_id, &status, timeout);
     /*
         ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
         如果我们不想使用它们，也可以把options设为0，如：
@@ -297,8 +328,9 @@ ZEND_METHOD(wing_process, wait) {
  * @return int
  */
 ZEND_METHOD(wing_process, getProcessId) {
-	zval *process_id = wing_zend_read_property(wing_process_ce, getThis(), "process_id");
-	RETURN_ZVAL(process_id, 0, 0);
+	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    RETURN_LONG(info->process_id);
 }
 
 
@@ -308,12 +340,16 @@ ZEND_METHOD(wing_process, getProcessId) {
  * @return int
  */
 ZEND_METHOD(wing_process, getThreadId) {
-    #ifdef PHP_WIN32
-	zval *thread_id = wing_zend_read_property(wing_process_ce, getThis(), "thread_id");
-	RETURN_ZVAL(thread_id,0,0);
-	#else
-	RETURN_LONG(0);
-	#endif
+//    #ifdef PHP_WIN32
+//	zval *thread_id = wing_zend_read_property(wing_process_ce, getThis(), "thread_id");
+//	RETURN_ZVAL(thread_id,0,0);
+//	#else
+//	RETURN_LONG(0);
+//	#endif
+
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    RETURN_LONG(info->thread_id);
 }
 
 
@@ -392,8 +428,9 @@ ZEND_METHOD(wing_process, kill)
     if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
         process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
     } else {
-        zval *_process_id = wing_zend_read_property(wing_process_ce, getThis(), "process_id");
-        process_id = Z_LVAL_P(_process_id);
+        zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+        WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+        process_id = info->process_id;
     }
     int status = kill(process_id, SIGKILL);
     if (status == -1) {
@@ -484,7 +521,8 @@ PHP_MINIT_FUNCTION(wing_process)
 	zend_declare_property_long(wing_process_ce, "thread_id", strlen("thread_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
     #endif
 	zend_declare_property_string(wing_process_ce, "command_line", strlen("command_line"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_long(wing_process_ce, "process_id", strlen("process_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
+
+	zend_declare_property_long(wing_process_ce, "process_info", strlen("process_info"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 
 
 	return SUCCESS;

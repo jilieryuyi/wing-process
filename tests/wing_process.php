@@ -29,9 +29,12 @@ class wing_process
 	{
         return 0;
 	}
+	/**
+	 * @return int
+     */
 	public function getProcessId()
 	{
-
+        return 0;
 	}
 	public function getThreadId()
 	{
