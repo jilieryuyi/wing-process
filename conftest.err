@@ -1,0 +1,3 @@
+g++: error: unrecognized command line option '-qversion'; did you mean '--version'?
+g++: fatal error: no input files
+compilation terminated.

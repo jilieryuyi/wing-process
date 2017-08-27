@@ -391,7 +391,11 @@ ZEND_METHOD(wing_process, run)
 	#else
 
     if (redirect_output) {
+    	#if PHP_MAJOR_VERSION >= 7
         const char *str = zend_get_executed_filename();//"/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php";
+        #else
+        const char *str = zend_get_executed_filename(TSRMLS_C);
+        #endif
         char find_str[] = "/";
         char *find      = strstr((const char*)str, find_str);
         char *last_pos  = NULL;
