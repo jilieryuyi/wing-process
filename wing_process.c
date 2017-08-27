@@ -194,50 +194,6 @@ char *PHP_PATH = NULL;
 zend_class_entry *wing_process_ce;
 
 /**
- * 判断是否为可执行文件，此方法一句后缀识别，不是很好
- *
- * @param char* file
- * @return BOOL
- */
-//BOOL wing_check_is_runable(const char *file) {
-//
-//	char *begin = NULL;
-//	char *find = NULL;
-//
-//	if (file[0] == '\'' || file[0] == '\"') {
-//		begin = (char*)(file + 1);
-//	}
-//	else {
-//		begin = (char*)file;
-//	}
-//
-//
-//	find = strchr(begin, '.');
-//	if (!find)
-//	{
-//		return 0;
-//	}
-//	const char *p = strchr(begin, '.') + 1;
-//
-//	char *ext = (char*)emalloc(4);
-//	memset(ext, 0, 4);
-//
-//	#ifdef PHP_WIN32
-//	strncpy_s(ext, 4, p, 3);
-//	#else
-//	strncpy(ext, p, 3);
-//	#endif
-//
-//	BOOL is_run = 0;
-//	if (strcmp(ext, "exe") == 0 || strcmp(ext, "bat") == 0)
-//	{
-//		is_run = 1;
-//	}
-//	efree(ext);
-//	return is_run;
-//}
-
-/**
  * 构造函数，第一个参数为需要以守护进程执行的php文件或者是其他可执行的命令和文件
  * 第二个参数为重定向输出的文件路径
  * 如果传入的文件是一个数字，则认为根据进程id打开进程，后续可以对此进程进行控制，比如kill
@@ -247,17 +203,30 @@ zend_class_entry *wing_process_ce;
 ZEND_METHOD(wing_process, __construct) 
 {
 
-	char *file        = NULL;
-    char *output_file = NULL;
-    int file_len      = 0;
-    int output_len    = 0;
+	zend_string *_file        = NULL;
+    //int file_len      = 0;
+    //    char *output_file = NULL;
+
+//    int output_len    = 0;
+
+//    if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+//        "S", &file, &file_len)) {
+//        return;
+//    }
 
     if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-        "s|s", &file, &file_len, &output_file, &output_len)) {
-        return;
+            "S", &_file)) {
+            return;
+        }
+
+    char *file = NULL;
+    if (_file) {
+        file = ZSTR_VAL(_file);
+        efree(_file);
     }
 
-    //php_printf("%d=>%s\r\n%d=>%s\r\n", file_len, file, output_len, output_file);
+    int file_len = strlen(file);
+    php_printf("=====>%s\r\n", file);
 
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
 
