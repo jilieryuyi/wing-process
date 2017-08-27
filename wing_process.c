@@ -84,7 +84,6 @@ ZEND_METHOD(wing_process, __construct)
 	info->process_id = 0;
 	info->thread_id  = 0;
 	info->command    = NULL;
-	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
 
 	int size = file_len + 2;
 	if (PHP_PATH) {
@@ -103,7 +102,6 @@ ZEND_METHOD(wing_process, __construct)
 		WingQueryProcessByProcessID(item, process_id);
 		if (item) {
 			spprintf(&command_line, size, "%s", item->command_line);
-			zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), 0 TSRMLS_CC);
 			delete item;
 		}
 		#endif
@@ -126,10 +124,14 @@ ZEND_METHOD(wing_process, __construct)
 	if (command_line) {
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
 	    strcpy(info->command, command_line);
-
-		zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command_line TSRMLS_CC);
+        printf("command==>%s\r\n", info->command);
 	    efree(command_line);
 	}
+
+    printf("%l=>%s\r\n",(unsigned long)info, info->command);
+
+	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
+
 }
 
 /***
@@ -182,88 +184,22 @@ ZEND_METHOD(wing_process, run)
     zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &output_file, &output_file_len);
 	#endif
 
-	int redirect_output = 1;
-    if (output_file == NULL) {
-        redirect_output = 0;
-    }
+	zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
+    printf("%l=>%s\r\n",(unsigned long)info, info->command);
 
-	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
-	//char *output_file  = Z_STRVAL_P(_output_file);
-	zval *_command     = wing_zend_read_property(wing_process_ce, getThis(), "command_line");
-	char *command      = Z_STRVAL_P(_command);
-
-
-    #ifdef PHP_WIN32
-//	STARTUPINFO sui;
-	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
-//	SECURITY_ATTRIBUTES sa;                            // �����̴��ݸ��ӽ��̵�һЩ��Ϣ
-//
-//	sa.bInheritHandle       = TRUE;                         // �������ӽ��̼̳и����̵Ĺܵ����
-//	sa.lpSecurityDescriptor = NULL;
-//	sa.nLength              = sizeof(SECURITY_ATTRIBUTES);
-//
-//	SECURITY_ATTRIBUTES *psa = NULL;
-//	DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-//	OSVERSIONINFO osVersion = { 0 };
-//	osVersion.dwOSVersionInfoSize = sizeof(osVersion);
-//	if (GetVersionEx(&osVersion)) {
-//		if (osVersion.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-//			psa = &sa;
-//			dwShareMode |= FILE_SHARE_DELETE;
-//		}
-//	}
-//
-//	HANDLE hConsoleRedirect = CreateFile(
-//		output_file,
-//		GENERIC_WRITE,
-//		dwShareMode,
-//		psa,
-//		OPEN_ALWAYS,
-//		FILE_ATTRIBUTE_NORMAL,
-//		NULL);
-//	SetLastError(0);
-//	ZeroMemory(&sui, sizeof(STARTUPINFO));         // ��һ���ڴ������㣬�����ZeroMemory, �����ٶ�Ҫ����memset
-//
-//	sui.cb         = sizeof(STARTUPINFO);
-//	sui.dwFlags    = STARTF_USESTDHANDLES;
-//	sui.hStdInput  = NULL;//m_hRead;
-//	sui.hStdOutput = hConsoleRedirect;//m_hWrite;
-//	sui.hStdError  = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
-//	//sui.wShowWindow = SW_SHOW;
-//	if(!redirect_output) {
-//	    sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
-//	}
-//									 /*if( params_len >0 ) {
-//									 DWORD byteWrite  = 0;
-//									 if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
-//									 php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
-//									 }
-//									 }*/
-//	if (!CreateProcessA(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
-//		CloseHandle(hConsoleRedirect);
-//		RETURN_LONG(WING_ERROR_FAILED);
-//		return;
-//	}
-//	CloseHandle(hConsoleRedirect);
-
-	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
-	//zend_update_property_string(wing_process_ce, getThis(), "command_line", strlen("command_line"), command TSRMLS_CC);
-	zend_update_property_long(wing_process_ce, getThis(), "thread_id", strlen("thread_id"), pi->dwThreadId TSRMLS_CC);
-
-    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
-    info->process_id = pi->dwProcessId;
-    info->thread_id  = pi->dwThreadId;
-	RETURN_LONG(pi->dwProcessId);
-	#else
-
-    unsigned long childpid = wing_create_process(command, output_file);
-
-    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
-    info->process_id = childpid;
-	RETURN_LONG(childpid);
-	#endif
+//    #ifdef PHP_WIN32
+//	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
+//	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
+//    info->process_id = pi->dwProcessId;
+//    info->thread_id  = pi->dwThreadId;
+//	RETURN_LONG(pi->dwProcessId);
+//	#else
+//	printf(info->command);
+//    unsigned long childpid = wing_create_process(command, output_file);
+//    info->process_id = childpid;
+//	RETURN_LONG(childpid);
+//	#endif
 }
 
 
@@ -340,13 +276,6 @@ ZEND_METHOD(wing_process, getProcessId) {
  * @return int
  */
 ZEND_METHOD(wing_process, getThreadId) {
-//    #ifdef PHP_WIN32
-//	zval *thread_id = wing_zend_read_property(wing_process_ce, getThis(), "thread_id");
-//	RETURN_ZVAL(thread_id,0,0);
-//	#else
-//	RETURN_LONG(0);
-//	#endif
-
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
     RETURN_LONG(info->thread_id);
@@ -361,6 +290,8 @@ ZEND_METHOD(wing_process, getThreadId) {
 ZEND_METHOD(wing_process, getCommandLine)
 {
 	zval *file = wing_zend_read_property(wing_process_ce, getThis(), "file");
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
 	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
 		#ifdef PHP_WIN32
@@ -376,12 +307,11 @@ ZEND_METHOD(wing_process, getCommandLine)
 		}
 		#endif
 	} else {
-		zval *command_line  = wing_zend_read_property(wing_process_ce, getThis(), "command_line");
-	    char *file          = Z_STRVAL_P(command_line);
+	   // char *file          = info->command;
 	    char *bcommand_line = NULL;
-	    if (wing_file_is_php(file) && PHP_PATH != NULL) {
-	        int size = strlen(PHP_PATH) + strlen(file) + 3;
-	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, file);
+	    if (wing_file_is_php(info->command) && PHP_PATH != NULL) {
+	        int size = strlen(PHP_PATH) + strlen(info->command) + 3;
+	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, info->command);
 	        if (bcommand_line) {
                 #if PHP_MAJOR_VERSION >= 7
                 ZVAL_STRING(return_value, bcommand_line);
@@ -392,7 +322,7 @@ ZEND_METHOD(wing_process, getCommandLine)
                 bcommand_line = NULL;
 	        }
 	    } else {
-		    ZVAL_ZVAL(return_value, command_line, 0, 0);
+		    ZVAL_ZVAL(return_value, info->command, 0, 0);
 		}
 	}
 }
@@ -518,9 +448,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 	#ifdef PHP_WIN32
 	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_long(wing_process_ce, "thread_id", strlen("thread_id"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
     #endif
-	zend_declare_property_string(wing_process_ce, "command_line", strlen("command_line"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	zend_declare_property_long(wing_process_ce, "process_info", strlen("process_info"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 
