@@ -111,11 +111,9 @@ void init_daemon(const char* dir)
     int pid = fork();
     int i;
     if (pid > 0) {
-        printf("父进程退出1\r\n");
         exit(0);//是父进程，结束父进程
     }
     if (pid < 0) {
-    printf("fork出错1\r\n");
         exit(1);//fork失败，退出
     }
     //是第一子进程，后台继续执行
@@ -123,11 +121,9 @@ void init_daemon(const char* dir)
     //并与控制终端分离
     pid = fork();
     if (pid > 0) {
-    printf("父进程退出2\r\n");
         exit(0);//是第一子进程，结束第一子进程
     }
     if (pid < 0) {
-    printf("fork出错2\r\n");
         exit(1);//fork失败，退出
     }
     //是第二子进程，继续
@@ -229,9 +225,6 @@ ZEND_METHOD(wing_process, __construct)
 
     #endif
 
-
-    php_printf("=====>%s\r\n", file);
-
 	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
 
 	int size = file_len + 2;
@@ -324,7 +317,6 @@ ZEND_METHOD(wing_process, run)
         redirect_output = 0;
     }
 
-	zend_printf("==========%s", output_file);
 	//zval *_output_file = zend_read_property(wing_process_ce, getThis(), "output_file", strlen("output_file"), 0, 0 TSRMLS_CC);
 	//char *output_file  = Z_STRVAL_P(_output_file);
 	zval *_command     = zend_read_property(wing_process_ce, getThis(), "command_line", strlen("command_line"), 0, 0 TSRMLS_CC);
@@ -434,9 +426,18 @@ ZEND_METHOD(wing_process, run)
                 exit(0);
             }
         }
+    } else if(childpid > 0) {
+    	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
+    	if (redirect_output) {
+    	    //如果以守护进程方式启动，则等待子进程退出，防止子进程变成僵尸进程
+            int status;
+            pid_t epid = waitpid(childpid, &status, 0);
+            RETURN_LONG(epid);
+        }
+    } else {
+         php_error_docref(NULL TSRMLS_CC, E_WARNING, "创建进程错误(fork a process error)");
     }
 
-	zend_update_property_long(wing_process_ce, getThis(), "process_id", strlen("process_id"), (int)childpid TSRMLS_CC);
 	RETURN_LONG((int)childpid);
 	#endif
 }

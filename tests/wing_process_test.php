@@ -13,7 +13,7 @@ echo $process->run(__DIR__."/log.log"),"\r\n";//
 echo \wing\wing_process::getCurrentProcessId(),"\r\n";
 echo $process->getCommandLine(),"\r\n";
 //$process->kill();
-echo $process->wait(),"\r\n";
+//echo $process->wait(),"\r\n";
 
 
 
