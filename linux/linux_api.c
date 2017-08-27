@@ -94,6 +94,7 @@ void init_daemon(const char* dir)
 
 unsigned long wing_create_process(const char *command, char* output_file)
 {
+    TSRMLS_FETCH();
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
     //    #if PHP_MAJOR_VERSION >= 7
