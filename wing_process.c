@@ -716,8 +716,10 @@ PHP_MSHUTDOWN_FUNCTION(wing_process)
 
 PHP_RINIT_FUNCTION(wing_process)
 {
+#if PHP_MAJOR_VERSION >= 7
 #if defined(COMPILE_DL_WING_PROCESS) && defined(ZTS)
 	ZEND_TSRMLS_CACHE_UPDATE();
+#endif
 #endif
 	return SUCCESS;
 }
@@ -756,8 +758,10 @@ zend_module_entry wing_process_module_entry = {
 };
 
 #ifdef COMPILE_DL_WING_PROCESS
+#if PHP_MAJOR_VERSION >= 7
 #ifdef ZTS
 ZEND_TSRMLS_CACHE_DEFINE()
+#endif
 #endif
 ZEND_GET_MODULE(wing_process)
 #endif

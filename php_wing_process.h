@@ -52,10 +52,23 @@ ZEND_END_MODULE_GLOBALS(wing_process)
    You are encouraged to rename these macros something shorter, see
    examples in any other php module directory.
 */
-#define WING_PROCESS_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(wing_process, v)
 
+#if PHP_MAJOR_VERSION >= 7
+//php7
+#define WING_PROCESS_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(wing_process, v)
 #if defined(ZTS) && defined(COMPILE_DL_WING_PROCESS)
 ZEND_TSRMLS_CACHE_EXTERN()
+#endif
+//end-php7
+#else
+
+//php5
+#ifdef ZTS
+#define WING_PROCESS_G(v) TSRMG(wing_process_globals_id, zend_wing_process_globals *, v)
+#else
+#define WING_PROCESS_G(v) (wing_process_globals.v)
+#endif
+//end-php5
 #endif
 
 #endif	/* PHP_WING_PROCESS_H */
