@@ -654,16 +654,16 @@ ZEND_METHOD(wing_process, getCurrentProcessId) {
 
 
 static zend_function_entry wing_process_methods[] = {
-	ZEND_ME(wing_process, __construct,NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	ZEND_ME(wing_process, __construct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-	ZEND_ME(wing_process, wait,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, run,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getProcessId,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getThreadId,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getCommandLine,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, kill,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getMemory,  NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getCurrentProcessId,  NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	ZEND_ME(wing_process, wait, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, run, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getProcessId, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getThreadId, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCommandLine, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, kill, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getMemory, NULL,ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCurrentProcessId, NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{
 	    NULL,NULL,NULL
 	}
