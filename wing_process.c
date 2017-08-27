@@ -39,18 +39,19 @@
 #define INFINITE 0
 #define MAX_PATH 256
 
-//#include <unistd.h>
-//#include <string.h>
-//#include <sys/wait.h>
-//#include <signal.h>
-//#include <sys/param.h>
-//#include <sys/stat.h>
-//#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-char* get_command_path(const char* command){
+char* get_command_path(const char* command)
+{
 
     char *env           = getenv("PATH");
     ulong start         = (ulong)env;
