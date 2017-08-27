@@ -24,6 +24,7 @@ This library provides a better API to work with daemon processes on windows、ma
 		public function getCommandLine();
 		public function kill();
 		public function getMemory();
+		public static function getCurrentProcessId();
 	}
 	
 ## Demo
