@@ -139,8 +139,8 @@
 
 #endif
 
-#define WING_ERROR_FAILED  0
-#define WING_ERROR_SUCCESS 1
+//#define WING_ERROR_FAILED  0
+//#define WING_ERROR_SUCCESS 1
 
 /**
  * 判断是否为可执行文件，此方法一句后缀识别，不是很好
