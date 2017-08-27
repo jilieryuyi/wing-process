@@ -50,92 +50,92 @@
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
  */
-char* get_command_path(const char* command)
-{
-
-    char *env           = getenv("PATH");
-    ulong start         = (ulong)env;
-    size_t len          = strlen(env);
-    ulong pos           = (ulong)env;
-    ulong size          = 0;
-    char temp[MAX_PATH] = {0};
-    char *res           = NULL;
-    ulong command_len   = strlen(command)+1;
-
-    while (1) {
-        char t = ((char*)start)[0];
-
-        if (t == ':' ) {
-            size = start - pos;
-            memset(temp, 0, MAX_PATH);
-            strncpy(temp, (char*)pos, size);
-            char *base = (char*)((unsigned long)temp + strlen(temp));
-            strcpy(base, "/");
-            strcpy((char*)((unsigned long)base + 1), command);
-
-            if (access(temp, F_OK) == 0) {
-                res = (char *)malloc(size+command_len);
-                memset(res, 0, size+command_len);
-                strcpy(res, temp);
-                return res;
-            }
-
-            pos = start+1;
-        }
-
-        if (start >= ((unsigned long)env+len) ) {
-            break;
-        }
-
-        start++;
-    }
-
-    size = (ulong)env+len - pos;
-    memset(temp, 0, MAX_PATH);
-    strncpy(temp, (char*)pos, size);
-
-    char *base = (char*)((unsigned long)temp + strlen(temp));
-    strcpy(base, "/");
-    strcpy((char*)((unsigned long)base + 1), command);
-
-    if (access(temp, F_OK) == 0) {
-        res = (char *)malloc(size+command_len);
-        memset(res, 0, size+command_len);
-        strcpy(res, temp);
-        return res;
-    }
-    return NULL;
-}
-
-void init_daemon(const char* dir)
-{
-    int pid = fork();
-    int i;
-    if (pid > 0) {
-        exit(0);//是父进程，结束父进程
-    }
-    if (pid < 0) {
-        exit(1);//fork失败，退出
-    }
-    //是第一子进程，后台继续执行
-    setsid();//第一子进程成为新的会话组长和进程组长
-    //并与控制终端分离
-    pid = fork();
-    if (pid > 0) {
-        exit(0);//是第一子进程，结束第一子进程
-    }
-    if (pid < 0) {
-        exit(1);//fork失败，退出
-    }
-    //是第二子进程，继续
-    //第二子进程不再是会话组长
-//    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
-//        close(i);
+//char* get_command_path(const char* command)
+//{
+//
+//    char *env           = getenv("PATH");
+//    ulong start         = (ulong)env;
+//    size_t len          = strlen(env);
+//    ulong pos           = (ulong)env;
+//    ulong size          = 0;
+//    char temp[MAX_PATH] = {0};
+//    char *res           = NULL;
+//    ulong command_len   = strlen(command)+1;
+//
+//    while (1) {
+//        char t = ((char*)start)[0];
+//
+//        if (t == ':' ) {
+//            size = start - pos;
+//            memset(temp, 0, MAX_PATH);
+//            strncpy(temp, (char*)pos, size);
+//            char *base = (char*)((unsigned long)temp + strlen(temp));
+//            strcpy(base, "/");
+//            strcpy((char*)((unsigned long)base + 1), command);
+//
+//            if (access(temp, F_OK) == 0) {
+//                res = (char *)malloc(size+command_len);
+//                memset(res, 0, size+command_len);
+//                strcpy(res, temp);
+//                return res;
+//            }
+//
+//            pos = start+1;
+//        }
+//
+//        if (start >= ((unsigned long)env+len) ) {
+//            break;
+//        }
+//
+//        start++;
 //    }
-    chdir(dir);//改变工作目录到/tmp
-    umask(0);//重设文件创建掩模
-    return;
-}
+//
+//    size = (ulong)env+len - pos;
+//    memset(temp, 0, MAX_PATH);
+//    strncpy(temp, (char*)pos, size);
+//
+//    char *base = (char*)((unsigned long)temp + strlen(temp));
+//    strcpy(base, "/");
+//    strcpy((char*)((unsigned long)base + 1), command);
+//
+//    if (access(temp, F_OK) == 0) {
+//        res = (char *)malloc(size+command_len);
+//        memset(res, 0, size+command_len);
+//        strcpy(res, temp);
+//        return res;
+//    }
+//    return NULL;
+//}
+
+//void init_daemon(const char* dir)
+//{
+//    int pid = fork();
+//    int i;
+//    if (pid > 0) {
+//        exit(0);//是父进程，结束父进程
+//    }
+//    if (pid < 0) {
+//        exit(1);//fork失败，退出
+//    }
+//    //是第一子进程，后台继续执行
+//    setsid();//第一子进程成为新的会话组长和进程组长
+//    //并与控制终端分离
+//    pid = fork();
+//    if (pid > 0) {
+//        exit(0);//是第一子进程，结束第一子进程
+//    }
+//    if (pid < 0) {
+//        exit(1);//fork失败，退出
+//    }
+//    //是第二子进程，继续
+//    //第二子进程不再是会话组长
+////    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+////        close(i);
+////    }
+//    chdir(dir);//改变工作目录到/tmp
+//    umask(0);//重设文件创建掩模
+//    return;
+//}
 
 #endif
 
@@ -399,7 +399,7 @@ ZEND_METHOD(wing_process, run)
 
         strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
 
-        init_daemon((const char*)path);
+        //init_daemon((const char*)path);
 
         FILE *handle = fopen(output_file, "a+");
 
@@ -679,7 +679,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	memset(PHP_PATH, 0, MAX_PATH);
 	GetModuleFileName(NULL, PHP_PATH, MAX_PATH);
 	#else
-	PHP_PATH = get_command_path("php");
+	PHP_PATH = NULL;//get_command_path("php");
 	#endif
 
 	REGISTER_STRING_CONSTANT("WING_PROCESS_PHP",     PHP_PATH,                 CONST_CS | CONST_PERSISTENT );
