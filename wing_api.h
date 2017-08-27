@@ -4,7 +4,7 @@
 
 char* wing_get_command_path(const char* command);
 int wing_file_is_php(const char *file);
-int wing_create_process(const char *command, char* output_file);
+unsigned long wing_create_process(const char *command, char* output_file);
 int wing_get_process_id();
 unsigned long get_memory(int process_id);
 int wing_kill(int process_id);

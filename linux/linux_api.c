@@ -92,7 +92,7 @@ void init_daemon(const char* dir)
     return;
 }
 
-int wing_create_process(const char *command, char* output_file)
+unsigned long wing_create_process(const char *command, char* output_file)
 {
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
@@ -150,7 +150,7 @@ int wing_create_process(const char *command, char* output_file)
     } else {
          php_error_docref(NULL TSRMLS_CC, E_WARNING, "创建进程错误(fork a process error)");
     }
-    return childpid;
+    return (unsigned long )childpid;
 }
 
 int wing_get_process_id()
