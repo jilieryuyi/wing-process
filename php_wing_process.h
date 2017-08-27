@@ -27,11 +27,11 @@ extern zend_module_entry wing_process_module_entry;
 #define PHP_WING_PROCESS_VERSION "2.0.0" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
-#	define PHP_WING_PROCESS_API __declspec(dllexport)
-#elif defined(__GNUC__) && __GNUC__ >= 4
-#	define PHP_WING_PROCESS_API __attribute__ ((visibility("default")))
+#define PHP_WING_PROCESS_API __declspec(dllexport)
+#else if defined(__GNUC__) && __GNUC__ >= 4
+#define PHP_WING_PROCESS_API __attribute__ ((visibility("default")))
 #else
-#	define PHP_WING_PROCESS_API
+#define PHP_WING_PROCESS_API
 #endif
 
 #ifdef ZTS
