@@ -52,3 +52,4 @@ Release/tests/*.pid
 /.idea/
 /tests/.idea/
 /tests/log.txt
+/tests/*.log
