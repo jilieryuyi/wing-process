@@ -109,7 +109,6 @@ ZEND_METHOD(wing_process, __construct)
 		}
 		#endif
 	} else {
-	    #ifdef PHP_WIN32
 		if (wing_file_is_php((const char*)file)){
 		    if (PHP_PATH) {
 			    spprintf(&command_line, size, "%s %s\0", PHP_PATH, file);
@@ -119,9 +118,9 @@ ZEND_METHOD(wing_process, __construct)
 		} else {
 			spprintf(&command_line, size, "%s\0", file);
 		}
-		#else
-		spprintf(&command_line, size, "%s\0", file);
-		#endif
+//		#else
+//		spprintf(&command_line, size, "%s\0", file);
+//		#endif
 	}
 
 	if (command_line) {
@@ -188,7 +187,6 @@ ZEND_METHOD(wing_process, run)
 
 	zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
-    printf("%lu==%lu=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)info, info->command);
 
     #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);
@@ -198,7 +196,7 @@ ZEND_METHOD(wing_process, run)
     info->thread_id  = pi->dwThreadId;
 	RETURN_LONG(pi->dwProcessId);
 	#else
-    unsigned long childpid = wing_create_process(info->command, output_file);
+    unsigned long childpid = wing_create_process(info->file, output_file);
     info->process_id = childpid;
 	RETURN_LONG(childpid);
 	#endif
@@ -292,45 +290,45 @@ ZEND_METHOD(wing_process, getCommandLine)
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
-	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
-		#ifdef PHP_WIN32
-		PROCESSINFO *item = new PROCESSINFO();
-		WingQueryProcessByProcessID(item, zend_atoi(info->file, strlen(info->file)));
-		if (item) {
-			int size = strlen(item->command_line) + 1;
-			char *command_line = "";//(char*)emalloc(size);
-			memset(command_line, 0, size);
-			spprintf(&command_line, size,"%s", item->command_line);
-			delete item;
-			RETURN_STRING(command_line);
-		}
-		#endif
-	} else {
-	   // char *file          = info->command;
-	    char *bcommand_line = NULL;
-	    if (wing_file_is_php(info->command) && PHP_PATH != NULL) {
-	        int size = strlen(PHP_PATH) + strlen(info->command) + 3;
-	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, info->command);
-	        if (bcommand_line) {
-                #if PHP_MAJOR_VERSION >= 7
-                ZVAL_STRING(return_value, bcommand_line);
-                #else
-                ZVAL_STRING(return_value, bcommand_line, 1);
-                #endif
-                efree(bcommand_line);
-                bcommand_line = NULL;
-	        }
-	    } else {
-	                    #if PHP_MAJOR_VERSION >= 7
+//	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
+//		#ifdef PHP_WIN32
+//		PROCESSINFO *item = new PROCESSINFO();
+//		WingQueryProcessByProcessID(item, zend_atoi(info->file, strlen(info->file)));
+//		if (item) {
+//			int size = strlen(item->command_line) + 1;
+//			char *command_line = "";//(char*)emalloc(size);
+//			memset(command_line, 0, size);
+//			spprintf(&command_line, size,"%s", item->command_line);
+//			delete item;
+//			RETURN_STRING(command_line);
+//		}
+//		#endif
+//	} else {
+//	   // char *file          = info->command;
+//	    char *bcommand_line = NULL;
+//	    if (wing_file_is_php(info->command) && PHP_PATH != NULL) {
+//	        int size = strlen(PHP_PATH) + strlen(info->command) + 3;
+//	        spprintf(&bcommand_line, size, "%s %s\0", PHP_PATH, info->command);
+//	        if (bcommand_line) {
+//                #if PHP_MAJOR_VERSION >= 7
+//                ZVAL_STRING(return_value, bcommand_line);
+//                #else
+//                ZVAL_STRING(return_value, bcommand_line, 1);
+//                #endif
+//                efree(bcommand_line);
+//                bcommand_line = NULL;
+//	        }
+//	    } else {
+//	                    #if PHP_MAJOR_VERSION >= 7
+//
+//
+//		    ZVAL_STRING(return_value, info->command);
+//		    #else
+	ZVAL_STRING(return_value, info->command, 1);
 
-
-		    ZVAL_STRING(return_value, info->command);
-		    #else
-		    		    ZVAL_STRING(return_value, info->command, 1);
-
-		    #endif
-		}
-	}
+//		    #endif
+//		}
+//	}
 }
 
 /**
