@@ -10,13 +10,13 @@ This library provides a better API to work with daemon processes on windows、ma
 		 * @__construct all file path onle support full path
 		 *
 		 * @param string|int $mixed command or process_id
-		 * @param string $output_file process output will write into this file
 		 */
-		public function __construct( $mixed, $output_file = '');
+		public function __construct($mixed);
 		/**
-		 * @run as deamon process
+		 * run as deamon process
+		 * @param string $output_file if $output_file is not empty and is a file, process will run as a daemon process
 		 */
-		public function run( $redirect_ouput = 1);
+		public function run($output_file = '');
 
 		public function wait();
 		public function getProcessId();
@@ -40,8 +40,8 @@ This library provides a better API to work with daemon processes on windows、ma
 
 #### process.php
 	//run .php file as a deamon process
-	$process = new \wing\wing_process(__DIR__."/run.php",__DIR__."/process.log");
-	echo "process_id=",$process->run(),"\r\n";
+	$process = new \wing\wing_process(__DIR__."/run.php");
+	echo "process_id=",$process->run(__DIR__."/process.log"),"\r\n";
 	echo "process_id=",$process->getProcessId(),"\r\n";
 	echo "thread_id=",$process->getThreadId(),"\r\n";
 	echo "command line=",$process->getCommandLine(),"\r\n";
