@@ -55,6 +55,12 @@ typedef struct _WING_PROCESS_INFO {
  */
 ZEND_METHOD(wing_process, __construct)
 {
+    zval *argv;
+    //获取命令行参数
+	if ((argv = zend_hash_find(&EG(symbol_table), zend_string_init("argv", 4, 0))) != NULL) {
+        HashTable *arr_hash = Z_ARRVAL_P(argv);
+        int argc            = zend_hash_num_elements(arr_hash);
+	}
 
     #if PHP_MAJOR_VERSION >= 7
 	zend_string *_file = NULL;
@@ -287,8 +293,8 @@ ZEND_METHOD(wing_process, getThreadId) {
  */
 ZEND_METHOD(wing_process, getCommandLine)
 {
-    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    zval *zinfo = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(zinfo);
 
     #if PHP_MAJOR_VERSION >= 7
     ZVAL_STRING(return_value, info->command);

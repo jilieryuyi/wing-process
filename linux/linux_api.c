@@ -168,3 +168,22 @@ int wing_kill(int process_id)
 {
     return 0;
 }
+
+const char* wing_get_tmp_dir()
+{
+    const char* tmp = "/tmp";
+    if(0 != access(tmp, W_OK)) {
+        return NULL;
+    }
+
+    const char* tmp_wing = "/tmp/wing_process";
+    if (0 == access(tmp_wing, F_OK)) {
+        return tmp_wing;
+    }
+
+    if (0 == mkdir(tmp_wing, 0777)) {
+        return tmp_wing;
+    }
+
+    return NULL;
+}

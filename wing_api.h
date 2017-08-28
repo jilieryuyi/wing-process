@@ -16,8 +16,8 @@ unsigned long wing_create_process(const char *command, char* output_file);
 int wing_get_process_id();
 unsigned long get_memory(int process_id);
 int wing_kill(int process_id);
-
 zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name);
+const char* wing_get_tmp_dir();
 
 #ifdef PHP_WIN32
 unsigned long get_memory(int process_id)
@@ -51,9 +51,9 @@ unsigned long wing_create_process(const char *command, char* output_file)
 	int redirect_output = output_file == NULL ? 0 : 1;
 	STARTUPINFO sui;
 	PROCESS_INFORMATION *pi = new PROCESS_INFORMATION(); // ?????????????????????
-	SECURITY_ATTRIBUTES sa;                            // ?????????????????§»???
+	SECURITY_ATTRIBUTES sa;                            // ?????????????????ï¿½ï¿½???
 
-	sa.bInheritHandle = TRUE;                         // ????????????§Ú???????????
+	sa.bInheritHandle = TRUE;                         // ????????????ï¿½ï¿½???????????
 	sa.lpSecurityDescriptor = NULL;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
@@ -115,7 +115,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
 
 /**
-* ÅÐ¶ÏÊÇ·ñÎªphpÎÄ¼þ£¬´Ë·½·¨ÒÀ¾ÝphpÎÄ¼þ¿ªÍ·µÄ <?php Ê¶±ð
+* ï¿½Ð¶ï¿½ï¿½Ç·ï¿½Îªphpï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Ë·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½phpï¿½Ä¼ï¿½ï¿½ï¿½Í·ï¿½ï¿½ <?php Ê¶ï¿½ï¿½
 *
 * @param char* file
 * @return BOOL
