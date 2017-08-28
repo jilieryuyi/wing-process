@@ -1,4 +1,4 @@
-#include "win_api.h"
+/*#include "win_api.h"
 
 char* wing_get_command_path(const char* command)
 {
@@ -66,16 +66,15 @@ int redirect_output = output_file == NULL ? 0 : 1;
     	if(!redirect_output) {
     	    sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
     	}
-    									 /*if( params_len >0 ) {
+    									 /--*if( params_len >0 ) {
     									 DWORD byteWrite  = 0;
     									 if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
     									 php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
     									 }
-    									 }*/
-    	if (!CreateProcessA(NULL, command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
+    									 }*--/
+    	if (!CreateProcessA(NULL, (LPSTR)command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
     		CloseHandle(hConsoleRedirect);
-    		RETURN_LONG(WING_ERROR_FAILED);
-    		return;
+    		return 0;
     	}
     	CloseHandle(hConsoleRedirect);
 
@@ -86,4 +85,4 @@ int redirect_output = output_file == NULL ? 0 : 1;
 //
     	//RETURN_LONG(pi->dwProcessId);
     	return (unsigned long )pi;
-}
+}*/

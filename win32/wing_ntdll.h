@@ -13,6 +13,8 @@
 #define  WING_WINDOWS_10                100
 #define  WING_WINDOWS_NEW               MAXLONG
 
+#include "windows.h"
+
 typedef struct _PROCESSINFO {
 	char *process_name;
 	char *command_line;
