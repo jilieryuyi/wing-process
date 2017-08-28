@@ -83,7 +83,7 @@ ZEND_METHOD(wing_process, __construct)
 	WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)emalloc(sizeof(WING_PROCESS_INFO)+1);
 	info->process_id = 0;
 	info->thread_id  = 0;
-	info->ext_info   = 0；
+	info->ext_info   = 0;
 	info->command    = NULL;
 	info->file       = (char*)emalloc(strlen(file)+1);
 	strcpy(info->file, file);
