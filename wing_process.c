@@ -42,6 +42,7 @@ typedef struct _WING_PROCESS_INFO {
     unsigned long process_id;
     unsigned long thread_id;
     char* command;
+    char* file;
 } WING_PROCESS_INFO;
 
 /**
@@ -78,12 +79,12 @@ ZEND_METHOD(wing_process, __construct)
     }
     #endif
 
-	zend_update_property_string(wing_process_ce, getThis(), "file", strlen("file"), file TSRMLS_CC);
-
 	WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)emalloc(sizeof(WING_PROCESS_INFO)+1);
 	info->process_id = 0;
 	info->thread_id  = 0;
 	info->command    = NULL;
+	info->file       = (char*)emalloc(strlen(file)+1);
+	strcpy(info->file, file);
 
 	int size = file_len + 2;
 	if (PHP_PATH) {
@@ -163,6 +164,7 @@ ZEND_METHOD(wing_process, __destruct) {
     if (info->command) {
         efree(info->command);
     }
+    efree(info->file);
 	efree(info);
 	#endif
 }
@@ -222,13 +224,15 @@ ZEND_METHOD(wing_process, wait) {
 	int timeout = INFINITE;
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
 
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+
     #ifdef PHP_WIN32
 	HANDLE process = NULL;
-	zval *file     = wing_zend_read_property(wing_process_ce, getThis(), "file");
     int process_id = 0;
-	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
-	    process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
+	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
+		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(info->file, strlen(info->file)));
+	    process_id = zend_atoi(info->file, strlen(info->file));
 	} else {
 		zval *_pi               = wing_zend_read_property(wing_process_ce, getThis(), "process_info_pointer");
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
@@ -249,9 +253,6 @@ ZEND_METHOD(wing_process, wait) {
 	RETURN_LONG(process_id);
 	#else
 	int status;
-
-	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
 	pid_t epid = waitpid(info->process_id, &status, timeout);
     /*
@@ -297,7 +298,6 @@ ZEND_METHOD(wing_process, getThreadId) {
  */
 ZEND_METHOD(wing_process, getCommandLine)
 {
-	zval *file = wing_zend_read_property(wing_process_ce, getThis(), "file");
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
