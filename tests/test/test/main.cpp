@@ -174,14 +174,20 @@ int get_phy_mem(const pid_t p)
     return vmrss;
 }
 
-int file_is_php(const char *file)
+int wing_file_is_php(const char *file)
 {
-    FILE *handle = fopen(file, "r");
+    
+    char find_str[]     = " ";
+    char *find          = strstr(file, find_str);
+    char path[MAX_PATH] = {0};
+    
+    strncpy((char*)path, file, (size_t)(find-file));
+    FILE *handle = fopen(path, "r");
     if (!handle) {
         return 0;
     }
-    char *find = NULL;
-    char line[8] = {0};//  = (char*)malloc(8);
+    //char *find = NULL;
+    char line[8] = { 0 };
     memset(line, 0, 8);
     fgets(line, 7, handle);
     
@@ -266,31 +272,31 @@ int main(int argc, const char * argv[]) {
     
     */
     
-//    int is = file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests//php_path.php");
-//    if (is == 1) {
-//        std::cout << "is php file\r\n";
-//    } else {
-//        std::cout << "not php \r\n";
-//    }
-//    
-//    std::cout << get_command_path("php");
-    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php";
-    char find_str[] = "/";
-    char *find = strstr((const char*)str, find_str);
-    char *last_pos = NULL;
-    while(find) {
-        last_pos = find;
-        find++;
-        find = strstr((const char*)find, find_str);
+    int is = wing_file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/wing_process.php 123");
+    if (is == 1) {
+        std::cout << "is php file\r\n";
+    } else {
+        std::cout << "not php \r\n";
     }
-    char path[MAX_PATH] = {0};
-    
-   // strncpy(<#char *__dst#>, <#const char *__src#>, <#size_t __n#>)
-    strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
-    std::cout <<"===>"<< last_pos <<"\r\n";
-    std::cout <<"===>"<< (size_t)(last_pos-str) <<"---"<< path <<"\r\n";
-    
-    init_daemon((const char*)path);
+//
+//    std::cout << get_command_path("php");
+//    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php 123";
+//    char find_str[] = "/";
+//    char *find = strstr((const char*)str, find_str);
+//    char *last_pos = NULL;
+//    while(find) {
+//        last_pos = find;
+//        find++;
+//        find = strstr((const char*)find, find_str);
+//    }
+//    char path[MAX_PATH] = {0};
+//    
+//   // strncpy(<#char *__dst#>, <#const char *__src#>, <#size_t __n#>)
+//    strncpy((char*)path, (const char*)str, (size_t)(last_pos-str));
+//    std::cout <<"===>"<< last_pos <<"\r\n";
+//    std::cout <<"===>"<< (size_t)(last_pos-str) <<"---"<< path <<"\r\n";
+//    
+//    init_daemon((const char*)path);
     
     return 0;
 }
