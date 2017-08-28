@@ -123,7 +123,7 @@ void WingGetProcessCommandLine( DWORD process_id, char* &lpszCommandLine ){
         ::GetExitCodeThread(hThread, &dwExitCode);
 
 		 SetLastError(0);
-		::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, sizeof(char)*buf_size, &dwReaded);
+		::ReadProcessMemory(hProcess, (LPCVOID)&dwExitCode, lpszCommandLine, sizeof(char)*buf_size, &dwReaded);
 
 		//进程的可执行文件名称。要获得可执行文件的完整路径，应调用Module32First函数，再检查其返回的MODULEENTRY32结构的szExePath成员。
 		//但是，如果被调用进程是一个64位程序，您必须调用QueryFullProcessImageName函数去获取64位进程的可执行文件完整路径名。
@@ -151,7 +151,7 @@ void WingGetProcessCommandLine( DWORD process_id, char* &lpszCommandLine ){
 				//这句也很重要哦 重置错误
 				SetLastError(0);
 
-				::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, sizeof(char)*start, &dwReaded );
+				::ReadProcessMemory(hProcess, (LPCVOID)&dwExitCode, lpszCommandLine, sizeof(char)*start, &dwReaded );
 
 				if(  299 == GetLastError() ) 
 				{
