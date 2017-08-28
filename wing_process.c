@@ -130,14 +130,16 @@ ZEND_METHOD(wing_process, __construct)
 	}
 
     unsigned long pointer = (unsigned long)info;
-    printf("%d=>%s\r\n",pointer, info->command);
+    printf("%lu=>%s\r\n",pointer, info->command);
 
-	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), pointer TSRMLS_CC);
+	zend_update_property_long(wing_process_ce, getThis(), "process_info", strlen("process_info"), pointer TSRMLS_CC);
 
 
-    zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    zval *_info             =
+    zend_read_property(wing_process_ce, getThis(), "process_info", strlen("process_info"), 0, 0 TSRMLS_CC);
+   // wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *__info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
-    printf("%d==%d=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)__info, __info->command);
+    printf("%lu==%lu=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)__info, __info->command);
 
 }
 
@@ -193,20 +195,19 @@ ZEND_METHOD(wing_process, run)
 
 	zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
-    printf("%d==%d=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)info, info->command);
+    printf("%lu==%lu=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)info, info->command);
 
-//    #ifdef PHP_WIN32
-//	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
-//	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
-//    info->process_id = pi->dwProcessId;
-//    info->thread_id  = pi->dwThreadId;
-//	RETURN_LONG(pi->dwProcessId);
-//	#else
-//	printf(info->command);
-//    unsigned long childpid = wing_create_process(command, output_file);
-//    info->process_id = childpid;
-//	RETURN_LONG(childpid);
-//	#endif
+    #ifdef PHP_WIN32
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
+	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
+    info->process_id = pi->dwProcessId;
+    info->thread_id  = pi->dwThreadId;
+	RETURN_LONG(pi->dwProcessId);
+	#else
+    unsigned long childpid = wing_create_process(info->command, output_file);
+    info->process_id = childpid;
+	RETURN_LONG(childpid);
+	#endif
 }
 
 
