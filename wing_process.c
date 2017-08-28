@@ -41,6 +41,7 @@ zend_class_entry *wing_process_ce;
 typedef struct _WING_PROCESS_INFO {
     unsigned long process_id;
     unsigned long thread_id;
+    unsigned long ext_info;
     char* command;
     char* file;
 } WING_PROCESS_INFO;
@@ -82,6 +83,7 @@ ZEND_METHOD(wing_process, __construct)
 	WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)emalloc(sizeof(WING_PROCESS_INFO)+1);
 	info->process_id = 0;
 	info->thread_id  = 0;
+	info->ext_info   = 0；
 	info->command    = NULL;
 	info->file       = (char*)emalloc(strlen(file)+1);
 	strcpy(info->file, file);
@@ -124,24 +126,11 @@ ZEND_METHOD(wing_process, __construct)
 
 	if (command_line) {
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
-	    //memset(info->command, 0, strlen(command_line)+1);
 	    strcpy(info->command, command_line);
-        printf("command==>%s\r\n", info->command);
 	    efree(command_line);
 	}
 
-    unsigned long pointer = (unsigned long)info;
-    printf("%lu=>%s\r\n",pointer, info->command);
-
-	zend_update_property_long(wing_process_ce, getThis(), "process_info", strlen("process_info"), pointer TSRMLS_CC);
-
-
-    zval *_info             =
-    zend_read_property(wing_process_ce, getThis(), "process_info", strlen("process_info"), 0, 0 TSRMLS_CC);
-   // wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *__info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
-    printf("%lu==%lu=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)__info, __info->command);
-
+	zend_update_property_long(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
 }
 
 /***
@@ -149,9 +138,12 @@ ZEND_METHOD(wing_process, __construct)
  * windows下面需要释放一些资源
  */
 ZEND_METHOD(wing_process, __destruct) {
+
+	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+
 	#ifdef PHP_WIN32
-	zval *_pi = wing_zend_read_property(wing_process_ce, getThis(),"process_info_pointer");
-	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)(info->ext_info);
 
 	if (pi) {
 		CloseHandle(pi->hProcess);
@@ -159,8 +151,7 @@ ZEND_METHOD(wing_process, __destruct) {
 		delete pi;
 	}
 
-	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+
     if (info->command) {
         efree(info->command);
     }
@@ -200,8 +191,9 @@ ZEND_METHOD(wing_process, run)
     printf("%lu==%lu=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)info, info->command);
 
     #ifdef PHP_WIN32
-	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);//new PROCESS_INFORMATION(); // �������������ӽ��̵���Ϣ
-	zend_update_property_long(wing_process_ce, getThis(), "process_info_pointer", strlen("process_info_pointer"), (zend_long)pi TSRMLS_CC);
+	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);
+
+    info->ext_info   = (unsigned long)pi;
     info->process_id = pi->dwProcessId;
     info->thread_id  = pi->dwThreadId;
 	RETURN_LONG(pi->dwProcessId);
@@ -234,10 +226,9 @@ ZEND_METHOD(wing_process, wait) {
 		process    = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(info->file, strlen(info->file)));
 	    process_id = zend_atoi(info->file, strlen(info->file));
 	} else {
-		zval *_pi               = wing_zend_read_property(wing_process_ce, getThis(), "process_info_pointer");
-		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)(info->ext_info);
 		process                 = pi->hProcess;
-		process_id              = pi->dwProcessId;
+		process_id              = info->process_id;
 	}
 
 	DWORD wait_result = 0;
@@ -301,10 +292,10 @@ ZEND_METHOD(wing_process, getCommandLine)
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
-	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
+	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
 		#ifdef PHP_WIN32
 		PROCESSINFO *item = new PROCESSINFO();
-		WingQueryProcessByProcessID(item, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+		WingQueryProcessByProcessID(item, zend_atoi(info->file, strlen(info->file)));
 		if (item) {
 			int size = strlen(item->command_line) + 1;
 			char *command_line = "";//(char*)emalloc(size);
@@ -349,16 +340,16 @@ ZEND_METHOD(wing_process, getCommandLine)
  */
 ZEND_METHOD(wing_process, kill)
 {
-	zval *file     = wing_zend_read_property(wing_process_ce, getThis(), "file");
+    zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
 	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
-	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-		process   = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
+		process   = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(info->file, strlen(info->file)));
 	} else {
-		zval *_pi = wing_zend_read_property(wing_process_ce, getThis(), "process_info_pointer");
-		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)(info->ext_info);
 		process   = pi->hProcess;
 	}
     //非安全的方式直接退出 可能造成进程数据丢失
@@ -370,11 +361,9 @@ ZEND_METHOD(wing_process, kill)
 	RETURN_TRUE;
 	#else
     int process_id = 0;
-    if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-        process_id = zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file));
+    if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
+        process_id = zend_atoi(info->file, strlen(info->file));
     } else {
-        zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-        WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
         process_id = info->process_id;
     }
     int status = kill(process_id, SIGKILL);
@@ -396,17 +385,16 @@ ZEND_METHOD(wing_process, kill)
  * @return int
  */
 ZEND_METHOD(wing_process, getMemory) {
-	zval *file     = wing_zend_read_property(wing_process_ce, getThis(), "file");
+	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
 	#ifdef PHP_WIN32
 	HANDLE process = NULL;
 
-	if (is_numeric_string(Z_STRVAL_P(file), Z_STRLEN_P(file), NULL, NULL, 0)) {
-		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(Z_STRVAL_P(file), Z_STRLEN_P(file)));
+	if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
+		process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, zend_atoi(info->file, strlen(info->file)));
 	} else {
-
-		zval *_pi = wing_zend_read_property(wing_process_ce, getThis(), "process_info_pointer");
-		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)Z_LVAL_P(_pi);
+		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)(info->ext_info);
 		process = pi->hProcess;
 	}
 
@@ -459,15 +447,7 @@ PHP_MINIT_FUNCTION(wing_process)
 	INIT_NS_CLASS_ENTRY(_wing_process_ce, "wing", "wing_process", wing_process_methods);
 	wing_process_ce = zend_register_internal_class(&_wing_process_ce TSRMLS_CC);
 
-	zend_declare_property_string(wing_process_ce, "file", strlen("file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_string(wing_process_ce, "output_file", strlen("output_file"), "", ZEND_ACC_PRIVATE TSRMLS_CC);
-	#ifdef PHP_WIN32
-	zend_declare_property_long(wing_process_ce, "process_info_pointer", strlen("process_info_pointer"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-    #endif
-
 	zend_declare_property_long(wing_process_ce, "process_info", strlen("process_info"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-
-
 	return SUCCESS;
 }
 
