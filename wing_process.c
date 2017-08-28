@@ -41,7 +41,7 @@ zend_class_entry *wing_process_ce;
 typedef struct _WING_PROCESS_INFO {
     unsigned long process_id;
     unsigned long thread_id;
-    unsigned long ext_info;
+    void *ext_info;
     char* command;
     char* file;
 } WING_PROCESS_INFO;
@@ -83,7 +83,7 @@ ZEND_METHOD(wing_process, __construct)
 	WING_PROCESS_INFO *info = (WING_PROCESS_INFO*)emalloc(sizeof(WING_PROCESS_INFO)+1);
 	info->process_id = 0;
 	info->thread_id  = 0;
-	info->ext_info   = 0;
+	info->ext_info   = NULL;
 	info->command    = NULL;
 	info->file       = (char*)emalloc(strlen(file)+1);
 	strcpy(info->file, file);
@@ -191,7 +191,7 @@ ZEND_METHOD(wing_process, run)
     #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);
 
-    info->ext_info   = (unsigned long)pi;
+    info->ext_info   = (void*)pi;
     info->process_id = pi->dwProcessId;
     info->thread_id  = pi->dwThreadId;
 	RETURN_LONG(pi->dwProcessId);
