@@ -129,7 +129,7 @@ ZEND_METHOD(wing_process, __construct)
 	    efree(command_line);
 	}
 
-unsigned long pointer = (unsigned long)info;
+    unsigned long pointer = (unsigned long)info;
     printf("%d=>%s\r\n",pointer, info->command);
 
 	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), pointer TSRMLS_CC);
