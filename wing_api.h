@@ -20,6 +20,10 @@ zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char 
 const char* wing_get_tmp_dir();
 
 #ifdef PHP_WIN32
+const char* wing_get_tmp_dir()
+{
+    return GetTempPath();
+}
 unsigned long get_memory(int process_id)
 {
 	return 0;
