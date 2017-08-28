@@ -129,9 +129,15 @@ ZEND_METHOD(wing_process, __construct)
 	    efree(command_line);
 	}
 
-    printf("%d=>%s\r\n",(unsigned long)info, info->command);
+unsigned long pointer = (unsigned long)info;
+    printf("%d=>%s\r\n",pointer, info->command);
 
-	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), (unsigned long)info TSRMLS_CC);
+	zend_update_property_string(wing_process_ce, getThis(), "process_info", strlen("process_info"), pointer TSRMLS_CC);
+
+
+    zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
+    WING_PROCESS_INFO *__info = (WING_PROCESS_INFO*)Z_LVAL_P(_info);
+    printf("%d==%d=>%s\r\n",(unsigned long)Z_LVAL_P(_info),(unsigned long)__info, __info->command);
 
 }
 
@@ -323,7 +329,14 @@ ZEND_METHOD(wing_process, getCommandLine)
                 bcommand_line = NULL;
 	        }
 	    } else {
-		    ZVAL_ZVAL(return_value, info->command, 0, 0);
+	                    #if PHP_MAJOR_VERSION >= 7
+
+
+		    ZVAL_STRING(return_value, info->command);
+		    #else
+		    		    ZVAL_STRING(return_value, info->command, 1);
+
+		    #endif
 		}
 	}
 }
