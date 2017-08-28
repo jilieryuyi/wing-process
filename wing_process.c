@@ -319,14 +319,11 @@ ZEND_METHOD(wing_process, getCommandLine)
 //                bcommand_line = NULL;
 //	        }
 //	    } else {
-//	                    #if PHP_MAJOR_VERSION >= 7
-//
-//
-//		    ZVAL_STRING(return_value, info->command);
-//		    #else
-	ZVAL_STRING(return_value, info->command, 1);
-
-//		    #endif
+            #if PHP_MAJOR_VERSION >= 7
+            ZVAL_STRING(return_value, info->command);
+            #else
+            ZVAL_STRING(return_value, info->command, 1);
+            #endif
 //		}
 //	}
 }
