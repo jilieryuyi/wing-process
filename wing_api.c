@@ -255,9 +255,9 @@ ERROR_A:
 
 
 #else
-void wing_get_cmdline(unsigned long process_id, char *buffer)
+void wing_get_cmdline(int process_id, char *buffer)
 {
-  sprintf(buffer, "/proc/%lu/cmdline", process_id);
+  sprintf(buffer, "/proc/%d/cmdline", process_id);//%lu
   if (access(buffer, F_OK) == 0) {
   //printf("%s\r\n", buffer);
         //linux处理
