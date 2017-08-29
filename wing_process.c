@@ -115,25 +115,12 @@ ZEND_METHOD(wing_process, __construct)
 		}
 		#else
 		info->process_id  = (unsigned long)zend_atoi(file, strlen(file));
-		#ifdef __APPLE__
-		//mac下使用堆内存
-		char *buffer = NULL;
-		wing_get_cmdline(info->process_id, &buffer);
-		#else
-		//其他环境使用栈内存
+
 		char buffer[MAX_PATH] = {0};
 		wing_get_cmdline(info->process_id, buffer);
-		#endif
-		if (buffer)
+
 		spprintf(&command_line, strlen(buffer), "%s", buffer);
-		else
-				spprintf(&command_line, strlen(""), "%s", "");
 
-
-		#ifdef __APPLE__
-		if (buffer)
-		free(buffer);
-		#endif
 		#endif
 	} else {
 		if (wing_file_is_php((const char*)file)){

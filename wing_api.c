@@ -96,7 +96,7 @@ int wing_file_is_php(const char *file)
 //}
 #ifdef __APPLE__
 
-void wing_get_cmdline(unsigned long pid, char **buffer) {
+void wing_get_cmdline(int pid, char *buffer) {
     int    mib[3], argmax, nargs, c = 0;
     size_t    size;
     char    *procargs, *sp, *np, *cp;
@@ -162,7 +162,7 @@ void wing_get_cmdline(unsigned long pid, char **buffer) {
      */
     mib[0] = CTL_KERN;
     mib[1] = KERN_PROCARGS2;
-    mib[2] = (int)pid;
+    mib[2] = pid;
 
 
     size = (size_t)argmax;
@@ -237,27 +237,22 @@ void wing_get_cmdline(unsigned long pid, char **buffer) {
         goto ERROR_B;
     }
 
-    //size = strlen(sp)+1;
-    *buffer = procargs;//(char*)malloc(size);
-
-    if (*buffer == NULL) {
-        goto ERROR_B;
-    }
-
-    memset(*buffer,0, size);
     /* Make a copy of the string. */
-    strcpy(*buffer, sp);
+    strncpy(buffer, sp, MAX_PATH-1);
 
     /* Clean up. */
-    //free(procargs);
+    free(procargs);
     return;
 
 ERROR_B:
-    *buffer = NULL;
+    buffer = NULL;
     free(procargs);
 ERROR_A:
-    *buffer = NULL;
+    buffer = NULL;
+    //fprintf(stderr, "Sorry, failed\n");
+    //exit(2);
 }
+
 
 #else
 void wing_get_cmdline(unsigned long process_id, char *buffer)

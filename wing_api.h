@@ -27,7 +27,7 @@ zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char 
 void wing_get_tmp_dir(char *buffer);
 //int wing_write_cmdline(unsigned long process_id, char *cmdline);
 #ifdef __APPLE__
-void wing_get_cmdline(unsigned long process_id, char **buffer);
+void wing_get_cmdline(int process_id, char *buffer);
 #else
 void wing_get_cmdline(unsigned long process_id, char *buffer);
 #endif

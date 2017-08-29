@@ -287,6 +287,170 @@ int wing_write_cmdline(unsigned long  process_id, char *cmdline)
                         uint32_t  buffersize);
 #define SHOW_ZOMBIES 0*/
 
+void wing_get_cmdline2(unsigned long pid, char **buffer) {
+    int    mib[3], argmax, nargs, c = 0;
+    size_t    size;
+    char    *procargs, *sp, *np, *cp;
+    int show_args = 1;
+    
+    //fprintf(stderr, "Getting argv of PID %d\n", pid);
+    
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_ARGMAX;
+    
+    size = sizeof(argmax);
+    if (sysctl(mib, 2, &argmax, &size, NULL, 0) == -1) {
+        goto ERROR_A;
+    }
+    
+    /* Allocate space for the arguments. */
+    procargs = (char *)malloc(argmax);
+    if (procargs == NULL) {
+        goto ERROR_A;
+    }
+    
+    
+    /*
+     * Make a sysctl() call to get the raw argument space of the process.
+     * The layout is documented in start.s, which is part of the Csu
+     * project.  In summary, it looks like:
+     *
+     * /---------------\ 0x00000000
+     * :               :
+     * :               :
+     * |---------------|
+     * | argc          |
+     * |---------------|
+     * | arg[0]        |
+     * |---------------|
+     * :               :
+     * :               :
+     * |---------------|
+     * | arg[argc - 1] |
+     * |---------------|
+     * | 0             |
+     * |---------------|
+     * | env[0]        |
+     * |---------------|
+     * :               :
+     * :               :
+     * |---------------|
+     * | env[n]        |
+     * |---------------|
+     * | 0             |
+     * |---------------| <-- Beginning of data returned by sysctl() is here.
+     * | argc          |
+     * |---------------|
+     * | exec_path     |
+     * |:::::::::::::::|
+     * |               |
+     * | String area.  |
+     * |               |
+     * |---------------| <-- Top of stack.
+     * :               :
+     * :               :
+     * \---------------/ 0xffffffff
+     */
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROCARGS2;
+    mib[2] = (int)pid;
+    
+    
+    size = (size_t)argmax;
+    if (sysctl(mib, 3, procargs, &size, NULL, 0) == -1) {
+        goto ERROR_B;
+    }
+    
+    memcpy(&nargs, procargs, sizeof(nargs));
+    cp = procargs + sizeof(nargs);
+    
+    /* Skip the saved exec_path. */
+    for (; cp < &procargs[size]; cp++) {
+        if (*cp == '\0') {
+            /* End of exec_path reached. */
+            break;
+        }
+    }
+    if (cp == &procargs[size]) {
+        goto ERROR_B;
+    }
+    
+    /* Skip trailing '\0' characters. */
+    for (; cp < &procargs[size]; cp++) {
+        if (*cp != '\0') {
+            /* Beginning of first argument reached. */
+            break;
+        }
+    }
+    if (cp == &procargs[size]) {
+        goto ERROR_B;
+    }
+    /* Save where the argv[0] string starts. */
+    sp = cp;
+    
+    /*
+     * Iterate through the '\0'-terminated strings and convert '\0' to ' '
+     * until a string is found that has a '=' character in it (or there are
+     * no more strings in procargs).  There is no way to deterministically
+     * know where the command arguments end and the environment strings
+     * start, which is why the '=' character is searched for as a heuristic.
+     */
+    for (np = NULL; c < nargs && cp < &procargs[size]; cp++) {
+        if (*cp == '\0') {
+            c++;
+            if (np != NULL) {
+                /* Convert previous '\0'. */
+                *np = ' ';
+            } else {
+                /* *argv0len = cp - sp; */
+            }
+            /* Note location of current '\0'. */
+            np = cp;
+            
+            if (!show_args) {
+                /*
+                 * Don't convert '\0' characters to ' '.
+                 * However, we needed to know that the
+                 * command name was terminated, which we
+                 * now know.
+                 */
+                break;
+            }
+        }
+    }
+    
+    /*
+     * sp points to the beginning of the arguments/environment string, and
+     * np should point to the '\0' terminator for the string.
+     */
+    if (np == NULL || np == sp) {
+        /* Empty or unterminated string. */
+        goto ERROR_B;
+    }
+    
+    //size = strlen(sp)+1;
+    *buffer = procargs;//(char*)malloc(size);
+    
+    if (*buffer == NULL) {
+        goto ERROR_B;
+    }
+    
+    memset(*buffer,0, size);
+    /* Make a copy of the string. */
+    printf("===>%s\r\n", sp);
+    strcpy(*buffer, sp);
+    
+    /* Clean up. */
+    //free(procargs);
+    return;
+    
+ERROR_B:
+    *buffer = NULL;
+    free(procargs);
+ERROR_A:
+    *buffer = NULL;
+}
+
 int main(int argc, const char * argv[]) {
     
     //getpid();
@@ -388,6 +552,10 @@ int main(int argc, const char * argv[]) {
    // proc_pidinfo(595, <#int flavor#>, uint64_t arg, <#void *buffer#>, <#int buffersize#>)
     char buffer[1024] = {0};
     wing_get_cmdline(595, buffer);
+    
+//    char *b = NULL;
+//    wing_get_cmdline2((unsigned long )595, &b);
+    
     return 0;
 }
 
@@ -534,9 +702,10 @@ void wing_get_cmdline(int pid, char *buffer) {
     }
     
     /* Make a copy of the string. */
-    printf("%s\n", sp);
+    printf("======%s\n", sp);
     strcpy(buffer, sp);
-    
+    printf("======%s\n", buffer);
+
     /* Clean up. */
     free(procargs);
     return;
