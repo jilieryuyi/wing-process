@@ -99,7 +99,7 @@ void wing_get_linux(unsigned long process_id, char *buffer)
 {
   sprintf(buffer, "/proc/%lu/cmdline", process_id);
   if (access(buffer, F_OK) == 0) {
-  printf("%s\r\n", buffer);
+  //printf("%s\r\n", buffer);
         //linux处理
         FILE *handle = fopen((const char*)buffer, "r");
         if (!handle) {
@@ -109,20 +109,21 @@ void wing_get_linux(unsigned long process_id, char *buffer)
         memset(buffer, 0, MAX_PATH);
        // fgets(buffer, MAX_PATH, handle);
 
-int c;
+            int c;
              char *cs;
              cs=buffer;
-             int count = 0;
+            // int count = 0;
               while(!feof(handle)) {
               c=getc(handle);
               if (!c || c == NULL) c=' ';
               *cs++ = c;
-              count++;
+              printf("%d-", c);
+             // count++;
               }
 //             while((c = getc(handle))!=EOF)
 //             *cs++=c;
   *cs='\0';
-        printf("%d == %s\r\n", count, buffer);
+       // printf("%d == %s\r\n", count, buffer);
         fclose(handle);
         return;
   }
