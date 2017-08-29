@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define MAX_PATH 255
 void wing_get_cmdline(unsigned long process_id, char *buffer)
 {
 
