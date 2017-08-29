@@ -168,25 +168,24 @@ int wing_kill(int process_id)
 {
     return 0;
 }
-
-void wing_get_tmp_dir(char **buffer)
+void wing_get_tmp_dir(char *buffer)
 {
     const char* tmp = "/tmp";
     if(0 != access(tmp, W_OK)) {
-        *buffer = NULL;
+        buffer = NULL;
         return;
     }
 
     const char* tmp_wing = "/tmp/wing_process";
     if (0 == access(tmp_wing, F_OK)) {
-        strcpy(*buffer, tmp_wing);
+        strcpy(buffer, tmp_wing);
         return;
     }
 
     if (0 == mkdir(tmp_wing, 0777)) {
-        strcpy(*buffer, tmp_wing);
+        strcpy(buffer, tmp_wing);
         return;
     }
-    *buffer = NULL;
+    buffer = NULL;
     return;
 }
