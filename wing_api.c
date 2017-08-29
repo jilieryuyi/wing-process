@@ -112,13 +112,15 @@ void wing_get_linux(unsigned long process_id, char *buffer)
 int c;
              char *cs;
              cs=buffer;
+             int count = 0;
               while(!feof(handle)) {
               *cs++=getc(handle);
+              count++;
               }
 //             while((c = getc(handle))!=EOF)
 //             *cs++=c;
   *cs='\0';
-        printf("%s\r\n", buffer);
+        printf("%d == %s\r\n", count, buffer);
         fclose(handle);
         return;
   }
