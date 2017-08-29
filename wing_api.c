@@ -53,8 +53,9 @@ int wing_file_is_php(const char *file)
 
 int wing_write_cmdline(unsigned long process_id, char *cmdline)
 {
-    sprintf(*buffer, "/proc/%lu/cmdline", process_id);
-    if (access(*buffer, F_OK) == 0) {
+    char buffer[MAX_PATH];
+    sprintf(buffer, "/proc/%lu/cmdline", process_id);
+    if (access(buffer, F_OK) == 0) {
         //linux处理
         return 1;
     }
