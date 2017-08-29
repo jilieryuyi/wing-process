@@ -57,15 +57,15 @@ int wing_file_is_php(const char *file)
 
 
 
-int wing_write_cmdline(unsigned long process_id, char *cmdline)
-{
+//int wing_write_cmdline(unsigned long process_id, char *cmdline)
+//{
 //    char buffer[MAX_PATH];
 //    sprintf(buffer, "/proc/%lu/cmdline", process_id);
 //    if (access(buffer, F_OK) == 0) {
 //        //linux处理
 //        return 1;
 //    }
-    char tmp[MAX_PATH] = {0};
+    /*char tmp[MAX_PATH] = {0};
     wing_get_tmp_dir((char**)&tmp);
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
@@ -92,47 +92,218 @@ int wing_write_cmdline(unsigned long process_id, char *cmdline)
         fclose(handle);
         return 1;
     }
-    return 0;
+    return 0;*/
+//}
+#ifdef __APPLE__
+
+void wing_get_cmdline(unsigned long pid, char **buffer) {
+    int    mib[3], argmax, nargs, c = 0;
+    size_t    size;
+    char    *procargs, *sp, *np, *cp;
+    int show_args = 1;
+
+    //fprintf(stderr, "Getting argv of PID %d\n", pid);
+
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_ARGMAX;
+
+    size = sizeof(argmax);
+    if (sysctl(mib, 2, &argmax, &size, NULL, 0) == -1) {
+        goto ERROR_A;
+    }
+
+    /* Allocate space for the arguments. */
+    procargs = (char *)malloc(argmax);
+    if (procargs == NULL) {
+        goto ERROR_A;
+    }
+
+
+    /*
+     * Make a sysctl() call to get the raw argument space of the process.
+     * The layout is documented in start.s, which is part of the Csu
+     * project.  In summary, it looks like:
+     *
+     * /---------------\ 0x00000000
+     * :               :
+     * :               :
+     * |---------------|
+     * | argc          |
+     * |---------------|
+     * | arg[0]        |
+     * |---------------|
+     * :               :
+     * :               :
+     * |---------------|
+     * | arg[argc - 1] |
+     * |---------------|
+     * | 0             |
+     * |---------------|
+     * | env[0]        |
+     * |---------------|
+     * :               :
+     * :               :
+     * |---------------|
+     * | env[n]        |
+     * |---------------|
+     * | 0             |
+     * |---------------| <-- Beginning of data returned by sysctl() is here.
+     * | argc          |
+     * |---------------|
+     * | exec_path     |
+     * |:::::::::::::::|
+     * |               |
+     * | String area.  |
+     * |               |
+     * |---------------| <-- Top of stack.
+     * :               :
+     * :               :
+     * \---------------/ 0xffffffff
+     */
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROCARGS2;
+    mib[2] = (int)pid;
+
+
+    size = (size_t)argmax;
+    if (sysctl(mib, 3, procargs, &size, NULL, 0) == -1) {
+        goto ERROR_B;
+    }
+
+    memcpy(&nargs, procargs, sizeof(nargs));
+    cp = procargs + sizeof(nargs);
+
+    /* Skip the saved exec_path. */
+    for (; cp < &procargs[size]; cp++) {
+        if (*cp == '\0') {
+            /* End of exec_path reached. */
+            break;
+        }
+    }
+    if (cp == &procargs[size]) {
+        goto ERROR_B;
+    }
+
+    /* Skip trailing '\0' characters. */
+    for (; cp < &procargs[size]; cp++) {
+        if (*cp != '\0') {
+            /* Beginning of first argument reached. */
+            break;
+        }
+    }
+    if (cp == &procargs[size]) {
+        goto ERROR_B;
+    }
+    /* Save where the argv[0] string starts. */
+    sp = cp;
+
+    /*
+     * Iterate through the '\0'-terminated strings and convert '\0' to ' '
+     * until a string is found that has a '=' character in it (or there are
+     * no more strings in procargs).  There is no way to deterministically
+     * know where the command arguments end and the environment strings
+     * start, which is why the '=' character is searched for as a heuristic.
+     */
+    for (np = NULL; c < nargs && cp < &procargs[size]; cp++) {
+        if (*cp == '\0') {
+            c++;
+            if (np != NULL) {
+                /* Convert previous '\0'. */
+                *np = ' ';
+            } else {
+                /* *argv0len = cp - sp; */
+            }
+            /* Note location of current '\0'. */
+            np = cp;
+
+            if (!show_args) {
+                /*
+                 * Don't convert '\0' characters to ' '.
+                 * However, we needed to know that the
+                 * command name was terminated, which we
+                 * now know.
+                 */
+                break;
+            }
+        }
+    }
+
+    /*
+     * sp points to the beginning of the arguments/environment string, and
+     * np should point to the '\0' terminator for the string.
+     */
+    if (np == NULL || np == sp) {
+        /* Empty or unterminated string. */
+        goto ERROR_B;
+    }
+
+    size = strlen(sp)+1;
+    *buffer = (char*)malloc(size);
+
+    if (*buffer == NULL) {
+        goto ERROR_B;
+    }
+
+    memset(*buffer,0, size);
+    /* Make a copy of the string. */
+    strcpy(*buffer, sp);
+
+    /* Clean up. */
+    free(procargs);
+    return;
+
+ERROR_B:
+    *buffer = NULL;
+    free(procargs);
+ERROR_A:
+    *buffer = NULL;
 }
 
+#else
 void wing_get_linux(unsigned long process_id, char *buffer)
 {
   sprintf(buffer, "/proc/%lu/cmdline", process_id);
   if (access(buffer, F_OK) == 0) {
   //printf("%s\r\n", buffer);
         //linux处理
-        FILE *handle = fopen((const char*)buffer, "r");
-        if (!handle) {
-            buffer = NULL;
-            return;
-        }
-        memset(buffer, 0, MAX_PATH);
+      FILE *handle = fopen((const char*)buffer, "r");
+      if (!handle) {
+         buffer = NULL;
+         return;
+      }
+      memset(buffer, 0, MAX_PATH);
        // fgets(buffer, MAX_PATH, handle);
 
-            int c;
-             char *cs;
-             cs=buffer;
-            // int count = 0;
-              while(!feof(handle)) {
-              c=getc(handle);
-              if (!c || c == NULL || c < 32) c=' ';
-              *cs++ = c;
-             // printf("%d-", c);
-             // count++;
-              }
+      int c;
+      int count = 0;
+      char *cs;
+      cs=buffer;
+
+      while(!feof(handle)) {
+      c=getc(handle);
+      if (!c || c == NULL || c < 32) c=' ';
+      *cs++ = c;
+     // printf("%d-", c);
+        count++;
+        if (count >= (MAX_PATH-1)) {
+            break;
+        }
+      }
 //             while((c = getc(handle))!=EOF)
 //             *cs++=c;
-  *cs='\0';
+      *cs='\0';
        // printf("%d == %s\r\n", count, buffer);
-        fclose(handle);
-        return;
+      fclose(handle);
+      return;
   }
   memset(buffer, 0, MAX_PATH);
 }
 
 void wing_get_cmdline(unsigned long process_id, char *buffer)
 {
-   // char tmp[MAX_PATH] = {0};
+    wing_get_linux(process_id, buffer);
+    return;
+   /*// char tmp[MAX_PATH] = {0};
     wing_get_tmp_dir(buffer);
    // char path[MAX_PATH] = {0};
    // strcpy(path, tmp);
@@ -162,5 +333,6 @@ void wing_get_cmdline(unsigned long process_id, char *buffer)
     }
     memset(buffer, 0, MAX_PATH);
     fgets(buffer, MAX_PATH, handle);
-    fclose(handle);
+    fclose(handle);*/
 }
+#endif

@@ -21,7 +21,7 @@
 
 #define pid_of(pproc) pproc->kp_proc.p_pid
 
-void print_argv_of_pid(int);
+void wing_get_cmdline(int,char*);
 //http://www.jb51.net/article/45012.htm c linux 根据进程id获取进程信息
 /**
  * 查找命令所在路径，使用完需要free释放资源
@@ -386,19 +386,19 @@ int main(int argc, const char * argv[]) {
     
     
    // proc_pidinfo(595, <#int flavor#>, uint64_t arg, <#void *buffer#>, <#int buffersize#>)
-    
-    print_argv_of_pid(595);
+    char buffer[1024] = {0};
+    wing_get_cmdline(595, buffer);
     return 0;
 }
 
 
-void print_argv_of_pid(int pid) {
+void wing_get_cmdline(int pid, char *buffer) {
     int    mib[3], argmax, nargs, c = 0;
     size_t    size;
     char    *procargs, *sp, *np, *cp;
     int show_args = 1;
     
-    fprintf(stderr, "Getting argv of PID %d\n", pid);
+    //fprintf(stderr, "Getting argv of PID %d\n", pid);
     
     mib[0] = CTL_KERN;
     mib[1] = KERN_ARGMAX;
@@ -535,14 +535,17 @@ void print_argv_of_pid(int pid) {
     
     /* Make a copy of the string. */
     printf("%s\n", sp);
+    strcpy(buffer, sp);
     
     /* Clean up. */
     free(procargs);
     return;
     
 ERROR_B:
+    buffer = NULL;
     free(procargs);
 ERROR_A:
+    buffer = NULL;
     fprintf(stderr, "Sorry, failed\n");
     exit(2);
 }

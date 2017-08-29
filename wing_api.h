@@ -9,6 +9,14 @@
 #include "php_wing_process.h"
 #endif
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define pid_of(pproc) pproc->kp_proc.p_pid
+#endif
+
 char* wing_get_command_path(const char* command);
 int wing_file_is_php(const char *file);
 unsigned long wing_create_process(const char *command, char* output_file);
@@ -17,8 +25,12 @@ unsigned long get_memory(int process_id);
 int wing_kill(int process_id);
 zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name);
 void wing_get_tmp_dir(char *buffer);
-int wing_write_cmdline(unsigned long process_id, char *cmdline);
+//int wing_write_cmdline(unsigned long process_id, char *cmdline);
+#ifdef __APPLE__
+void wing_get_cmdline(unsigned long process_id, char **buffer);
+#else
 void wing_get_cmdline(unsigned long process_id, char *buffer);
+#endif
 
 #ifdef PHP_WIN32
 #include "win32/win_api.c"

@@ -145,15 +145,15 @@ unsigned long wing_create_process(const char *command, char* output_file)
         }
     } else if(childpid > 0) {
 
-     if (wing_file_is_php(command)) {
-         char __command[MAX_PATH];
-                    strcpy(__command, PHP_PATH);
-                    strcpy((char*)(__command+strlen(__command)), " ");
-                    strcpy((char*)(__command+strlen(__command)), command);
-                    wing_write_cmdline(childpid, __command);
-     } else {
-        wing_write_cmdline(childpid, command);
-     }
+//     if (wing_file_is_php(command)) {
+//         char __command[MAX_PATH];
+//                    strcpy(__command, PHP_PATH);
+//                    strcpy((char*)(__command+strlen(__command)), " ");
+//                    strcpy((char*)(__command+strlen(__command)), command);
+//                    //wing_write_cmdline(childpid, __command);
+//     } else {
+//        wing_write_cmdline(childpid, command);
+//     }
 
 
         if (daemon) {
