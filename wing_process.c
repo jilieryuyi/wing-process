@@ -110,14 +110,14 @@ ZEND_METHOD(wing_process, __construct)
 
 		WingQueryProcessByProcessID(item, process_id);
 		if (item) {
-			spprintf(&command_line, size, "%s", item->command_line);
+			spprintf(&command_line, strlen(item->command_line), "%s", item->command_line);
 			delete item;
 		}
 		#else
 		info->process_id  = (unsigned long)zend_atoi(file, strlen(file));
 		char buffer[MAX_PATH] = {0};
 		wing_get_cmdline(info->process_id, buffer);
-		spprintf(&command_line, size, "%s", buffer);
+		spprintf(&command_line, strlen(buffer), "%s", buffer);
 		#endif
 	} else {
 		if (wing_file_is_php((const char*)file)){
