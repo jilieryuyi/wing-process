@@ -108,7 +108,7 @@ void wing_get_linux(unsigned long process_id, char *buffer)
         memset(buffer, 0, MAX_PATH);
        // fgets(buffer, MAX_PATH, handle);
 
-
+int c; 
              char *cs;
              cs=buffer;
              while((c = getc(handle))!=EOF)
