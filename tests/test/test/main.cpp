@@ -239,6 +239,25 @@ void init_daemon(const char* dir)
     return; 
 }
 
+const char* wing_get_tmp_dir()
+{
+    const char* tmp = "/tmp";
+    if(0 != access(tmp, W_OK)) {
+        return NULL;
+    }
+    
+    const char* tmp_wing = "/tmp/wing_process";
+    if (0 == access(tmp_wing, F_OK)) {
+        return tmp_wing;
+    }
+    
+    if (0 == mkdir(tmp_wing, 0777)) {
+        return tmp_wing;
+    }
+    
+    return NULL;
+}
+
 int main(int argc, const char * argv[]) {
     
     //getpid();
@@ -272,12 +291,12 @@ int main(int argc, const char * argv[]) {
     
     */
     
-    int is = wing_file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/wing_process.php 123");
-    if (is == 1) {
-        std::cout << "is php file\r\n";
-    } else {
-        std::cout << "not php \r\n";
-    }
+//    int is = wing_file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/wing_process.php 123");
+//    if (is == 1) {
+//        std::cout << "is php file\r\n";
+//    } else {
+//        std::cout << "not php \r\n";
+//    }
 //
 //    std::cout << get_command_path("php");
 //    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php 123";
@@ -297,6 +316,8 @@ int main(int argc, const char * argv[]) {
 //    std::cout <<"===>"<< (size_t)(last_pos-str) <<"---"<< path <<"\r\n";
 //    
 //    init_daemon((const char*)path);
+    
+    std::cout << wing_get_tmp_dir() << "\r\n";
     
     return 0;
 }
