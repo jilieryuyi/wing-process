@@ -260,7 +260,7 @@ ERROR_A:
 }
 
 #else
-void wing_get_linux(unsigned long process_id, char *buffer)
+void wing_get_cmdline(unsigned long process_id, char *buffer)
 {
   sprintf(buffer, "/proc/%lu/cmdline", process_id);
   if (access(buffer, F_OK) == 0) {
@@ -297,42 +297,5 @@ void wing_get_linux(unsigned long process_id, char *buffer)
       return;
   }
   memset(buffer, 0, MAX_PATH);
-}
-
-void wing_get_cmdline(unsigned long process_id, char *buffer)
-{
-    wing_get_linux(process_id, buffer);
-    return;
-   /*// char tmp[MAX_PATH] = {0};
-    wing_get_tmp_dir(buffer);
-   // char path[MAX_PATH] = {0};
-   // strcpy(path, tmp);
-    strcpy((char*)(buffer+strlen(buffer)), "/");
-    char _process_id[32] = {0};
-    sprintf(_process_id, "%lu", process_id);
-    strcpy((char*)(buffer+strlen(buffer)), _process_id);
-
-    if (access(buffer, F_OK) != 0) {
-        wing_get_linux(process_id, buffer);
-        buffer = NULL;
-        return;
-    }
-
-    strcpy((char*)(buffer+strlen(buffer)), "/cmdline");
-
-    if (access(buffer, F_OK) != 0) {
-        wing_get_linux(process_id, buffer);
-        buffer = NULL;
-        return;
-    }
-    FILE *handle = fopen((const char*)buffer, "r");
-    if (!handle) {
-        wing_get_linux(process_id, buffer);
-        buffer = NULL;
-        return;
-    }
-    memset(buffer, 0, MAX_PATH);
-    fgets(buffer, MAX_PATH, handle);
-    fclose(handle);*/
 }
 #endif
