@@ -91,11 +91,19 @@ int wing_write_cmdline(unsigned long process_id, char *cmdline)
 void wing_get_cmdline(unsigned long process_id, char **buffer)
 {
 
-//    sprintf(*buffer, "/proc/%lu/cmdline", process_id);
-//    if (access(*buffer, F_OK) == 0) {
-//        //linux处理
-//        return;
-//    }
+    sprintf(*buffer, "/proc/%lu/cmdline", process_id);
+    if (access(*buffer, F_OK) == 0) {
+        //linux处理
+        FILE *handle = fopen((const char*)*buffer, "r");
+        if (!handle) {
+            *buffer = NULL;
+            return;
+        }
+        memset(*buffer, 0, MAX_PATH);
+        fgets(*buffer, MAX_PATH, handle);
+        fclose(handle);
+        return;
+    }
     memset(*buffer, 0, MAX_PATH);
    // char tmp[MAX_PATH] = {0};
     wing_get_tmp_dir(buffer);
@@ -123,6 +131,6 @@ void wing_get_cmdline(unsigned long process_id, char **buffer)
         return;
     }
     memset(*buffer, 0, MAX_PATH);
-    fgets(*buffer, MAX_PATH,handle);
+    fgets(*buffer, MAX_PATH, handle);
     fclose(handle);
 }
