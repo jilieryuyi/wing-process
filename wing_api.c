@@ -115,9 +115,9 @@ void wing_get_linux(unsigned long process_id, char *buffer)
             // int count = 0;
               while(!feof(handle)) {
               c=getc(handle);
-              if (!c || c == NULL) c=' ';
+              if (!c || c == NULL || c < 32) c=' ';
               *cs++ = c;
-              printf("%d-", c);
+             // printf("%d-", c);
              // count++;
               }
 //             while((c = getc(handle))!=EOF)
