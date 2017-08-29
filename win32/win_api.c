@@ -1,22 +1,22 @@
 #include "win_api.h"
-void wing_get_tmp_dir(char **buffer)
+void wing_get_tmp_dir(char *buffer)
 {
-	GetTempPath(MAX_PATH, *buffer);
-	if (0 != access(*buffer, W_OK)) {
-        *buffer = NULL;
+	GetTempPath(MAX_PATH, buffer);
+	if (0 != access(buffer, W_OK)) {
+        buffer = NULL;
         return;
     }
 
-    strcpy((char*)(*buffer+strlen(*buffer)), "/wing_process");
+    strcpy((char*)(buffer+strlen(buffer)), "/wing_process");
 
-    if (0 == access(*buffer, F_OK)) {
+    if (0 == access(buffer, F_OK)) {
         return;
     }
 
-    if (0 == mkdir(*buffer, 0777)) {
+    if (0 == mkdir(buffer, 0777)) {
         return;
     }
-    *buffer = NULL;
+    buffer = NULL;
     return;
 }
 unsigned long get_memory(int process_id)
