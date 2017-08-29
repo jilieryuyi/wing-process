@@ -317,7 +317,32 @@ int main(int argc, const char * argv[]) {
 //    
 //    init_daemon((const char*)path);
     
-    std::cout << wing_get_tmp_dir() << "\r\n";
+    int process_id = 123;
+    const char *tmp = wing_get_tmp_dir();
+    std::cout << tmp  << "\r\n";
+    char path[MAX_PATH] = {0};
+    strcpy(path, tmp);
+    strcpy((char*)(path+strlen(tmp)), "/");
+    char _process_id[32] = {0};
+    sprintf(_process_id, "%d", process_id);
+    strcpy((char*)(path+strlen(tmp)+1), _process_id);
+    std::cout << path  << "\r\n";
     
+    if (access(path, F_OK) != 0) {
+        mkdir(path, 0777);
+    }
+    
+    strcpy((char*)(path+strlen(tmp)+1+strlen(_process_id)), "/cmdline");
+
+    std::cout << path << "\r\n";
+    
+    FILE *handle = fopen((const char*)path, "w");
+    if (handle) {
+        const char* data = "php 123.php";
+        if (1 != fwrite(data, strlen(data), 1, handle)) {
+            //写入失败
+        }
+        fclose(handle);
+    }
     return 0;
 }
