@@ -53,7 +53,8 @@ int wing_file_is_php(const char *file)
 
 int wing_write_cmdline(unsigned long process_id, char *cmdline)
 {
-    const char *tmp = wing_get_tmp_dir();
+    char tmp[MAX_PATH] = {0};
+    wing_get_tmp_dir((char**)&tmp);
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
     strcpy((char*)(path+strlen(tmp)), "/");
@@ -84,7 +85,8 @@ int wing_write_cmdline(unsigned long process_id, char *cmdline)
 
 void wing_get_cmdline(unsigned long process_id, char **buffer)
 {
-    const char *tmp = wing_get_tmp_dir();
+    char tmp[MAX_PATH] = {0};
+    wing_get_tmp_dir((char**)&tmp);
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
     strcpy((char*)(path+strlen(tmp)), "/");

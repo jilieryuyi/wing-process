@@ -239,7 +239,7 @@ void init_daemon(const char* dir)
     return; 
 }
 
-const char* wing_get_tmp_dir()
+void wing_get_tmp_dir(char **buffer)
 {
     const char* tmp = "/tmp";
     if(0 != access(tmp, W_OK)) {
@@ -248,18 +248,21 @@ const char* wing_get_tmp_dir()
     
     const char* tmp_wing = "/tmp/wing_process";
     if (0 == access(tmp_wing, F_OK)) {
-        return tmp_wing;
+        strcpy(*buffer, tmp_wing);
+        return;
     }
     
     if (0 == mkdir(tmp_wing, 0777)) {
-        return tmp_wing;
+         strcpy(*buffer, tmp_wing);
+         return;
     }
-    
+    *buffer = NULL;
     return NULL;
 }
 int wing_write_cmdline(unsigned long  process_id, char *cmdline)
 {
-    const char *tmp = wing_get_tmp_dir();
+    char tmp[MAX_PATH] = {0};
+    wing_get_tmp_dir(&tmp);
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
     strcpy((char*)(path+strlen(tmp)), "/");
