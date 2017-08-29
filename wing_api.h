@@ -17,7 +17,7 @@ unsigned long get_memory(int process_id);
 int wing_kill(int process_id);
 zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name);
 const char* wing_get_tmp_dir();
-int wing_write_cmdline(int process_id, char *cmdline);
+int wing_write_cmdline(unsigned long process_id, char *cmdline);
 
 #ifdef PHP_WIN32
 #include "win32/win_api.c"

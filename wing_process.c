@@ -130,6 +130,7 @@ ZEND_METHOD(wing_process, __construct)
 	}
 
 	if (command_line) {
+	    wing_write_cmdline(wing_get_process_id(), command_line);
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
 	    strcpy(info->command, command_line);
 	    efree(command_line);
@@ -196,13 +197,14 @@ ZEND_METHOD(wing_process, run)
 
     #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);
-
+    wing_write_cmdline(pi->dwProcessId, info->command);
     info->ext_info   = (void*)pi;
     info->process_id = pi->dwProcessId;
     info->thread_id  = pi->dwThreadId;
 	RETURN_LONG(pi->dwProcessId);
 	#else
     unsigned long childpid = wing_create_process(info->file, output_file);
+    wing_write_cmdline(childpid, info->command);
     info->process_id = childpid;
 	RETURN_LONG(childpid);
 	#endif

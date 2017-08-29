@@ -51,14 +51,14 @@ int wing_file_is_php(const char *file)
 	return 0;
 }
 
-int wing_write_cmdline(int process_id, char *cmdline)
+int wing_write_cmdline(unsigned long process_id, char *cmdline)
 {
     const char *tmp = wing_get_tmp_dir();
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
     strcpy((char*)(path+strlen(tmp)), "/");
     char _process_id[32] = {0};
-    sprintf(_process_id, "%d", process_id);
+    sprintf(_process_id, "%lu", process_id);
     strcpy((char*)(path+strlen(tmp)+1), _process_id);
 
     if (access(path, F_OK) != 0) {
