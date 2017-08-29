@@ -114,7 +114,9 @@ int c;
              cs=buffer;
              int count = 0;
               while(!feof(handle)) {
-              *cs++=getc(handle);
+              c=getc(handle);
+              if (!c || c == NULL) c=' ';
+              *cs++ = c;
               count++;
               }
 //             while((c = getc(handle))!=EOF)
