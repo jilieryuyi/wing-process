@@ -257,7 +257,36 @@ const char* wing_get_tmp_dir()
     
     return NULL;
 }
-
+int wing_write_cmdline(int process_id, char *cmdline)
+{
+    const char *tmp = wing_get_tmp_dir();
+    char path[MAX_PATH] = {0};
+    strcpy(path, tmp);
+    strcpy((char*)(path+strlen(tmp)), "/");
+    char _process_id[32] = {0};
+    sprintf(_process_id, "%d", process_id);
+    strcpy((char*)(path+strlen(tmp)+1), _process_id);
+    
+    if (access(path, F_OK) != 0) {
+        if (0 != mkdir(path, 0777)) {
+            return 0;
+        }
+    }
+    
+    strcpy((char*)(path+strlen(tmp)+1+strlen(_process_id)), "/cmdline");
+    
+    FILE *handle = fopen((const char*)path, "w");
+    if (handle) {
+        if (1 != fwrite(cmdline, strlen(cmdline), 1, handle)) {
+            fclose(handle);
+            //写入失败
+            return 0;
+        }
+        fclose(handle);
+        return 1;
+    }
+    return 0;
+}
 int main(int argc, const char * argv[]) {
     
     //getpid();
@@ -317,32 +346,6 @@ int main(int argc, const char * argv[]) {
 //    
 //    init_daemon((const char*)path);
     
-    int process_id = 123;
-    const char *tmp = wing_get_tmp_dir();
-    std::cout << tmp  << "\r\n";
-    char path[MAX_PATH] = {0};
-    strcpy(path, tmp);
-    strcpy((char*)(path+strlen(tmp)), "/");
-    char _process_id[32] = {0};
-    sprintf(_process_id, "%d", process_id);
-    strcpy((char*)(path+strlen(tmp)+1), _process_id);
-    std::cout << path  << "\r\n";
-    
-    if (access(path, F_OK) != 0) {
-        mkdir(path, 0777);
-    }
-    
-    strcpy((char*)(path+strlen(tmp)+1+strlen(_process_id)), "/cmdline");
-
-    std::cout << path << "\r\n";
-    
-    FILE *handle = fopen((const char*)path, "w");
-    if (handle) {
-        const char* data = "php 123.php";
-        if (1 != fwrite(data, strlen(data), 1, handle)) {
-            //写入失败
-        }
-        fclose(handle);
-    }
+    wing_write_cmdline(456, (char*)"php efsd.php");
     return 0;
 }
