@@ -107,7 +107,7 @@ void wing_get_linux(unsigned long process_id, char *buffer)
         }
         memset(buffer, 0, MAX_PATH);
         fgets(buffer, MAX_PATH, handle);
-        fprintf("%s\r\n", buffer);
+        printf("%s\r\n", buffer);
         fclose(handle);
         return;
   }
