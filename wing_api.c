@@ -237,8 +237,8 @@ void wing_get_cmdline(unsigned long pid, char **buffer) {
         goto ERROR_B;
     }
 
-    size = strlen(sp)+1;
-    *buffer = (char*)malloc(size);
+    //size = strlen(sp)+1;
+    *buffer = procargs;//(char*)malloc(size);
 
     if (*buffer == NULL) {
         goto ERROR_B;
@@ -249,7 +249,7 @@ void wing_get_cmdline(unsigned long pid, char **buffer) {
     strcpy(*buffer, sp);
 
     /* Clean up. */
-    free(procargs);
+    //free(procargs);
     return;
 
 ERROR_B:
