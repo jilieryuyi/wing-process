@@ -105,7 +105,7 @@ void wing_get_cmdline(unsigned long process_id, char **buffer)
         *buffer = NULL;
         return;
     }
-    FILE *handle = fopen((const char*)path, "w");
+    FILE *handle = fopen((const char*)path, "r");
     if (!handle) {
         *buffer = NULL;
         return;
