@@ -275,6 +275,11 @@ int wing_write_cmdline(unsigned long  process_id, char *cmdline)
     }
     return 0;
 }
+
+/*extern int proc_pidinfo(int pid, int flavor, uint64_t arg, user_addr_t buffer,
+                        uint32_t  buffersize);
+#define SHOW_ZOMBIES 0*/
+
 int main(int argc, const char * argv[]) {
     
     //getpid();
@@ -361,8 +366,18 @@ int main(int argc, const char * argv[]) {
         printf("path: %s\n", pathBuffer);
     }
 
+    char pathBuffer2[PROC_PIDPATHINFO_MAXSIZE];
+    bzero(pathBuffer2, PROC_PIDPATHINFO_MAXSIZE);
+    proc_name(595, pathBuffer2, sizeof(pathBuffer2));
+    
+     printf("proc_name: %s\n", pathBuffer2);
+    struct proc_taskallinfo info;
+    
+    int ret = proc_pidinfo(595, PROC_PIDTASKALLINFO, 0,
+                           (void*)&info, sizeof(struct proc_taskallinfo));
+    printf("ret=%d, result=%s---%s\n", ret, (char *) info.pbsd.pbi_comm, info.pbsd.pbi_name);
     
     
-    
+   // proc_pidinfo(595, <#int flavor#>, uint64_t arg, <#void *buffer#>, <#int buffersize#>)
     return 0;
 }
