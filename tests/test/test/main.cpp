@@ -13,7 +13,8 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <sys/proc_info.h>
+#include <libproc.h>
 //http://www.jb51.net/article/45012.htm c linux 根据进程id获取进程信息
 /**
  * 查找命令所在路径，使用完需要free释放资源
@@ -239,30 +240,14 @@ void init_daemon(const char* dir)
     return; 
 }
 
-void wing_get_tmp_dir(char **buffer)
+void wing_get_tmp_dir(char *buffer)
 {
-    const char* tmp = "/tmp";
-    if(0 != access(tmp, W_OK)) {
-        return NULL;
-    }
-    
-    const char* tmp_wing = "/tmp/wing_process";
-    if (0 == access(tmp_wing, F_OK)) {
-        strcpy(*buffer, tmp_wing);
-        return;
-    }
-    
-    if (0 == mkdir(tmp_wing, 0777)) {
-         strcpy(*buffer, tmp_wing);
-         return;
-    }
-    *buffer = NULL;
-    return NULL;
+        return ;
 }
 int wing_write_cmdline(unsigned long  process_id, char *cmdline)
 {
     char tmp[MAX_PATH] = {0};
-    wing_get_tmp_dir(&tmp);
+   // wing_get_tmp_dir(&tmp);
     char path[MAX_PATH] = {0};
     strcpy(path, tmp);
     strcpy((char*)(path+strlen(tmp)), "/");
@@ -350,5 +335,34 @@ int main(int argc, const char * argv[]) {
 //    init_daemon((const char*)path);
     
     wing_write_cmdline(456, (char*)"php efsd.php");
+    
+    
+    
+
+    
+    /*int numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, NULL, 0);
+    pid_t pids[numberOfProcesses];
+    bzero(pids, sizeof(pids));
+    proc_listpids(PROC_ALL_PIDS, 0, pids, sizeof(pids));
+    for (int i = 0; i < numberOfProcesses; ++i) {
+        if (pids[i] == 0) { continue; }
+        char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+        bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
+        proc_pidpath(pids[i], pathBuffer, sizeof(pathBuffer));
+        if (strlen(pathBuffer) > 0) {
+            printf("path: %s\n", pathBuffer);
+        }
+    }*/
+    
+    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+    bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
+    proc_pidpath(595, pathBuffer, sizeof(pathBuffer));
+    if (strlen(pathBuffer) > 0) {
+        printf("path: %s\n", pathBuffer);
+    }
+
+    
+    
+    
     return 0;
 }
