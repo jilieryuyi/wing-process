@@ -77,10 +77,14 @@ int wing_file_is_php(const char *file)
 {
 
     char find_str[]     = " ";
-    char *find          = strstr(file, find_str);
     char path[MAX_PATH] = {0};
 
+    char *find          = strstr(file, find_str);
+    if (find != NULL)
     strncpy((char*)path, file, (size_t)(find-file));
+    else
+    strcpy((char*)path, file);
+
     FILE *handle = fopen(path, "r");
     if (!handle) {
         return 0;
