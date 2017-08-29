@@ -17,6 +17,10 @@ void test111(char* buffer) {
 	strcpy(buffer, "hello");
 }
 
+void test222(char** buffer) {
+	strcpy(*buffer, "hello");
+}
+
 int main()
 {
 	char a[32] = {0};
@@ -25,6 +29,15 @@ int main()
 	test111(a);
 	//strcpy(a, "hello");
 	printf("%s", a);
+
+
+	char *b= (char*)malloc(32);
+	memset(b,0, 32);
+	test222(&b);
+	//strcpy(a, "hello");
+	printf("%s", b);
+	free(b);
+
 	/*if (setjmp(j) == 0)
 	{
 		printf("\''setjmp\'' is initializing \''j\''\n");
