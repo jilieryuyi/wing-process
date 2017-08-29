@@ -53,6 +53,11 @@ int wing_file_is_php(const char *file)
 
 int wing_write_cmdline(unsigned long process_id, char *cmdline)
 {
+    sprintf(*buffer, "/proc/%lu/cmdline", process_id);
+    if (access(*buffer, F_OK) == 0) {
+        //linux处理
+        return 1;
+    }
     char tmp[MAX_PATH] = {0};
     wing_get_tmp_dir((char**)&tmp);
     char path[MAX_PATH] = {0};
@@ -85,6 +90,13 @@ int wing_write_cmdline(unsigned long process_id, char *cmdline)
 
 void wing_get_cmdline(unsigned long process_id, char **buffer)
 {
+
+//    sprintf(*buffer, "/proc/%lu/cmdline", process_id);
+//    if (access(*buffer, F_OK) == 0) {
+//        //linux处理
+//        return;
+//    }
+    memset(*buffer, 0, MAX_PATH);
    // char tmp[MAX_PATH] = {0};
     wing_get_tmp_dir(buffer);
    // char path[MAX_PATH] = {0};
