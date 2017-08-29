@@ -1,8 +1,30 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>  
+#include <unistd.h>
 #define MAX_PATH 255
+
+void wing_get_tmp_dir(char **buffer)
+{
+    const char* tmp = "/tmp";
+    if(0 != access(tmp, W_OK)) {
+        *buffer = NULL;
+        return;
+    }
+
+    const char* tmp_wing = "/tmp/wing_process";
+    if (0 == access(tmp_wing, F_OK)) {
+        strcpy(*buffer, tmp_wing);
+        return;
+    }
+
+    if (0 == mkdir(tmp_wing, 0777)) {
+        strcpy(*buffer, tmp_wing);
+        return;
+    }
+    *buffer = NULL;
+    return;
+}
 void wing_get_cmdline(unsigned long process_id, char *buffer)
 {
 
