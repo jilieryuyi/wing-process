@@ -72,9 +72,48 @@ void wing_get_cmdline(unsigned long process_id, char *buffer)
     fclose(handle);
 }
 
+
+int wing_file_is_php(const char *file)
+{
+
+    char find_str[]     = " ";
+    char *find          = strstr(file, find_str);
+    char path[MAX_PATH] = {0};
+
+    strncpy((char*)path, file, (size_t)(find-file));
+    FILE *handle = fopen(path, "r");
+    if (!handle) {
+        return 0;
+    }
+    //char *find = NULL;
+    char line[8] = { 0 };
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+
+    memset(line, 0, 8);
+    fgets(line, 7, handle);
+    find = strstr(line, "<?php");
+    if (find == line) {
+        fclose(handle);
+        return 1;
+    }
+    fclose(handle);
+
+    return 0;
+}
+
+
 int main() {
     char buffer[256];
     wing_get_cmdline(973, buffer);
     printf("%s", buffer);
+
+    printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
     return 0;
 }
