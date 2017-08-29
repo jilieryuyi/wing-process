@@ -135,7 +135,6 @@ ZEND_METHOD(wing_process, __construct)
 	}
 
 	if (command_line) {
-	    wing_write_cmdline(wing_get_process_id(), command_line);
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
 	    strcpy(info->command, command_line);
 	    efree(command_line);
