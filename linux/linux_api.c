@@ -134,10 +134,18 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
     if (childpid == 0) {
         if (wing_file_is_php(command)) {
+
+            char __command[MAX_PATH];
+            strcpy(__command, PHP_PATH);
+            strcpy((char*)(__command+strlen(__command)), " ");
+            strcpy((char*)(__command+strlen(__command)), command);
+            wing_write_cmdline(childpid, __command);
+
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {
                 exit(0);
             }
         } else {
+            wing_write_cmdline(childpid, command);
             if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
                 exit(0);
             }

@@ -208,7 +208,6 @@ ZEND_METHOD(wing_process, run)
 	RETURN_LONG(pi->dwProcessId);
 	#else
     unsigned long childpid = wing_create_process(info->file, output_file);
-    wing_write_cmdline(childpid, info->command);
     info->process_id = childpid;
 	RETURN_LONG(childpid);
 	#endif
