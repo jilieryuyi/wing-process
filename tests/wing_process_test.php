@@ -9,7 +9,7 @@ echo WING_PROCESS_PHP, "\r\n";
 echo WING_PROCESS_VERSION, "\r\n";
 
 $process = new \wing\wing_process(__DIR__."/runner.php");
-echo $process->run(),"\r\n";//
+echo $process->run(__DIR__."/log.log"),"\r\n";//
 //echo $process->getProcessId(),"\r\n";
 //echo \wing\wing_process::getCurrentProcessId(),"\r\n";
 //echo $process->getCommandLine(),"\r\n";
