@@ -99,6 +99,7 @@ void wing_get_linux(unsigned long process_id, char *buffer)
 {
   sprintf(buffer, "/proc/%lu/cmdline", process_id);
   if (access(buffer, F_OK) == 0) {
+  printf("%s\r\n", buffer);
         //linux处理
         FILE *handle = fopen((const char*)buffer, "r");
         if (!handle) {
@@ -108,7 +109,7 @@ void wing_get_linux(unsigned long process_id, char *buffer)
         memset(buffer, 0, MAX_PATH);
        // fgets(buffer, MAX_PATH, handle);
 
-int c; 
+int c;
              char *cs;
              cs=buffer;
              while((c = getc(handle))!=EOF)
