@@ -43,7 +43,9 @@ void wing_get_cmdline(int process_id, char **buffer)
 
    // fseek(handle, 0L, SEEK_END);
     int filesize = 0;//ftell(handle);
-    while(!feof(handle))filesize++;
+    while(!feof(handle)){
+    getc(handle);filesize++;
+    }
 //    if (filesize <= 0) {
 //        fclose(handle);
 //        return;
