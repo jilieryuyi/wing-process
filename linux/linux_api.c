@@ -191,7 +191,7 @@ unsigned long get_memory(int process_id)
     		memset(sbuffer, 0, 256);
     		fgets(sbuffer, 256, sp);
     		//printf("%s", sbuffer);
-    		if (strstr(sbuffer, "VmSize") != NULL) {
+    		if (strncmp(sbuffer, "VmSize:", 7) == 0) {
     			//printf("发现VmSize\r\n");
     			cs = (char*)(sbuffer + 6);
     			end = (char*)(sbuffer + strlen(sbuffer));
