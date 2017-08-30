@@ -122,6 +122,44 @@ ZEND_METHOD(wing_process, __construct)
 		spprintf(&command_line, strlen(buffer), "%s", buffer);
 
 		#endif
+
+		//这里还需要解析command_line 判断是否是php命令 还原成file 填充到 info->file
+		if (command_line) {
+            char *find = strstr(command_line, " ");
+            if(info->file) {
+                efree(info->file);
+                info->file = NULL;
+            }
+
+            if (find == NULL) {
+                info->file = (char*)emalloc(strlen(command_line)+1);
+                strcpy(info->file, command_line);
+            } else {
+                char _cmd[MAX_PATH] = {0};
+                strncpy(_cmd, command_line, find-command_line);
+                //printf("_cmd=%s\r\n",_cmd);
+                int _dphp = strcmp(_cmd, "php");
+                if (strcmp(_cmd, PHP_PATH) == 0 || _dphp == 0) {
+                    //php文件
+                    memset(_cmd,0,MAX_PATH);
+                    strcpy(_cmd, (char*)(find+1));
+                    info->file = (char*)emalloc(strlen(_cmd)+1);
+                    strcpy(info->file, _cmd);
+
+                    if (_dphp == 0) {
+                        efree(command_line);
+                        command_line = NULL;
+                        size = strlen(PHP_PATH) + strlen(info->file)+2;
+                        spprintf(&command_line, size, "%s %s\0", PHP_PATH, info->file);
+                        //printf("command line from pid=%s\r\n", command_line);
+
+                    }
+                } else {
+                    info->file = (char*)emalloc(strlen(command_line)+1);
+                    strcpy(info->file, command_line);
+                }
+            }
+		}
 	} else {
 		if (wing_file_is_php((const char*)file)){
 		    if (PHP_PATH) {
@@ -137,6 +175,7 @@ ZEND_METHOD(wing_process, __construct)
 //		#endif
 	}
 
+    //printf("file==%s\r\n", info->file);
 	if (command_line) {
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
 	    strcpy(info->command, command_line);
