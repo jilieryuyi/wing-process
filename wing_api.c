@@ -297,8 +297,8 @@ void wing_get_cmdline(int process_id, char **buffer)
     while(!feof(handle)) {
         c = getc(handle);
         if (!c || (void*)c == NULL || c < 32) {
-            c = ' '
-        };
+            c = ' ';
+        }
         *cs++ = c;
     }
     *cs='\0';
