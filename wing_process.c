@@ -427,9 +427,7 @@ ZEND_METHOD(wing_process, getMemory) {
 	GetProcessMemoryInfo(process, &pmc, sizeof(pmc));
 	RETURN_LONG(pmc.WorkingSetSize);
 	#else
-	zval *_info             = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
-    WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
-	unsigned long mem       = get_memory(info->process_id);
+	unsigned long mem = get_memory(info->process_id);
 	RETURN_LONG(mem);
 	#endif
 }
