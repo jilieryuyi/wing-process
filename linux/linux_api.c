@@ -174,7 +174,7 @@ int wing_get_process_id()
 /**
  * 返回单位为k
  */
-unsigned long get_memory(int process_id)
+unsigned long wing_get_memory(int process_id)
 {
     char file[MAX_PATH] = {0};
     sprintf(file, "/proc/%d/status", process_id);
