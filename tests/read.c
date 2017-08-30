@@ -129,6 +129,21 @@ fseek(fp,0L,SEEK_END); /* 定位到文件末尾 */
 int flen = ftell(fp); /* 得到文件大小 */
 printf("\r\n%s文件大小%d\r\n", file, flen);
 fclose(fp);
+
+     struct stat file_status = { 0 };
+
+        int status = stat( file, &file_status );
+
+        if ( 0 != status )
+        {
+            perror("Failed to read file status");
+            return EXIT_FAILURE;
+        }
+
+        printf( "File size: %li\n", file_status.st_size );
+
+        return EXIT_SUCCESS;
+
     //printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
     return 0;
 }
