@@ -151,14 +151,15 @@ const char *sfile = "/proc/17009/status";
 FILE *sp = fopen(sfile, "r");
 char sbuffer[256] = {0};
 char mem[32] = {0};
+ char *cs = NULL;
  while(!feof(sp)) {
     memset(sbuffer,0,256);
     fgets(sbuffer, 256, sp);
     if (strstr(sbuffer, "VmSize") != NULL) {
-        char *cs;
+
         cs = sbuffer+8;
         while(cs++ <= sbuffer+strlen(sbuffer)) {
-                if (!cs || cs == NULL || c < 32 || cs == ' ') {
+                if (!cs || cs == NULL || cs < 32 || cs == ' ') {
                     continue;
                 }
                 mem++ = cs;
