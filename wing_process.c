@@ -55,12 +55,6 @@ typedef struct _WING_PROCESS_INFO {
  */
 ZEND_METHOD(wing_process, __construct)
 {
-//    zval *argv;
-//    //获取命令行参数
-//	if ((argv = zend_hash_find(&EG(symbol_table), zend_string_init("argv", 4, 0))) != NULL) {
-//        HashTable *arr_hash = Z_ARRVAL_P(argv);
-//        int argc            = zend_hash_num_elements(arr_hash);
-//	}
 
     #if PHP_MAJOR_VERSION >= 7
 	zend_string *_file = NULL;
@@ -116,14 +110,16 @@ ZEND_METHOD(wing_process, __construct)
 		#else
 		info->process_id  = (unsigned long)zend_atoi(file, strlen(file));
 
-		char *buffer = NULL;//[MAX_PATH] = {0};
+		char *buffer = NULL;
 		wing_get_cmdline(info->process_id, &buffer);
-        if (buffer)
-		spprintf(&command_line, strlen(buffer), "%s", buffer);
-		else
-		spprintf(&command_line, strlen(""), "%s", "");
-		if (buffer)
-		free(buffer);
+        if (buffer) {
+		    spprintf(&command_line, strlen(buffer), "%s", buffer);
+		} else {
+		    spprintf(&command_line, strlen(""), "%s", "");
+		}
+		if (buffer) {
+		    free(buffer);
+		}
 
 		#endif
 
@@ -141,7 +137,6 @@ ZEND_METHOD(wing_process, __construct)
             } else {
                 char _cmd[MAX_PATH] = {0};
                 strncpy(_cmd, command_line, find-command_line);
-                //printf("_cmd=%s\r\n",_cmd);
                 int _dphp = strcmp(_cmd, "php");
                 if (strcmp(_cmd, PHP_PATH) == 0 || _dphp == 0) {
                     //php文件
@@ -155,8 +150,6 @@ ZEND_METHOD(wing_process, __construct)
                         command_line = NULL;
                         size = strlen(PHP_PATH) + strlen(info->file)+2;
                         spprintf(&command_line, size, "%s %s\0", PHP_PATH, info->file);
-                        //printf("command line from pid=%s\r\n", command_line);
-
                     }
                 } else {
                     info->file = (char*)emalloc(strlen(command_line)+1);
@@ -174,12 +167,8 @@ ZEND_METHOD(wing_process, __construct)
 		} else {
 			spprintf(&command_line, size, "%s\0", file);
 		}
-//		#else
-//		spprintf(&command_line, size, "%s\0", file);
-//		#endif
 	}
 
-    //printf("file==%s\r\n", info->file);
 	if (command_line) {
 	    info->command  = (char*)emalloc(strlen(command_line)+1);
 	    strcpy(info->command, command_line);
@@ -206,14 +195,13 @@ ZEND_METHOD(wing_process, __destruct) {
 		CloseHandle(pi->hThread);
 		delete pi;
 	}
+	#endif
 
-
-    if (info->command) {
-        efree(info->command);
+	if (info->command) {
+       efree(info->command);
     }
     efree(info->file);
-	efree(info);
-	#endif
+    efree(info);
 }
 
 /**
@@ -224,7 +212,6 @@ ZEND_METHOD(wing_process, __destruct) {
  */
 ZEND_METHOD(wing_process, run)
 {
-   //php_printf(zend_get_executed_filename());
    char *output_file = NULL;
 
     #if PHP_MAJOR_VERSION >= 7
@@ -247,7 +234,6 @@ ZEND_METHOD(wing_process, run)
 
     #ifdef PHP_WIN32
 	PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)wing_create_process(info->command, output_file);
-    //wing_write_cmdline(pi->dwProcessId, info->command);
     info->ext_info   = (void*)pi;
     info->process_id = pi->dwProcessId;
     info->thread_id  = pi->dwThreadId;
@@ -299,16 +285,7 @@ ZEND_METHOD(wing_process, wait) {
 	RETURN_LONG(process_id);
 	#else
 	int status;
-
 	pid_t epid = waitpid(info->process_id, &status, timeout);
-    /*
-        ret=waitpid(-1,NULL,WNOHANG | WUNTRACED);
-        如果我们不想使用它们，也可以把options设为0，如：
-        ret=waitpid(-1,NULL,0);
-        WNOHANG 若pid指定的子进程没有结束，则waitpid()函数返回0，不予以等待。若结束，则返回该子进程的ID。
-        WUNTRACED 若子进程进入暂停状态，则马上返回，但子进程的结束状态不予以理会。
-        WIFSTOPPED(status)宏确定返回值是否对应与一个暂停子进程。
-    */
 	RETURN_LONG(epid);
 	#endif
 }
@@ -397,7 +374,6 @@ ZEND_METHOD(wing_process, kill)
     }
     wait(&status);
     if (WIFSIGNALED(status)) {
-        //printf("chile process receive signal %d\n",WTERMSIG(status));
         RETURN_TRUE;
     }
     RETURN_FALSE;
