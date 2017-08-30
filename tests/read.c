@@ -149,33 +149,36 @@ fclose(fp);
 
 const char *sfile = "/proc/17009/status";
 FILE *sp = fopen(sfile, "r");
-char sbuffer[256] = {0};
-char mem[32] = {0};
-int cs = 0;
-int end = 0;
-int count = 0;
- while(!feof(sp)) {
-    memset(sbuffer,0,256);
-    fgets(sbuffer, 256, sp);
-    if (strstr(sbuffer, "VmSize") != NULL) {
+	char sbuffer[256] = { 0 };
+	char mem[32] = { 0 };
+	char *cs = NULL;
+	char *end = NULL;
+	int count = 0;
+	while (!feof(sp)) {
+		memset(sbuffer, 0, 256);
+		fgets(sbuffer, 256, sp);
+		printf("%s", sbuffer);
+		if (strstr(sbuffer, "VmSize") != NULL) {
+			printf("发现VmSize\r\n");
+			cs = (char*)(sbuffer + 8);
+			end = (char*)(sbuffer + strlen(sbuffer));
+			while (cs < end) {
+				if (cs[0] == NULL || cs[0] < 32 || cs[0] == ' ') {
+					cs++;
+					continue;
+				}
 
-        cs  = sbuffer+8;
-        end = sbuffer+strlen(sbuffer);
-        while(cs < end) {
-                if ((char)cs == NULL || (char)cs < 32 || (char)cs == ' ') {
-                    continue;
-                }
-                mem[count] = (char)cs;
-                count++;
-                if (count>31) break;
-                cs++;
-            }
+				mem[count] = cs[0];
+				count++;
+				if (count>31) break;
+				cs++;
+			}
 
-        break;
-    }
- }
+			break;
+		}
+	}
 
- printf("使用内存：%s\r\n", cs);
+	printf("使用内存：%s\r\n", mem);
 
         return EXIT_SUCCESS;
 
