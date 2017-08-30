@@ -237,14 +237,14 @@ void wing_get_cmdline(int pid, char **buffer) {
         goto ERROR_B;
     }
 
-    *buffer = procargs;
-    size = (size_t)argmax;
+    size = strlen(sp)+1;
+    *buffer = (char*)malloc(size);
+
     memset(*buffer, 0, size);
     /* Make a copy of the string. */
     strcpy(*buffer, sp);//, MAX_PATH-1);
-
     /* Clean up. */
-   // free(procargs);
+    free(procargs);
     return;
 
 ERROR_B:
