@@ -162,7 +162,7 @@ char mem[32] = {0};
                 if (!cs || cs == NULL || cs < 32 || cs == ' ') {
                     continue;
                 }
-                mem++ = cs;
+                mem++ = (char)cs;
             }
 
         break;
