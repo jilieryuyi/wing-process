@@ -179,12 +179,9 @@ unsigned long wing_get_memory(int process_id)
 
     int ret = proc_pidinfo(process_id, PROC_PIDTASKALLINFO, 0,
                            (void*)&info, sizeof(struct proc_taskallinfo));
-   // printf("ret=%d, result=%s---%s\n", ret, (char *) info.pbsd.pbi_comm, info.pbsd.pbi_name);
-
-   // uint64_t		pti_virtual_size;	/* virtual memory size (bytes) */
-   // uint64_t		pti_resident_size;	/* resident memory size (bytes) */
-    //info.ptinfo
-    //printf("======%llu===%llu\n", info.ptinfo.pti_virtual_size/1024/1024, info.ptinfo.pti_resident_size/1024);
+    if (ret <= 0) {
+        return 0;
+    }
     return info.ptinfo.pti_resident_size/1024;
 }
 #else
