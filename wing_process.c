@@ -425,7 +425,7 @@ ZEND_METHOD(wing_process, getMemory) {
 
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo(process, &pmc, sizeof(pmc));
-	RETURN_LONG(pmc.WorkingSetSize);
+	RETURN_LONG(pmc.WorkingSetSize/1024);
 	#else
 	unsigned long mem = get_memory(info->process_id);
 	RETURN_LONG(mem);
