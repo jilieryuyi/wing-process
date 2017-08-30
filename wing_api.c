@@ -22,7 +22,7 @@ int wing_file_is_php(const char *file)
     char find_str[]     = " ";
     char path[MAX_PATH] = {0};
 
-    char *find          = strstr(file, find_str);
+    const char *find          = strstr(file, find_str);
     if (find != NULL)
     strncpy((char*)path, file, (size_t)(find-file));
     else
@@ -264,7 +264,7 @@ void wing_get_cmdline(int process_id, char **buffer)
     *buffer = NULL;
     char file[MAX_PATH] = {0};
     sprintf(file, "/proc/%d/cmdline", process_id);
-    if (access(file, R_OK) != 0) {
+    if (wing_access(file, R_OK) != 0) {
         return;
     }
 
