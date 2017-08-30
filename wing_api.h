@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define pid_of(pproc) pproc->kp_proc.p_pid
+#include <libproc.h>
 #endif
 
 char* wing_get_command_path(const char* command);

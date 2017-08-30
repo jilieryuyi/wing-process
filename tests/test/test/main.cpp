@@ -18,6 +18,7 @@
 #include <sys/sysctl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <mach/mach.h>
 
 #define pid_of(pproc) pproc->kp_proc.p_pid
 
@@ -541,20 +542,40 @@ int main(int argc, const char * argv[]) {
     bzero(pathBuffer2, PROC_PIDPATHINFO_MAXSIZE);
     proc_name(595, pathBuffer2, sizeof(pathBuffer2));
     
-     printf("proc_name: %s\n", pathBuffer2);
+   //  printf("proc_name: %s\n", pathBuffer2);
     struct proc_taskallinfo info;
     
     int ret = proc_pidinfo(595, PROC_PIDTASKALLINFO, 0,
                            (void*)&info, sizeof(struct proc_taskallinfo));
-    printf("ret=%d, result=%s---%s\n", ret, (char *) info.pbsd.pbi_comm, info.pbsd.pbi_name);
+   // printf("ret=%d, result=%s---%s\n", ret, (char *) info.pbsd.pbi_comm, info.pbsd.pbi_name);
     
+   // uint64_t		pti_virtual_size;	/* virtual memory size (bytes) */
+   // uint64_t		pti_resident_size;	/* resident memory size (bytes) */
+    //info.ptinfo
+    printf("======%llu===%llu\n", info.ptinfo.pti_virtual_size/1024/1024, info.ptinfo.pti_resident_size/1024);
     
    // proc_pidinfo(595, <#int flavor#>, uint64_t arg, <#void *buffer#>, <#int buffersize#>)
-    char buffer[1024] = {0};
-    wing_get_cmdline(595, buffer);
+    //char buffer[1024] = {0};
+    //wing_get_cmdline(595, buffer);
     
 //    char *b = NULL;
 //    wing_get_cmdline2((unsigned long )595, &b);
+    
+    
+    
+    
+    struct task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+    
+    if (KERN_SUCCESS != task_info(mach_task_self(),
+                                  TASK_BASIC_INFO, (task_info_t)&t_info,
+                                  &t_info_count))
+    {
+        return -1;
+    }
+    // resident size is in t_info.resident_size;
+    // virtual size is in t_info.virtual_size;
+    
     
     return 0;
 }
