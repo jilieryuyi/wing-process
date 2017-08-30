@@ -151,18 +151,22 @@ const char *sfile = "/proc/17009/status";
 FILE *sp = fopen(sfile, "r");
 char sbuffer[256] = {0};
 char mem[32] = {0};
- char *cs = NULL;
+int cs = 0;
+int end = 0;
+int count = 0;
  while(!feof(sp)) {
     memset(sbuffer,0,256);
     fgets(sbuffer, 256, sp);
     if (strstr(sbuffer, "VmSize") != NULL) {
 
         cs = sbuffer+8;
-        while(cs++ <= sbuffer+strlen(sbuffer)) {
+        end = sbuffer+strlen(sbuffer);
+        while(cs++ <= end) {
                 if (!cs || cs == NULL || cs < 32 || cs == ' ') {
                     continue;
                 }
-                mem++ = (char)cs;
+                mem[count++] = (char)cs;
+                if (count>31) break;
             }
 
         break;
