@@ -143,6 +143,33 @@ fclose(fp);
 
         printf( "File size: %li\n", file_status.st_size );
 
+
+
+
+
+const char *sfile = "/proc/17009/status";
+FILE *sp = fopen(sfile, "r");
+char sbuffer[256] = {0};
+char mem[32] = {0};
+ while(!feof(sp)) {
+    memset(sbuffer,0,256);
+    fgets(sbuffer, 256, sp);
+    if (strstr(sbuffer, "VmSize") != NULL) {
+        char *cs;
+        cs = sbuffer+8;
+        while(cs++ <= sbuffer+strlen(sbuffer)) {
+                if (!cs || cs == NULL || c < 32 || cs == ' ') {
+                    continue;
+                }
+                mem++ = cs;
+            }
+
+        break;
+    }
+ }
+
+ printf("使用内存：%s\r\n", cs);
+
         return EXIT_SUCCESS;
 
     //printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
