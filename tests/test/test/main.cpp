@@ -185,19 +185,58 @@ int get_phy_mem(const pid_t p)
 
 int wing_file_is_php(const char *file)
 {
-    
-    char find_str[]     = " ";
-    char *find          = strstr(file, find_str);
     char path[MAX_PATH] = {0};
+   
+    if (strstr(file, "'") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "'");
+        strncpy(path, st, f - st);
+    }
     
-    strncpy((char*)path, file, (size_t)(find-file));
+    else if (strstr(file, "\"") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "\"");
+        strncpy(path, st, f - st);
+    }
+    
+    else if (strstr(file, "`") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "`");
+        strncpy(path, st, f - st);
+    }
+    
+    else if(strstr(file, " ") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, " ");
+        strncpy(path, st, f - st);
+    }
+    
+    else {
+        strcpy(path, file);
+    }
+    
+    char *ext = strrchr(path, '.');
+    if (ext) {
+        ext++;
+        if (strcmp(ext, "php") == 0 && access(path, R_OK) == 0) {
+            return 1;
+        }
+    }
+    
+    if (access(path, R_OK) != 0) {
+        return 0;
+    }
+    
     FILE *handle = fopen(path, "r");
     if (!handle) {
         return 0;
     }
-    //char *find = NULL;
+    char *find   = NULL;
     char line[8] = { 0 };
-    memset(line, 0, 8);
     fgets(line, 7, handle);
     
     find = strstr(line, "<?php");
@@ -485,12 +524,12 @@ int main(int argc, const char * argv[]) {
     
     */
     
-//    int is = wing_file_is_php("/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/wing_process.php 123");
-//    if (is == 1) {
-//        std::cout << "is php file\r\n";
-//    } else {
-//        std::cout << "not php \r\n";
-//    }
+    int is = wing_file_is_php("'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php' 123");
+    if (is == 1) {
+        std::cout << "is php file\r\n";
+    } else {
+        std::cout << "not php \r\n";
+    }
 //
 //    std::cout << get_command_path("php");
 //    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php 123";
@@ -531,16 +570,16 @@ int main(int argc, const char * argv[]) {
         }
     }*/
     
-    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
-    bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
-    proc_pidpath(595, pathBuffer, sizeof(pathBuffer));
-    if (strlen(pathBuffer) > 0) {
-        printf("path: %s\n", pathBuffer);
-    }
-
-    char pathBuffer2[PROC_PIDPATHINFO_MAXSIZE];
-    bzero(pathBuffer2, PROC_PIDPATHINFO_MAXSIZE);
-    proc_name(595, pathBuffer2, sizeof(pathBuffer2));
+//    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+//    bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
+//    proc_pidpath(595, pathBuffer, sizeof(pathBuffer));
+//    if (strlen(pathBuffer) > 0) {
+//        printf("path: %s\n", pathBuffer);
+//    }
+//
+//    char pathBuffer2[PROC_PIDPATHINFO_MAXSIZE];
+//    bzero(pathBuffer2, PROC_PIDPATHINFO_MAXSIZE);
+//    proc_name(595, pathBuffer2, sizeof(pathBuffer2));
     
    //  printf("proc_name: %s\n", pathBuffer2);
     struct proc_taskallinfo info;
@@ -552,7 +591,7 @@ int main(int argc, const char * argv[]) {
    // uint64_t		pti_virtual_size;	/* virtual memory size (bytes) */
    // uint64_t		pti_resident_size;	/* resident memory size (bytes) */
     //info.ptinfo
-    printf("======%llu===%llu\n", info.ptinfo.pti_virtual_size/1024/1024, info.ptinfo.pti_resident_size/1024);
+   // printf("======%llu===%llu\n", info.ptinfo.pti_virtual_size/1024/1024, info.ptinfo.pti_resident_size/1024);
     
    // proc_pidinfo(595, <#int flavor#>, uint64_t arg, <#void *buffer#>, <#int buffersize#>)
     //char buffer[1024] = {0};
@@ -564,7 +603,25 @@ int main(int argc, const char * argv[]) {
     
     
     
-    struct task_basic_info t_info;
+    
+   /* char file_path[MAX_PATH] = {0};
+    strcpy(file_path, "`234123412341324`\0");
+    char *st = file_path;
+    char *et = file_path+strlen(file_path);
+    while(1) {
+       // *st = '"';
+        if (*st == '`')*st = '"';
+       // printf("find:%s\r\n", st);
+        st++;
+        if (st > et) break;
+    }
+    printf("-------%s\r\n",file_path);*/
+    
+    
+    
+    execl("/usr/local/bin/php", "php", "/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php" , "123", NULL);
+    
+   /* struct task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
     
     if (KERN_SUCCESS != task_info(mach_task_self(),
@@ -575,7 +632,7 @@ int main(int argc, const char * argv[]) {
     }
     // resident size is in t_info.resident_size;
     // virtual size is in t_info.virtual_size;
-    
+    */
     
     return 0;
 }

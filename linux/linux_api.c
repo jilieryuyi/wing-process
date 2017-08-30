@@ -95,6 +95,7 @@ void init_daemon(const char* dir)
 unsigned long wing_create_process(const char *command, char* output_file)
 {
     TSRMLS_FETCH();
+
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
     //    #if PHP_MAJOR_VERSION >= 7
@@ -133,7 +134,10 @@ unsigned long wing_create_process(const char *command, char* output_file)
     pid_t childpid = fork();
 
     if (childpid == 0) {
+        //printf("php file1 = %s\r\n",command);
+
         if (wing_file_is_php(command)) {
+            //printf("php file2 = %s\r\n",command);
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {
                 exit(0);
             }
