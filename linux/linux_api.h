@@ -3,7 +3,7 @@
 #define WING_PROCESS_LINUX_API_H
 
 #define INFINITE 0
-#define MAX_PATH 1024
+#define MAX_PATH 256
 
 #include <unistd.h>
 #include <string.h>

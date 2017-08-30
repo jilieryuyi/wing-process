@@ -96,7 +96,7 @@ int wing_file_is_php(const char *file)
 //}
 #ifdef __APPLE__
 
-void wing_get_cmdline(int pid, char *buffer) {
+void wing_get_cmdline(int pid, char **buffer) {
     int    mib[3], argmax, nargs, c = 0;
     size_t    size;
     char    *procargs, *sp, *np, *cp;
@@ -237,60 +237,65 @@ void wing_get_cmdline(int pid, char *buffer) {
         goto ERROR_B;
     }
 
+    *buffer = procargs;
+    size = (size_t)argmax;
+    memset(*buffer, 0, size);
     /* Make a copy of the string. */
-    strncpy(buffer, sp, MAX_PATH-1);
+    strcpy(*buffer, sp);//, MAX_PATH-1);
 
     /* Clean up. */
-    free(procargs);
+   // free(procargs);
     return;
 
 ERROR_B:
-    buffer = NULL;
     free(procargs);
+    *buffer = NULL;
+    procargs = NULL;
 ERROR_A:
-    buffer = NULL;
+    *buffer = NULL;
     //fprintf(stderr, "Sorry, failed\n");
     //exit(2);
 }
 
 
 #else
-void wing_get_cmdline(int process_id, char *buffer)
+void wing_get_cmdline(int process_id, char **buffer)
 {
-  sprintf(buffer, "/proc/%d/cmdline", process_id);//%lu
-  if (access(buffer, F_OK) == 0) {
-  //printf("%s\r\n", buffer);
-        //linux处理
-      FILE *handle = fopen((const char*)buffer, "r");
-      if (!handle) {
-         buffer = NULL;
-         return;
-      }
-      memset(buffer, 0, MAX_PATH);
-       // fgets(buffer, MAX_PATH, handle);
+    *buffer = NULL;
+    char file[MAX_PATH] = {0};
+    sprintf(file, "/proc/%d/cmdline", process_id);
+    if (access(file, F_OK) == 0) {
 
-      int c;
-      int count = 0;
-      char *cs;
-      cs=buffer;
-
-      while(!feof(handle)) {
-      c=getc(handle);
-      if (!c || c == NULL || c < 32) c=' ';
-      *cs++ = c;
-     // printf("%d-", c);
-        count++;
-        if (count >= (MAX_PATH-1)) {
-            break;
+        FILE *handle = fopen((const char*)file, "r");
+        if (!handle) {
+            *buffer = NULL;
+            return;
         }
-      }
-//             while((c = getc(handle))!=EOF)
-//             *cs++=c;
-      *cs='\0';
-       // printf("%d == %s\r\n", count, buffer);
-      fclose(handle);
-      return;
-  }
-  memset(buffer, 0, MAX_PATH);
+
+        fseek(handle, 0L, SEEK_END);
+        int filesize = ftell(handle);
+        rewind(handle);
+
+        *buffer = (char*)malloc(filesize+1);
+        if (*buffer == NULL) {
+            fclose(handle);
+            return;
+        }
+        memset(*buffer,0,filesize+1);
+
+        int c;
+        char *cs;
+        cs = *buffer;
+
+        while(!feof(handle)) {
+            c = getc(handle);
+            if (!c || (void*)c == NULL || c < 32) {
+                c = ' '
+            };
+            *cs++ = c;
+        }
+        *cs='\0';
+        fclose(handle);
+    }
 }
 #endif

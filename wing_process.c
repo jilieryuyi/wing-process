@@ -116,10 +116,12 @@ ZEND_METHOD(wing_process, __construct)
 		#else
 		info->process_id  = (unsigned long)zend_atoi(file, strlen(file));
 
-		char buffer[MAX_PATH] = {0};
-		wing_get_cmdline(info->process_id, buffer);
+		char *buffer = NULL;//[MAX_PATH] = {0};
+		wing_get_cmdline(info->process_id, &buffer);
 
 		spprintf(&command_line, strlen(buffer), "%s", buffer);
+		if (buffer)
+		free(buffer);
 
 		#endif
 
