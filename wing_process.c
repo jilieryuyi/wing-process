@@ -333,7 +333,11 @@ ZEND_METHOD(wing_process, getProcessId) {
 ZEND_METHOD(wing_process, getThreadId) {
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
+    #ifdef PHP_WIN32
     RETURN_LONG(info->thread_id);
+    #else
+    RETURN_LONG(info->process_id);
+    #endif
 }
 
 
