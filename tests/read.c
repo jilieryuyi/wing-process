@@ -147,8 +147,8 @@ fclose(fp);
 
 
 
-const char *sfile = "/proc/17009/status";
-FILE *sp = fopen(sfile, "r");
+    const char *sfile = "/proc/17009/status";
+    FILE *sp = fopen(sfile, "r");
 	char sbuffer[256] = { 0 };
 	char mem[32] = { 0 };
 	char *cs = NULL;
@@ -177,7 +177,7 @@ FILE *sp = fopen(sfile, "r");
 			break;
 		}
 	}
-
+    fclose(sp);
 	printf("使用内存：%s\r\n", mem);
 
         return EXIT_SUCCESS;
