@@ -159,14 +159,16 @@ int count = 0;
     fgets(sbuffer, 256, sp);
     if (strstr(sbuffer, "VmSize") != NULL) {
 
-        cs = sbuffer+8;
+        cs  = sbuffer+8;
         end = sbuffer+strlen(sbuffer);
-        while(cs++ <= end) {
-                if (!cs || cs == NULL || cs < 32 || cs == ' ') {
+        while(cs < end) {
+                if ((char)cs == NULL || (char)cs < 32 || (char)cs == ' ') {
                     continue;
                 }
-                mem[count++] = (char)cs;
+                mem[count] = (char)cs;
+                count++;
                 if (count>31) break;
+                cs++;
             }
 
         break;
