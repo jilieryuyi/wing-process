@@ -124,10 +124,10 @@ int main() {
 
 
 const char *file = "/proc/17009/cmdline";
-FILE *fp = fopen(file, "r");
+FILE *fp = fopen(file, "rb");
 fseek(fp,0L,SEEK_END); /* 定位到文件末尾 */
 int flen = ftell(fp); /* 得到文件大小 */
-printf("%s文件大小%d\r\n", file, flen);
+printf("\r\n%s文件大小%d\r\n", file, flen);
 fclose(fp);
     //printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
     return 0;
