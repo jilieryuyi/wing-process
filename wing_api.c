@@ -280,10 +280,10 @@ void wing_get_cmdline(int process_id, char **buffer)
     while(!feof(handle)){
     getc(handle);filesize++;
     }
-//    if (filesize <= 0) {
-//        fclose(handle);
-//        return;
-//    }
+    if (filesize <= 0) {
+        fclose(handle);
+        return;
+    }
     rewind(handle);
 
     *buffer = (char*)malloc(filesize+1);

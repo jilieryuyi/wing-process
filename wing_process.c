@@ -118,8 +118,10 @@ ZEND_METHOD(wing_process, __construct)
 
 		char *buffer = NULL;//[MAX_PATH] = {0};
 		wing_get_cmdline(info->process_id, &buffer);
-
+        if (buffer)
 		spprintf(&command_line, strlen(buffer), "%s", buffer);
+		else
+		spprintf(&command_line, strlen(""), "%s", "");
 		if (buffer)
 		free(buffer);
 
