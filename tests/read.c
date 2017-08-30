@@ -25,53 +25,52 @@ void wing_get_tmp_dir(char *buffer)
     buffer = NULL;
     return;
 }
-void wing_get_cmdline(unsigned long process_id, char *buffer)
+void wing_get_cmdline(int process_id, char **buffer)
 {
+    *buffer = NULL;
+    char file[MAX_PATH] = {0};
+    sprintf(file, "/proc/%d/cmdline", process_id);
+    if (access(file, R_OK) != 0) {
+        return;
+    }
 
-    sprintf(buffer, "/proc/%lu/cmdline", process_id);
-    if (access(buffer, F_OK) == 0) {
-        //linux处理
-        FILE *handle = fopen((const char*)buffer, "r");
-        if (!handle) {
-            buffer = NULL;
-            return;
-        }
-        memset(buffer, 0, MAX_PATH);
-        fgets(buffer, MAX_PATH, handle);
+
+    FILE *handle = fopen((const char*)file, "r");
+    if (!handle) {
+        *buffer = NULL;
+        return;
+    }
+
+    fseek(handle, 0L, SEEK_END);
+    int filesize = ftell(handle);
+    if (filesize <= 0) {
         fclose(handle);
         return;
     }
-    memset(buffer, 0, MAX_PATH);
-   // char tmp[MAX_PATH] = {0};
-    wing_get_tmp_dir(buffer);
-   // char path[MAX_PATH] = {0};
-   // strcpy(path, tmp);
-    strcpy((char*)(buffer+strlen(buffer)), "/");
-    char _process_id[32] = {0};
-    sprintf(_process_id, "%lu", process_id);
-    strcpy((char*)(buffer+strlen(buffer)), _process_id);
+    rewind(handle);
 
-    if (access(buffer, F_OK) != 0) {
-        buffer = NULL;
+    *buffer = (char*)malloc(filesize+1);
+    if (*buffer == NULL) {
+        fclose(handle);
         return;
     }
+    memset(*buffer,0,filesize+1);
 
-    strcpy((char*)(buffer+strlen(buffer)), "/cmdline");
+    int c;
+    char *cs;
+    cs = *buffer;
 
-    if (access(buffer, F_OK) != 0) {
-        buffer = NULL;
-        return;
+    while(!feof(handle)) {
+        c = getc(handle);
+        if (!c || (void*)c == NULL || c < 32) {
+            c = ' ';
+        }
+        *cs++ = c;
     }
-    FILE *handle = fopen((const char*)buffer, "r");
-    if (!handle) {
-        buffer = NULL;
-        return;
-    }
-    memset(buffer, 0, MAX_PATH);
-    fgets(buffer, MAX_PATH, handle);
+    *cs='\0';
     fclose(handle);
-}
 
+}
 
 int wing_file_is_php(const char *file)
 {
@@ -114,10 +113,12 @@ int wing_file_is_php(const char *file)
 
 
 int main() {
-    char buffer[256];
-    wing_get_cmdline(973, buffer);
+    char *buffer = NULL;//[256];
+    wing_get_cmdline(17009, &buffer);
     printf("%s", buffer);
+    if (buffer)
+    free(buffer);
 
-    printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
+    //printf("\r\n==%d\r\n", wing_file_is_php("/home/tools/wing-process/tests/wing_process_test.php"));
     return 0;
 }
