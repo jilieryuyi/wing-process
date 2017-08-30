@@ -192,7 +192,8 @@ unsigned long get_memory(int process_id)
         fgets(sbuffer, 32, sp);
         if (strncmp(sbuffer, "VmSize:", 7) == 0) {
             cs = (char*)(sbuffer + 6);
-            while (*cs++ != '\n' && *cs >= 48 && *cs <= 57) {
+            while (*cs++ != '\n') {
+                if (*cs >= 48 && *cs <= 57)
                 mem[count++] = *cs;
             }
             break;
