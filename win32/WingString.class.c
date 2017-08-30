@@ -901,9 +901,9 @@ wchar_t* WingString::w_str(){
 void WingString::print(){
 	 setlocale(LC_ALL, "chs");
 	if( this->str_type == WING_STR_IS_CHAR )
-		printf("---char:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),this->str);
+		printf("---char:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),(char*)this->str);
 	else if( this->str_type == WING_STR_IS_WCHAR )
-		wprintf(L"---wchar_t:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),this->str);
+		wprintf(L"---wchar_t:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
 }
 /**
  *@安全打印字符串，二进制数据安全

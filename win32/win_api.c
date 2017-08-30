@@ -2,14 +2,14 @@
 void wing_get_tmp_dir(char *buffer)
 {
 	GetTempPath(MAX_PATH, buffer);
-	if (0 != access(buffer, W_OK)) {
+	if (0 != wing_access(buffer, W_OK)) {
         buffer = NULL;
         return;
     }
 
     strcpy((char*)(buffer+strlen(buffer)), "/wing_process");
 
-    if (0 == access(buffer, F_OK)) {
+    if (0 == wing_access(buffer, F_OK)) {
         return;
     }
 
