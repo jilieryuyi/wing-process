@@ -41,12 +41,13 @@ void wing_get_cmdline(int process_id, char **buffer)
         return;
     }
 
-    fseek(handle, 0L, SEEK_END);
-    int filesize = ftell(handle);
-    if (filesize <= 0) {
-        fclose(handle);
-        return;
-    }
+   // fseek(handle, 0L, SEEK_END);
+    int filesize = 0;//ftell(handle);
+    while(!feof(handle))filesize++;
+//    if (filesize <= 0) {
+//        fclose(handle);
+//        return;
+//    }
     rewind(handle);
 
     *buffer = (char*)malloc(filesize+1);
