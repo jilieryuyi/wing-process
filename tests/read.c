@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #define MAX_PATH 255
 
 void wing_get_tmp_dir(char *buffer)
