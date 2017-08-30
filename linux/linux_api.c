@@ -171,10 +171,42 @@ int wing_get_process_id()
 {
     return getpid();
 }
-
+/**
+ * 返回单位为k
+ */
 unsigned long get_memory(int process_id)
 {
+ char file[MAX_PATH] = {0};
+ sprintf(file, "/proc/%d/status", process_id);
+ FILE *sp = fopen(file, "r");
+ if (!sp) {
     return 0;
+ }
+    char sbuffer[256] = { 0 };
+    	char mem[32] = { 0 };
+    	char *cs = NULL;
+    	char *end = NULL;
+    	int count = 0;
+    	while (!feof(sp)) {
+    		memset(sbuffer, 0, 256);
+    		fgets(sbuffer, 256, sp);
+    		//printf("%s", sbuffer);
+    		if (strstr(sbuffer, "VmSize") != NULL) {
+    			//printf("发现VmSize\r\n");
+    			cs = (char*)(sbuffer + 6);
+    			end = (char*)(sbuffer + strlen(sbuffer));
+    			while (cs++[0] != '\n') {
+    				if (cs[0] >=48 && cs[0] <= 57) {
+    					mem[count++] = cs[0];
+    				}
+    			}
+
+    			break;
+    		}
+    	}
+        fclose(sp);
+    	//printf("使用内存：%s\r\n", mem);
+    	return atoi((const char*)mem);
 }
 
 int wing_kill(int process_id)
