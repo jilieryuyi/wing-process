@@ -264,38 +264,45 @@ void wing_get_cmdline(int process_id, char **buffer)
     *buffer = NULL;
     char file[MAX_PATH] = {0};
     sprintf(file, "/proc/%d/cmdline", process_id);
-    if (access(file, F_OK) == 0) {
-
-        FILE *handle = fopen((const char*)file, "r");
-        if (!handle) {
-            *buffer = NULL;
-            return;
-        }
-
-        fseek(handle, 0L, SEEK_END);
-        int filesize = ftell(handle);
-        rewind(handle);
-
-        *buffer = (char*)malloc(filesize+1);
-        if (*buffer == NULL) {
-            fclose(handle);
-            return;
-        }
-        memset(*buffer,0,filesize+1);
-
-        int c;
-        char *cs;
-        cs = *buffer;
-
-        while(!feof(handle)) {
-            c = getc(handle);
-            if (!c || (void*)c == NULL || c < 32) {
-                c = ' '
-            };
-            *cs++ = c;
-        }
-        *cs='\0';
-        fclose(handle);
+    if (access(file, R_OK) != 0) {
+        return;
     }
+
+
+    FILE *handle = fopen((const char*)file, "r");
+    if (!handle) {
+        *buffer = NULL;
+        return;
+    }
+
+    fseek(handle, 0L, SEEK_END);
+    int filesize = ftell(handle);
+    if (filesize <= 0) {
+        fclose(handle);
+        return;
+    }
+    rewind(handle);
+
+    *buffer = (char*)malloc(filesize+1);
+    if (*buffer == NULL) {
+        fclose(handle);
+        return;
+    }
+    memset(*buffer,0,filesize+1);
+
+    int c;
+    char *cs;
+    cs = *buffer;
+
+    while(!feof(handle)) {
+        c = getc(handle);
+        if (!c || (void*)c == NULL || c < 32) {
+            c = ' '
+        };
+        *cs++ = c;
+    }
+    *cs='\0';
+    fclose(handle);
+
 }
 #endif
