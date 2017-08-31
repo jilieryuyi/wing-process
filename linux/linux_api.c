@@ -200,7 +200,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
     //命令解析--end
 
 
-        if (wing_file_is_php(_args[0])) {
+        if (wing_file_is_php(command)) {
             //strcpy(_args[0],PHP_PATH);
           //  strcpy(_args[1],"php");
             //printf("php file2 = %s\r\n",command);
