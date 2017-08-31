@@ -6,7 +6,6 @@ extern char* PHP_PATH;
  */
 char* wing_get_command_path(const char* command)
 {
-
     char *env           = getenv("PATH");
     ulong start         = (ulong)env;
     size_t len          = strlen(env);
@@ -98,11 +97,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
-    //    #if PHP_MAJOR_VERSION >= 7
-    //    const char *str = zend_get_executed_filename();
-    //    #else
         const char *str = zend_get_executed_filename(TSRMLS_C);
-        //#endif
         char find_str[] = "/";
         char *find      = strstr((const char*)str, find_str);
         char *last_pos  = NULL;
@@ -134,9 +129,8 @@ unsigned long wing_create_process(const char *command, char* output_file)
     pid_t childpid = fork();
 
     if (childpid == 0) {
-        //printf("php file1 = %s\r\n",command);
 
-    //命令解析
+        //命令解析
     	char *st = (char*)command;
     	char *et = (char*)(st + strlen(command));
     	char _args[MAX_ARGC][MAX_PATH];
@@ -145,7 +139,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
     	int cc = 0;
     	int start = 0;
     	int next_s = 0;
-
+        int na = 0;
     	int i;
     	for (i = 0; i < MAX_ARGC; i++) {
     		memset(*_args, 0, MAX_PATH);
@@ -156,6 +150,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
     	//如下算法只是为了将如 "'__DIR__/1 2.php'     123     \"trertyertey\" '123456'  `23563456` \"sdfgfdgfdg\"";
     	//这样的字符串还原为正常的命令行参数
     	//如上字符出阿奴解析之后会得到一个数组 ["__DIR__/1 2.php", "123", "trertyertey", "123456", "23563456", "sdfgfdgfdg"]
+    	//最多只支持7个参数 每个参数不得超过255个字符
     	while (st <= et) {
     		if (ac >= MAX_ARGC - 1) break;
 
@@ -164,7 +159,6 @@ unsigned long wing_create_process(const char *command, char* output_file)
     			st++;
     			start = 1;
     			if (pos == 2) {
-    				int na = 0;
     				while (*st == ' ')
     				{
     					st++; na = 1;
@@ -175,7 +169,9 @@ unsigned long wing_create_process(const char *command, char* output_file)
     					cc = 0;
     					na = 0;
     				}
-    				if (*st == '\'' || *st == '"' || *st == '`') { st++; pos=1; }
+    				if (*st == '\'' || *st == '"' || *st == '`') {
+    				    st++; pos=1;
+    				}
     			}
     		}
 
@@ -184,7 +180,6 @@ unsigned long wing_create_process(const char *command, char* output_file)
     				ac++; printf("2ac++\r\n");
     				cc = 0;
     			}
-
 
     			while (*st == ' ')
     				st++;
@@ -199,67 +194,33 @@ unsigned long wing_create_process(const char *command, char* output_file)
     		if (*st == '\0') break;
     		if (st >= et) break;
     		if (cc < MAX_PATH) {
-
-    				printf("===>%d == %c\r\n", ac, *st);
-    				_args[ac][cc] = *st;
-    				cc++;
-    				_args[ac][cc] = '\0';
+    			_args[ac][cc] = *st;
+    			cc++;
+    			_args[ac][cc] = '\0';
 
     		}
 
     		if (pos == 2) {
-    			//printf("2ac++");
-    			//ac++;
-    			//cc = 0;
     			pos = 0;
-    			//while (*st == ' ')
-    			//	st++;
     			start = 0;
     		}
-    		//else {
-    			st++;
-    		//}
-    	}
-    	//int i;
-    	printf("\r\n");
-    	for (i = 0; i <= ac; i++) {
-    		printf("=>%s<=\r\n", _args[i]);
+    		st++;
     	}
     	//命令解析--end
 
-
         if (wing_file_is_php(command)) {
-            //strcpy(_args[0],PHP_PATH);
-          //  strcpy(_args[1],"php");
-            //printf("php file2 = %s\r\n",command);
             switch (ac) {
             case 0:
-                printf("执行文件：%s %s\r\n", PHP_PATH, _args[0]);
                 if (execl(PHP_PATH, "php", _args[0], NULL) < 0) {
                     exit(0);
                 }
                 break;
             case 1:
-                printf("执行文件：%s =>%s<=\r\n", PHP_PATH, _args[0]);
-                printf("执行参数：%s\r\n", _args[1]);
-//                char b[MAX_PATH] = {0};
-//                char *ss =  _args[0];
-//                ss = ss+strlen(_args[0]);
-//                while(1) {
-//                if (*ss == ' ')
-//                    *ss = '\0';
-//                    *ss--;
-//                    if (*ss != ' ') break;
-//                }
-//                sprintf(b,"'%s'",ss);
                 if (execl(PHP_PATH, "php", _args[0], _args[1], NULL) < 0) {
                     exit(0);
                 }
                 break;
             case 2:
-                printf("执行文件：%s\r\n", _args[0]);
-                printf("执行参数：%s\r\n", _args[1]);
-                printf("执行参数：%s\r\n", _args[2]);
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], NULL) < 0) {
                     exit(0);
                 }
@@ -292,28 +253,12 @@ unsigned long wing_create_process(const char *command, char* output_file)
             default:
                 break;
             }
-            //execvp(PHP_PATH, _args);
         } else {
-            //strcpy(_args[0],"/bin/sh");
-           // strcpy(_args[1],"sh");
             if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
                 exit(0);
             }
-            //execvp("/bin/sh", _args);
         }
     } else if(childpid > 0) {
-
-//     if (wing_file_is_php(command)) {
-//         char __command[MAX_PATH];
-//                    strcpy(__command, PHP_PATH);
-//                    strcpy((char*)(__command+strlen(__command)), " ");
-//                    strcpy((char*)(__command+strlen(__command)), command);
-//                    //wing_write_cmdline(childpid, __command);
-//     } else {
-//        wing_write_cmdline(childpid, command);
-//     }
-
-
         if (daemon) {
             //如果以守护进程方式启动，则等待子进程退出，防止子进程变成僵尸进程
             int status;
@@ -331,6 +276,9 @@ int wing_get_process_id()
 }
 
 #ifdef __APPLE__
+/**
+ * mac下面获取进程占用内存 返回单位为k
+ */
 unsigned long wing_get_memory(int process_id)
 {
     struct proc_taskallinfo info;
@@ -344,7 +292,7 @@ unsigned long wing_get_memory(int process_id)
 }
 #else
 /**
- * 返回单位为k
+ * linux下面获取进程占用内存 返回单位为k
  */
 unsigned long wing_get_memory(int process_id)
 {
