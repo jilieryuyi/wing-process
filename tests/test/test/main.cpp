@@ -657,13 +657,35 @@ int main(int argc, const char * argv[]) {
             start = 1;
         }
         
+        if (start == 0) {
+            if (*st == ' ') {
+                ac++;
+                cc = 0;
+            }
+        }
         
+        _args[ac][cc] = *st;
+        cc++;
+        _args[ac][cc] = '\0';
+        if (pos == 2) {
+            ac++;
+            cc = 0;
+            pos = 0;
+            while(*st == ' ')
+                st++;
+            printf("=======%s\r\n", st);
+            start = 0;
+        } else {
+            st++;
+        }
+        
+        /*
         if (pos%2 != 0) {
             _args[ac][cc] = *st;
             cc++;
             _args[ac][cc] = '\0';
         } else {
-            if (*st == ' ') {
+            if (*st == ' ' && start == 0) {
                 while(*st == ' ')
                 st++;
                 ac++;
@@ -679,10 +701,9 @@ int main(int argc, const char * argv[]) {
                 _args[ac][cc] = '\0';
             //}
             
-        }
+        }*/
         
-        st++;
-    
+        
     }
     //int i;
     for (i=0; i<32; i++) {
