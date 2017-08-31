@@ -9,6 +9,8 @@
 #include "php_wing_process.h"
 #endif
 
+#define MAX_ARGC  8
+
 #ifdef __APPLE__
 #include <sys/sysctl.h>
 #include <stdio.h>

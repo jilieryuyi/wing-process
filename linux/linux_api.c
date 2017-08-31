@@ -138,21 +138,21 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
     //命令解析
     char *st = (char*)command;
-    char *et = (char*)(command + strlen(command));
-    int  max_argc = 8;
-    char _args[8][MAX_PATH];
-    int pos = 0;
-    int ac = 0;
-    int cc = 0;
+    char *et = (char*)(st + strlen(command));
+    char _args[MAX_ARGC][MAX_PATH];
+    int pos   = 0;
+    int ac    = 0;
+    int cc    = 0;
     int start = 0;
 
     int i;
-    for (i=0; i<max_argc; i++) {
-        memset(*_args,0,MAX_PATH);
+    for (i=0; i < MAX_ARGC; i++) {
+        memset(*_args, 0, MAX_PATH);
     }
 
+    //命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
     while(st <= et) {
-        if (ac >= max_argc - 1) break;
+        if (ac >= MAX_ARGC - 1) break;
         if (*st == '\'' || *st == '"' || *st == '`') {
             pos++;
             st++;
@@ -179,7 +179,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
             cc++;
             _args[ac][cc] = '\0';
         }
-        
+
         if (pos == 2) {
             ac++;
             cc = 0;
