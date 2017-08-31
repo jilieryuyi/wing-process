@@ -635,88 +635,87 @@ int main(int argc, const char * argv[]) {
     */
     
     
-    const char *cmd= "'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php'    as    '4 5 6' asdfs sdg 你好 `srfsd`";
-    char *st = (char*)cmd;
-    char *et = (char*)(cmd + strlen(cmd));
-    char _args[32][MAX_PATH];
+    const char *command= "'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php'    as    '4 5 6' asdfs sdg 你好 `srfsd`";
+    //命令解析
+    char *st = (char*)command;
+    char *et = (char*)(st + strlen(command));
+    char _args[8][MAX_PATH];
     int pos = 0;
     int ac = 0;
     int cc = 0;
     int start = 0;
-    
+    int next_s = 0;
+    int na = 0;
     int i;
-    for (i=0; i<32; i++) {
-        memset(*_args,0,MAX_PATH);
+    for (i = 0; i < 8; i++) {
+        memset(*_args, 0, MAX_PATH);
     }
     
-    while(st <= et) {
-        if (ac >= 32) break;
+    //命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
+    //可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
+    //如下算法只是为了将如 "'__DIR__/1 2.php'     123     \"trertyertey\" '123456'  `23563456` \"sdfgfdgfdg\"";
+    //这样的字符串还原为正常的命令行参数
+    //如上字符出阿奴解析之后会得到一个数组 ["__DIR__/1 2.php", "123", "trertyertey", "123456", "23563456", "sdfgfdgfdg"]
+    //最多只支持7个参数 每个参数不得超过255个字符
+    while (st <= et) {
+        if (ac >= 8 - 1) break;
+        
         if (*st == '\'' || *st == '"' || *st == '`') {
             pos++;
             st++;
             start = 1;
+            if (pos == 2) {
+                while (*st == ' ')
+                {
+                    st++; na = 1;
+                }
+                if (na) {
+                    ac++;
+                    printf("1ac++\r\n");
+                    cc = 0;
+                    na = 0;
+                }
+                if (*st == '\'' || *st == '"' || *st == '`') {
+                    st++; pos=1;
+                }
+            }
         }
         
         if (start == 0) {
             if (*st == ' ') {
-                ac++;
+                ac++; printf("2ac++\r\n");
                 cc = 0;
             }
-            while(*st == ' ')
+            
+            while (*st == ' ')
                 st++;
+            
             if (*st == '\'' || *st == '"' || *st == '`') {
                 pos++;
                 st++;
                 start = 1;
             }
-          //  printf("=======%d--%s\r\n", pos, st);
         }
         
-        if (cc > MAX_PATH-1) break;
-        _args[ac][cc] = *st;
-        cc++;
-        _args[ac][cc] = '\0';
-        if (pos == 2) {
-            ac++;
-            cc = 0;
-            pos = 0;
-            while(*st == ' ')
-                st++;
-            //printf("=======%s\r\n", st);
-            start = 0;
-        } else {
-            st++;
-        }
-        
-        /*
-        if (pos%2 != 0) {
+        if (*st == '\0') break;
+        if (st >= et) break;
+        if (cc < MAX_PATH) {
             _args[ac][cc] = *st;
             cc++;
             _args[ac][cc] = '\0';
-        } else {
-            if (*st == ' ' && start == 0) {
-                while(*st == ' ')
-                st++;
-                ac++;
-                cc = 0;
-            }
-            if (start) {
-                ac++;
-                cc = 0;
-                start = 0;
-            } //else {
-                _args[ac][cc] = *st;
-                cc++;
-                _args[ac][cc] = '\0';
-            //}
             
-        }*/
+        }
         
-        
+        if (pos == 2) {
+            pos = 0;
+            start = 0;
+        }
+        st++;
     }
+    //命令解析--end
     //int i;
     for (i=0; i<=ac; i++) {
-        printf("=>%s\r\n", _args[i]);
+        printf("=>%s<=\r\n", _args[i]);
     }
     
     return 0;
