@@ -9,6 +9,8 @@
 #include "php_wing_process.h"
 #endif
 
+#define MAX_ARGC  8
+
 #ifdef __APPLE__
 #include <sys/sysctl.h>
 #include <stdio.h>
@@ -28,6 +30,14 @@ zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char 
 void wing_get_tmp_dir(char *buffer);
 //int wing_write_cmdline(unsigned long process_id, char *cmdline);
 void wing_get_cmdline(int process_id, char **buffer);
+
+int wing_access(const char* file, int mode) {
+#ifdef PHP_WIN32
+	return _access(file, mode);
+#else 
+	return access(file, mode);
+#endif
+}
 
 #ifdef PHP_WIN32
 #include "win32/win_api.c"

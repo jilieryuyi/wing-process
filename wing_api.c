@@ -18,23 +18,59 @@ zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char 
 */
 int wing_file_is_php(const char *file)
 {
-
-    char find_str[]     = " ";
     char path[MAX_PATH] = {0};
 
-    char *find          = strstr(file, find_str);
-    if (find != NULL)
-    strncpy((char*)path, file, (size_t)(find-file));
-    else
-    strcpy((char*)path, file);
+
+    if (strstr(file, "'") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "'");
+        strncpy(path, st, f - st);
+    }
+
+    else if (strstr(file, "\"") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "\"");
+        strncpy(path, st, f - st);
+    }
+
+    else if (strstr(file, "`") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, "`");
+        strncpy(path, st, f - st);
+    }
+
+    else if(strstr(file, " ") != NULL) {
+        char *st = (char*)file;
+        st++;
+        char *f  = strstr(st, " ");
+        strncpy(path, st, f - st);
+    }
+
+    else {
+        strcpy(path, file);
+    }
+
+    char *ext = strrchr(path, '.');
+    if (ext) {
+        ext++;
+        if (strcmp(ext, "php") == 0 && access(path, R_OK) == 0) {
+            return 1;
+        }
+    }
+
+    if (access(path, R_OK) != 0) {
+        return 0;
+    }
 
     FILE *handle = fopen(path, "r");
     if (!handle) {
         return 0;
     }
-    //char *find = NULL;
+    char *find   = NULL;
     char line[8] = { 0 };
-    memset(line, 0, 8);
     fgets(line, 7, handle);
 
     find = strstr(line, "<?php");
@@ -54,6 +90,8 @@ int wing_file_is_php(const char *file)
 
     return 0;
 }
+
+
 
 
 
@@ -264,7 +302,7 @@ void wing_get_cmdline(int process_id, char **buffer)
     *buffer = NULL;
     char file[MAX_PATH] = {0};
     sprintf(file, "/proc/%d/cmdline", process_id);
-    if (access(file, R_OK) != 0) {
+    if (wing_access(file, R_OK) != 0) {
         return;
     }
 

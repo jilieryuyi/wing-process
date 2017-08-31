@@ -6,11 +6,10 @@ extern char* PHP_PATH;
  */
 char* wing_get_command_path(const char* command)
 {
-
     char *env           = getenv("PATH");
-    ulong start         = (ulong)env;
+    char *start         = env;
     size_t len          = strlen(env);
-    ulong pos           = (ulong)env;
+    char *pos           = env;
     ulong size          = 0;
     char temp[MAX_PATH] = {0};
     char *res           = NULL;
@@ -23,9 +22,9 @@ char* wing_get_command_path(const char* command)
             size = start - pos;
             memset(temp, 0, MAX_PATH);
             strncpy(temp, (char*)pos, size);
-            char *base = (char*)((unsigned long)temp + strlen(temp));
+            char *base = (char*)(temp + strlen(temp));
             strcpy(base, "/");
-            strcpy((char*)((unsigned long)base + 1), command);
+            strcpy((char*)(base + 1), command);
 
             if (access(temp, F_OK) == 0) {
                 res = (char *)malloc(size+command_len);
@@ -37,20 +36,20 @@ char* wing_get_command_path(const char* command)
             pos = start+1;
         }
 
-        if (start >= ((unsigned long)env+len) ) {
+        if (start >= (env+len) ) {
             break;
         }
 
         start++;
     }
 
-    size = (ulong)env+len - pos;
+    size = env+len - pos;
     memset(temp, 0, MAX_PATH);
     strncpy(temp, (char*)pos, size);
 
-    char *base = (char*)((unsigned long)temp + strlen(temp));
+    char *base = (char*)(temp + strlen(temp));
     strcpy(base, "/");
-    strcpy((char*)((unsigned long)base + 1), command);
+    strcpy((char*)(base + 1), command);
 
     if (access(temp, F_OK) == 0) {
         res = (char *)malloc(size+command_len);
@@ -95,13 +94,10 @@ void init_daemon(const char* dir)
 unsigned long wing_create_process(const char *command, char* output_file)
 {
     TSRMLS_FETCH();
+
     int daemon = output_file == NULL ? 0 : 1;
     if (daemon) {
-    //    #if PHP_MAJOR_VERSION >= 7
-    //    const char *str = zend_get_executed_filename();
-    //    #else
         const char *str = zend_get_executed_filename(TSRMLS_C);
-        //#endif
         char find_str[] = "/";
         char *find      = strstr((const char*)str, find_str);
         char *last_pos  = NULL;
@@ -133,29 +129,136 @@ unsigned long wing_create_process(const char *command, char* output_file)
     pid_t childpid = fork();
 
     if (childpid == 0) {
+
+        //命令解析
+    	char *st = (char*)command;
+    	char *et = (char*)(st + strlen(command));
+    	char _args[MAX_ARGC][MAX_PATH];
+    	int pos = 0;
+    	int ac = 0;
+    	int cc = 0;
+    	int start = 0;
+    	int next_s = 0;
+        int na = 0;
+    	int i;
+    	for (i = 0; i < MAX_ARGC; i++) {
+    		memset(*_args, 0, MAX_PATH);
+    	}
+
+    	//命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
+    	//可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
+    	//如下算法只是为了将如 "'__DIR__/1 2.php'     123     \"trertyertey\" '123456'  `23563456` \"sdfgfdgfdg\"";
+    	//这样的字符串还原为正常的命令行参数
+    	//如上字符出阿奴解析之后会得到一个数组 ["__DIR__/1 2.php", "123", "trertyertey", "123456", "23563456", "sdfgfdgfdg"]
+    	//最多只支持7个参数 每个参数不得超过255个字符
+    	while (st <= et) {
+    		if (ac >= MAX_ARGC - 1) break;
+
+    		if (*st == '\'' || *st == '"' || *st == '`') {
+    			pos++;
+    			st++;
+    			start = 1;
+    			if (pos == 2) {
+    				while (*st == ' ')
+    				{
+    					st++; na = 1;
+    				}
+    				if (na) {
+    					ac++;
+    					printf("1ac++\r\n");
+    					cc = 0;
+    					na = 0;
+    				}
+    				if (*st == '\'' || *st == '"' || *st == '`') {
+    				    st++; pos=1;
+    				}
+    			}
+    		}
+
+    		if (start == 0) {
+    			if (*st == ' ') {
+    				ac++; printf("2ac++\r\n");
+    				cc = 0;
+    			}
+
+    			while (*st == ' ')
+    				st++;
+
+    			if (*st == '\'' || *st == '"' || *st == '`') {
+    				pos++;
+    				st++;
+    				start = 1;
+    			}
+    		}
+
+    		if (*st == '\0') break;
+    		if (st >= et) break;
+    		if (cc < MAX_PATH) {
+    			_args[ac][cc] = *st;
+    			cc++;
+    			_args[ac][cc] = '\0';
+
+    		}
+
+    		if (pos == 2) {
+    			pos = 0;
+    			start = 0;
+    		}
+    		st++;
+    	}
+    	//命令解析--end
+
         if (wing_file_is_php(command)) {
-            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-                exit(0);
+            switch (ac) {
+            case 0:
+                if (execl(PHP_PATH, "php", _args[0], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 1:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 2:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 3:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 4:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 5:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 6:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 7:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            default:
+                break;
             }
         } else {
-
             if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
                 exit(0);
             }
         }
     } else if(childpid > 0) {
-
-//     if (wing_file_is_php(command)) {
-//         char __command[MAX_PATH];
-//                    strcpy(__command, PHP_PATH);
-//                    strcpy((char*)(__command+strlen(__command)), " ");
-//                    strcpy((char*)(__command+strlen(__command)), command);
-//                    //wing_write_cmdline(childpid, __command);
-//     } else {
-//        wing_write_cmdline(childpid, command);
-//     }
-
-
         if (daemon) {
             //如果以守护进程方式启动，则等待子进程退出，防止子进程变成僵尸进程
             int status;
@@ -173,6 +276,9 @@ int wing_get_process_id()
 }
 
 #ifdef __APPLE__
+/**
+ * mac下面获取进程占用内存 返回单位为k
+ */
 unsigned long wing_get_memory(int process_id)
 {
     struct proc_taskallinfo info;
@@ -186,7 +292,7 @@ unsigned long wing_get_memory(int process_id)
 }
 #else
 /**
- * 返回单位为k
+ * linux下面获取进程占用内存 返回单位为k
  */
 unsigned long wing_get_memory(int process_id)
 {
@@ -199,7 +305,7 @@ unsigned long wing_get_memory(int process_id)
     char sbuffer[32] = { 0 };
     char mem[16]     = { 0 };
     char *cs         = NULL;
-    int count       = 0;
+    int count        = 0;
 
     while (!feof(sp)) {
         memset(sbuffer, 0, 32);
