@@ -150,6 +150,8 @@ char *st = (char*)command;
         memset(*_args,0,MAX_PATH);
     }
 
+//execvp
+//ac = 1;
     while(st <= et) {
         if (ac >= 32) break;
         if (*st == '\'' || *st == '"' || *st == '`') {
@@ -220,19 +222,25 @@ char *st = (char*)command;
     for (i=0; i<=ac; i++) {
         printf("=>%s\r\n", _args[i]);
     }
+    _args[ac+1] = NULL;
     //命令解析--end
 
 
-        if (wing_file_is_php(command)) {
+        if (wing_file_is_php(_args[0])) {
+            //strcpy(_args[0],PHP_PATH);
+          //  strcpy(_args[1],"php");
             //printf("php file2 = %s\r\n",command);
-            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-                exit(0);
-            }
+//            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
+//                exit(0);
+//            }
+            execvp(PHP_PATH, _args);
         } else {
-
-            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
-                exit(0);
-            }
+            //strcpy(_args[0],"/bin/sh");
+           // strcpy(_args[1],"sh");
+//            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
+//                exit(0);
+//            }
+            execvp("/bin/sh", _args);
         }
     } else if(childpid > 0) {
 
