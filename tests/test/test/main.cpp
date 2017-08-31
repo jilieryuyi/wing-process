@@ -673,10 +673,12 @@ int main(int argc, const char * argv[]) {
                 ac++;
                 cc = 0;
                 start = 0;
-            }
-            _args[ac][cc] = *st;
-            cc++;
-            _args[ac][cc] = '\0';
+            } //else {
+                _args[ac][cc] = *st;
+                cc++;
+                _args[ac][cc] = '\0';
+            //}
+            
         }
         
         st++;
