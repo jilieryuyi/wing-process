@@ -7,9 +7,9 @@ extern char* PHP_PATH;
 char* wing_get_command_path(const char* command)
 {
     char *env           = getenv("PATH");
-    ulong start         = (ulong)env;
+    char *start         = env;
     size_t len          = strlen(env);
-    ulong pos           = (ulong)env;
+    char *pos           = env;
     ulong size          = 0;
     char temp[MAX_PATH] = {0};
     char *res           = NULL;
