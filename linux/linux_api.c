@@ -221,7 +221,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
                     *ss = '\0';
                     *ss--;
                 }
-                sprintf(b,"'%s'", _args[0]);
+                sprintf(b,"'%s'",ss);
                 if (execl(PHP_PATH, "php", b, _args[1], NULL) < 0) {
                     exit(0);
                 }
