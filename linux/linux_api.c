@@ -153,6 +153,9 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
     	//命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
     	//可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
+    	//如下算法只是为了将如 "'__DIR__/1 2.php'     123     \"trertyertey\" '123456'  `23563456` \"sdfgfdgfdg\"";
+    	//这样的字符串还原为正常的命令行参数
+    	//如上字符出阿奴解析之后会得到一个数组 ["__DIR__/1 2.php", "123", "trertyertey", "123456", "23563456", "sdfgfdgfdg"]
     	while (st <= et) {
     		if (ac >= MAX_ARGC - 1) break;
 
