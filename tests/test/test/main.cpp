@@ -635,7 +635,7 @@ int main(int argc, const char * argv[]) {
     */
     
     
-    const char *cmd= "'1 2 3.php'    as    '4 5 6'";
+    const char *cmd= "'1 2 3.php'    as    '4 5 6' asdfs sdg 你好 `srfsd`";
     char *st = (char*)cmd;
     char *et = (char*)(cmd + strlen(cmd));
     char _args[32][MAX_PATH];
@@ -650,7 +650,7 @@ int main(int argc, const char * argv[]) {
     }
     
     while(st <= et) {
-    
+        if (ac >= 32) break;
         if (*st == '\'' || *st == '"' || *st == '`') {
             pos++;
             st++;
@@ -662,8 +662,17 @@ int main(int argc, const char * argv[]) {
                 ac++;
                 cc = 0;
             }
+            while(*st == ' ')
+                st++;
+            if (*st == '\'' || *st == '"' || *st == '`') {
+                pos++;
+                st++;
+                start = 1;
+            }
+          //  printf("=======%d--%s\r\n", pos, st);
         }
         
+        if (cc > MAX_PATH-1) break;
         _args[ac][cc] = *st;
         cc++;
         _args[ac][cc] = '\0';
@@ -673,7 +682,7 @@ int main(int argc, const char * argv[]) {
             pos = 0;
             while(*st == ' ')
                 st++;
-            printf("=======%s\r\n", st);
+            //printf("=======%s\r\n", st);
             start = 0;
         } else {
             st++;
@@ -706,7 +715,7 @@ int main(int argc, const char * argv[]) {
         
     }
     //int i;
-    for (i=0; i<32; i++) {
+    for (i=0; i<=ac; i++) {
         printf("=>%s\r\n", _args[i]);
     }
     
