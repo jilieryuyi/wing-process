@@ -138,7 +138,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
 
 //命令解析
 char *st = (char*)command;
-    char *et = (char*)(cmd + strlen(cmd));
+    char *et = (char*)(command + strlen(command));
     char _args[32][MAX_PATH];
     int pos = 0;
     int ac = 0;
