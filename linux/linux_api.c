@@ -214,7 +214,9 @@ unsigned long wing_create_process(const char *command, char* output_file)
             case 1:
                 printf("执行文件：%s %s\r\n", PHP_PATH, _args[0]);
                 printf("执行参数：%s\r\n", _args[1]);
-                if (execl(PHP_PATH, "php", _args[0], _args[1], NULL) < 0) {
+                char b[MAX_PATH] = {0};
+                sprintf(b,"'%s'", _args[0]);
+                if (execl(PHP_PATH, "php", b, _args[1], NULL) < 0) {
                     exit(0);
                 }
                 break;
