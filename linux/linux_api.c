@@ -137,68 +137,92 @@ unsigned long wing_create_process(const char *command, char* output_file)
         //printf("php file1 = %s\r\n",command);
 
     //命令解析
-    char *st = (char*)command;
-    char *et = (char*)(st + strlen(command));
-    char _args[MAX_ARGC][MAX_PATH];
-    int pos   = 0;
-    int ac    = 0;
-    int cc    = 0;
-    int start = 0;
+    	char *st = (char*)command;
+    	char *et = (char*)(st + strlen(command));
+    	char _args[MAX_ARGC][MAX_PATH];
+    	int pos = 0;
+    	int ac = 0;
+    	int cc = 0;
+    	int start = 0;
+    	int next_s = 0;
 
-    int i;
-    for (i=0; i < MAX_ARGC; i++) {
-        memset(*_args, 0, MAX_PATH);
-    }
+    	int i;
+    	for (i = 0; i < MAX_ARGC; i++) {
+    		memset(*_args, 0, MAX_PATH);
+    	}
 
-    //命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
-    //可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
-    while(st <= et) {
-        if (ac >= MAX_ARGC - 1) break;
-        if (*st == '\'' || *st == '"' || *st == '`') {
-            pos++;
-            st++;
-            start = 1;
-        }
+    	//命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
+    	//可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
+    	while (st <= et) {
+    		if (ac >= MAX_ARGC - 1) break;
 
-        if (start == 0) {
-            if (*st == ' ') {
-                ac++;
-                cc = 0;
-            }
-            while(*st == ' ')
-                st++;
-                if(*st == ' ')st++;
-            if (*st == '\'' || *st == '"' || *st == '`') {
-                pos++;
-                st++;
-                start = 1;
-            }
-        }
+    		if (*st == '\'' || *st == '"' || *st == '`') {
+    			pos++;
+    			st++;
+    			start = 1;
+    			if (pos == 2) {
+    				int na = 0;
+    				while (*st == ' ')
+    				{
+    					st++; na = 1;
+    				}
+    				if (na) {
+    					ac++;
+    					printf("1ac++\r\n");
+    					cc = 0;
+    					na = 0;
+    				}
+    				if (*st == '\'' || *st == '"' || *st == '`') { st++; pos=1; }
+    			}
+    		}
 
-        if (*st == '\0') break;
-        if (cc < MAX_PATH) {
-            _args[ac][cc] = *st;
-            cc++;
-            _args[ac][cc] = '\0';
-        }
+    		if (start == 0) {
+    			if (*st == ' ') {
+    				ac++; printf("2ac++\r\n");
+    				cc = 0;
+    			}
 
-        if (pos == 2) {
-            ac++;
-            cc = 0;
-            pos = 0;
-            while(*st == ' ')
-                st++;if(*st == ' ')st++;
-            start = 0;
-        } else {
-            st++;
-        }
-    }
-    //int i;
-    printf("\r\n");
-    for (i=0; i<=ac; i++) {
-        printf("=>%s\r\n", _args[i]);
-    }
-    //命令解析--end
+
+    			while (*st == ' ')
+    				st++;
+
+    			if (*st == '\'' || *st == '"' || *st == '`') {
+    				pos++;
+    				st++;
+    				start = 1;
+    			}
+    		}
+
+    		if (*st == '\0') break;
+    		if (st >= et) break;
+    		if (cc < MAX_PATH) {
+
+    				printf("===>%d == %c\r\n", ac, *st);
+    				_args[ac][cc] = *st;
+    				cc++;
+    				_args[ac][cc] = '\0';
+
+    		}
+
+    		if (pos == 2) {
+    			//printf("2ac++");
+    			//ac++;
+    			//cc = 0;
+    			pos = 0;
+    			//while (*st == ' ')
+    			//	st++;
+    			start = 0;
+    		}
+    		//else {
+    			st++;
+    		//}
+    	}
+    	//int i;
+    	printf("\r\n");
+    	for (i = 0; i <= ac; i++) {
+    		printf("=>%s<=\r\n", _args[i]);
+    	}
+    	//命令解析--end
 
 
         if (wing_file_is_php(command)) {
