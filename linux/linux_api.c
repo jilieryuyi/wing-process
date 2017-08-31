@@ -217,9 +217,11 @@ unsigned long wing_create_process(const char *command, char* output_file)
                 char b[MAX_PATH] = {0};
                 char *ss =  _args[0];
                 ss = ss+strlen(_args[0]);
-                while(*ss == ' ') {
+                while(1) {
+                if (*ss == ' ')
                     *ss = '\0';
                     *ss--;
+                    if (*ss != ' ') break;
                 }
                 sprintf(b,"'%s'",ss);
                 if (execl(PHP_PATH, "php", b, _args[1], NULL) < 0) {
