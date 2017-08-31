@@ -206,7 +206,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
             //printf("php file2 = %s\r\n",command);
             switch (ac) {
             case 0:
-             printf("执行文件：%s\r\n", _args[0]);
+             printf("执行文件：%s %s\r\n", PHP_PATH, _args[0]);
                 if (execl(PHP_PATH, "php", "/home/tools/wing-process/tests/1 2.php", NULL) < 0) {
                     exit(0);
                 }
