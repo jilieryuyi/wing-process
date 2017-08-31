@@ -16,9 +16,7 @@ char* wing_get_command_path(const char* command)
     ulong command_len   = strlen(command)+1;
 
     while (1) {
-        char t = ((char*)start)[0];
-
-        if (t == ':' ) {
+        if (*start == ':' ) {
             size = start - pos;
             memset(temp, 0, MAX_PATH);
             strncpy(temp, (char*)pos, size);
