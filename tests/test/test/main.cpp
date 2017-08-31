@@ -718,6 +718,19 @@ int main(int argc, const char * argv[]) {
         printf("=>%s<=\r\n", _args[i]);
     }
     
+    
+    
+    
+    int a=3;
+    
+    char aa[a];
+    
+    aa[0]='a';
+    aa[1]='b';
+    aa[2]='\0';
+    printf("%s\r\n",aa);
+    
+    
     return 0;
 }
 
