@@ -275,17 +275,17 @@ unsigned long wing_create_process(const char *command, char* output_file)
                 }
                 break;
             case 5:
-                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], NULL) < 0) {
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], NULL) < 0) {
                     exit(0);
                 }
                 break;
             case 6:
-                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], NULL) < 0) {
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], NULL) < 0) {
                     exit(0);
                 }
                 break;
             case 7:
-                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], _args[8], NULL) < 0) {
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], NULL) < 0) {
                     exit(0);
                 }
                 break;
