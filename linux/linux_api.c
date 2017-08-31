@@ -136,6 +136,92 @@ unsigned long wing_create_process(const char *command, char* output_file)
     if (childpid == 0) {
         //printf("php file1 = %s\r\n",command);
 
+//命令解析
+char *st = (char*)command;
+    char *et = (char*)(cmd + strlen(cmd));
+    char _args[32][MAX_PATH];
+    int pos = 0;
+    int ac = 0;
+    int cc = 0;
+    int start = 0;
+
+    int i;
+    for (i=0; i<32; i++) {
+        memset(*_args,0,MAX_PATH);
+    }
+
+    while(st <= et) {
+        if (ac >= 32) break;
+        if (*st == '\'' || *st == '"' || *st == '`') {
+            pos++;
+            st++;
+            start = 1;
+        }
+
+        if (start == 0) {
+            if (*st == ' ') {
+                ac++;
+                cc = 0;
+            }
+            while(*st == ' ')
+                st++;
+            if (*st == '\'' || *st == '"' || *st == '`') {
+                pos++;
+                st++;
+                start = 1;
+            }
+          //  printf("=======%d--%s\r\n", pos, st);
+        }
+
+        if (cc > MAX_PATH-1) break;
+        _args[ac][cc] = *st;
+        cc++;
+        _args[ac][cc] = '\0';
+        if (pos == 2) {
+            ac++;
+            cc = 0;
+            pos = 0;
+            while(*st == ' ')
+                st++;
+            //printf("=======%s\r\n", st);
+            start = 0;
+        } else {
+            st++;
+        }
+
+        /*
+        if (pos%2 != 0) {
+            _args[ac][cc] = *st;
+            cc++;
+            _args[ac][cc] = '\0';
+        } else {
+            if (*st == ' ' && start == 0) {
+                while(*st == ' ')
+                st++;
+                ac++;
+                cc = 0;
+            }
+            if (start) {
+                ac++;
+                cc = 0;
+                start = 0;
+            } //else {
+                _args[ac][cc] = *st;
+                cc++;
+                _args[ac][cc] = '\0';
+            //}
+
+        }*/
+
+
+    }
+    //int i;
+    for (i=0; i<=ac; i++) {
+        printf("=>%s\r\n", _args[i]);
+    }
+    //命令解析--end
+
+
         if (wing_file_is_php(command)) {
             //printf("php file2 = %s\r\n",command);
             if (execl(PHP_PATH, "php", command ,NULL) < 0) {

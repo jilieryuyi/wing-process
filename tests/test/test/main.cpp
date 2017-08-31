@@ -635,7 +635,7 @@ int main(int argc, const char * argv[]) {
     */
     
     
-    const char *cmd= "'1 2 3.php'    as    '4 5 6' asdfs sdg 你好 `srfsd`";
+    const char *cmd= "'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php'    as    '4 5 6' asdfs sdg 你好 `srfsd`";
     char *st = (char*)cmd;
     char *et = (char*)(cmd + strlen(cmd));
     char _args[32][MAX_PATH];
