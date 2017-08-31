@@ -524,12 +524,12 @@ int main(int argc, const char * argv[]) {
     
     */
     
-    int is = wing_file_is_php("'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php' 123");
-    if (is == 1) {
-        std::cout << "is php file\r\n";
-    } else {
-        std::cout << "not php \r\n";
-    }
+//    int is = wing_file_is_php("'/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php' 123");
+//    if (is == 1) {
+//        std::cout << "is php file\r\n";
+//    } else {
+//        std::cout << "not php \r\n";
+//    }
 //
 //    std::cout << get_command_path("php");
 //    char str[] ="/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/php_path.php 123";
@@ -550,7 +550,7 @@ int main(int argc, const char * argv[]) {
 //    
 //    init_daemon((const char*)path);
     
-    wing_write_cmdline(456, (char*)"php efsd.php");
+   // wing_write_cmdline(456, (char*)"php efsd.php");
     
     
     
@@ -582,10 +582,10 @@ int main(int argc, const char * argv[]) {
 //    proc_name(595, pathBuffer2, sizeof(pathBuffer2));
     
    //  printf("proc_name: %s\n", pathBuffer2);
-    struct proc_taskallinfo info;
-    
-    int ret = proc_pidinfo(595, PROC_PIDTASKALLINFO, 0,
-                           (void*)&info, sizeof(struct proc_taskallinfo));
+//    struct proc_taskallinfo info;
+//    
+//    int ret = proc_pidinfo(595, PROC_PIDTASKALLINFO, 0,
+//                           (void*)&info, sizeof(struct proc_taskallinfo));
    // printf("ret=%d, result=%s---%s\n", ret, (char *) info.pbsd.pbi_comm, info.pbsd.pbi_name);
     
    // uint64_t		pti_virtual_size;	/* virtual memory size (bytes) */
@@ -619,7 +619,7 @@ int main(int argc, const char * argv[]) {
     
     
     
-    execl("/usr/local/bin/php", "php", "/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php" , "123", NULL);
+   // execl("/usr/local/bin/php", "php", "/Users/yuyi/phpsdk/php-7.1.8/ext/wing-process/tests/1 2.php" , "123", NULL);
     
    /* struct task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -633,6 +633,59 @@ int main(int argc, const char * argv[]) {
     // resident size is in t_info.resident_size;
     // virtual size is in t_info.virtual_size;
     */
+    
+    
+    const char *cmd= "'1 2 3.php'    as    '4 5 6'";
+    char *st = (char*)cmd;
+    char *et = (char*)(cmd + strlen(cmd));
+    char _args[32][MAX_PATH];
+    int pos = 0;
+    int ac = 0;
+    int cc = 0;
+    int start = 0;
+    
+    int i;
+    for (i=0; i<32; i++) {
+        memset(*_args,0,MAX_PATH);
+    }
+    
+    while(st <= et) {
+    
+        if (*st == '\'' || *st == '"' || *st == '`') {
+            pos++;
+            st++;
+            start = 1;
+        }
+        
+        
+        if (pos%2 != 0) {
+            _args[ac][cc] = *st;
+            cc++;
+            _args[ac][cc] = '\0';
+        } else {
+            if (*st == ' ') {
+                while(*st == ' ')
+                st++;
+                ac++;
+                cc = 0;
+            }
+            if (start) {
+                ac++;
+                cc = 0;
+                start = 0;
+            }
+            _args[ac][cc] = *st;
+            cc++;
+            _args[ac][cc] = '\0';
+        }
+        
+        st++;
+    
+    }
+    //int i;
+    for (i=0; i<32; i++) {
+        printf("=>%s\r\n", _args[i]);
+    }
     
     return 0;
 }
