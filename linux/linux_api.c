@@ -293,7 +293,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
         } else {
             //strcpy(_args[0],"/bin/sh");
            // strcpy(_args[1],"sh");
-            if (execl("/bin/sh", "sh", "-c", _args[0], NULL) < 0) {
+            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
                 exit(0);
             }
             //execvp("/bin/sh", _args);
