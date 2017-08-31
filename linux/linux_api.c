@@ -216,6 +216,7 @@ char *st = (char*)command;
 
     }
     //int i;
+    printf("\r\n");
     for (i=0; i<=ac; i++) {
         printf("=>%s\r\n", _args[i]);
     }
