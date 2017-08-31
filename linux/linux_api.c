@@ -167,6 +167,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
             }
             while(*st == ' ')
                 st++;
+                if(*st == ' ')st++;
             if (*st == '\'' || *st == '"' || *st == '`') {
                 pos++;
                 st++;
@@ -186,7 +187,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
             cc = 0;
             pos = 0;
             while(*st == ' ')
-                st++;
+                st++;if(*st == ' ')st++;
             start = 0;
         } else {
             st++;
@@ -212,19 +213,19 @@ unsigned long wing_create_process(const char *command, char* output_file)
                 }
                 break;
             case 1:
-                printf("执行文件：%s %s\r\n", PHP_PATH, _args[0]);
+                printf("执行文件：%s =>%s<=\r\n", PHP_PATH, _args[0]);
                 printf("执行参数：%s\r\n", _args[1]);
-                char b[MAX_PATH] = {0};
-                char *ss =  _args[0];
-                ss = ss+strlen(_args[0]);
-                while(1) {
-                if (*ss == ' ')
-                    *ss = '\0';
-                    *ss--;
-                    if (*ss != ' ') break;
-                }
-                sprintf(b,"'%s'",ss);
-                if (execl(PHP_PATH, "php", b, _args[1], NULL) < 0) {
+//                char b[MAX_PATH] = {0};
+//                char *ss =  _args[0];
+//                ss = ss+strlen(_args[0]);
+//                while(1) {
+//                if (*ss == ' ')
+//                    *ss = '\0';
+//                    *ss--;
+//                    if (*ss != ' ') break;
+//                }
+//                sprintf(b,"'%s'",ss);
+                if (execl(PHP_PATH, "php", _args[0], _args[1], NULL) < 0) {
                     exit(0);
                 }
                 break;
