@@ -23,9 +23,9 @@ char* wing_get_command_path(const char* command)
             size = start - pos;
             memset(temp, 0, MAX_PATH);
             strncpy(temp, (char*)pos, size);
-            char *base = (char*)((unsigned long)temp + strlen(temp));
+            char *base = (char*)(temp + strlen(temp));
             strcpy(base, "/");
-            strcpy((char*)((unsigned long)base + 1), command);
+            strcpy((char*)(base + 1), command);
 
             if (access(temp, F_OK) == 0) {
                 res = (char *)malloc(size+command_len);
@@ -37,20 +37,20 @@ char* wing_get_command_path(const char* command)
             pos = start+1;
         }
 
-        if (start >= ((unsigned long)env+len) ) {
+        if (start >= (env+len) ) {
             break;
         }
 
         start++;
     }
 
-    size = (ulong)env+len - pos;
+    size = env+len - pos;
     memset(temp, 0, MAX_PATH);
     strncpy(temp, (char*)pos, size);
 
-    char *base = (char*)((unsigned long)temp + strlen(temp));
+    char *base = (char*)(temp + strlen(temp));
     strcpy(base, "/");
-    strcpy((char*)((unsigned long)base + 1), command);
+    strcpy((char*)(base + 1), command);
 
     if (access(temp, F_OK) == 0) {
         res = (char *)malloc(size+command_len);
@@ -151,6 +151,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
     }
 
     //命令行参数解析算法 主要是为了解决带空格路径和带空格参数的问题
+    //可以使用 单引号 双引号 和 ` 符号包含带空格的额参数
     while(st <= et) {
         if (ac >= MAX_ARGC - 1) break;
         if (*st == '\'' || *st == '"' || *st == '`') {
@@ -312,7 +313,7 @@ unsigned long wing_get_memory(int process_id)
     char sbuffer[32] = { 0 };
     char mem[16]     = { 0 };
     char *cs         = NULL;
-    int count       = 0;
+    int count        = 0;
 
     while (!feof(sp)) {
         memset(sbuffer, 0, 32);
