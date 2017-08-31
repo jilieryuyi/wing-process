@@ -205,20 +205,20 @@ unsigned long wing_create_process(const char *command, char* output_file)
           //  strcpy(_args[1],"php");
             //printf("php file2 = %s\r\n",command);
             switch (ac) {
-            case 1:
+            case 0:
              printf("执行文件：%s\r\n", _args[0]);
                 if (execl(PHP_PATH, "php", _args[0], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 2:
+            case 1:
                 printf("执行文件：%s\r\n", _args[0]);
                 printf("执行参数：%s\r\n", _args[1]);
                 if (execl(PHP_PATH, "php", (const char*)_args[0], _args[1], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 3:
+            case 2:
             printf("执行文件：%s\r\n", _args[0]);
                             printf("执行参数：%s\r\n", _args[1]);
                             printf("执行参数：%s\r\n", _args[2]);
@@ -226,27 +226,27 @@ unsigned long wing_create_process(const char *command, char* output_file)
                     exit(0);
                 }
                 break;
-            case 4:
+            case 3:
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 5:
+            case 4:
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 6:
+            case 5:
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 7:
+            case 6:
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], NULL) < 0) {
                     exit(0);
                 }
                 break;
-            case 8:
+            case 7:
                 if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], _args[8], NULL) < 0) {
                     exit(0);
                 }
