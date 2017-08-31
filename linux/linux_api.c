@@ -136,24 +136,23 @@ unsigned long wing_create_process(const char *command, char* output_file)
     if (childpid == 0) {
         //printf("php file1 = %s\r\n",command);
 
-//命令解析
-char *st = (char*)command;
+    //命令解析
+    char *st = (char*)command;
     char *et = (char*)(command + strlen(command));
-    char _args[32][MAX_PATH];
+    int  max_argc = 8;
+    char _args[8][MAX_PATH];
     int pos = 0;
     int ac = 0;
     int cc = 0;
     int start = 0;
 
     int i;
-    for (i=0; i<32; i++) {
+    for (i=0; i<max_argc; i++) {
         memset(*_args,0,MAX_PATH);
     }
 
-//execvp
-//ac = 1;
     while(st <= et) {
-        if (ac >= 32) break;
+        if (ac >= max_argc - 1) break;
         if (*st == '\'' || *st == '"' || *st == '`') {
             pos++;
             st++;
@@ -172,57 +171,31 @@ char *st = (char*)command;
                 st++;
                 start = 1;
             }
-          //  printf("=======%d--%s\r\n", pos, st);
         }
 
-        if (cc > MAX_PATH-1) break;
-        _args[ac][cc] = *st;
-        cc++;
-        _args[ac][cc] = '\0';
+        if (*st == '\0') break;
+        if (cc < MAX_PATH) {
+            _args[ac][cc] = *st;
+            cc++;
+            _args[ac][cc] = '\0';
+        }
+        
         if (pos == 2) {
             ac++;
             cc = 0;
             pos = 0;
             while(*st == ' ')
                 st++;
-            //printf("=======%s\r\n", st);
             start = 0;
         } else {
             st++;
         }
-
-        /*
-        if (pos%2 != 0) {
-            _args[ac][cc] = *st;
-            cc++;
-            _args[ac][cc] = '\0';
-        } else {
-            if (*st == ' ' && start == 0) {
-                while(*st == ' ')
-                st++;
-                ac++;
-                cc = 0;
-            }
-            if (start) {
-                ac++;
-                cc = 0;
-                start = 0;
-            } //else {
-                _args[ac][cc] = *st;
-                cc++;
-                _args[ac][cc] = '\0';
-            //}
-
-        }*/
-
-
     }
     //int i;
     printf("\r\n");
     for (i=0; i<=ac; i++) {
         printf("=>%s\r\n", _args[i]);
     }
-    _args[ac+1] = NULL;
     //命令解析--end
 
 
@@ -230,17 +203,58 @@ char *st = (char*)command;
             //strcpy(_args[0],PHP_PATH);
           //  strcpy(_args[1],"php");
             //printf("php file2 = %s\r\n",command);
-//            if (execl(PHP_PATH, "php", command ,NULL) < 0) {
-//                exit(0);
-//            }
-            execvp(PHP_PATH, _args);
+            switch (ac) {
+            case 1:
+                if (execl(PHP_PATH, "php", _args[0], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 2:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 3:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 4:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 5:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 6:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 7:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            case 8:
+                if (execl(PHP_PATH, "php", _args[0], _args[1], _args[2], _args[3], _args[4], _args[6], _args[7], _args[8], NULL) < 0) {
+                    exit(0);
+                }
+                break;
+            default:
+                break;
+            }
+            //execvp(PHP_PATH, _args);
         } else {
             //strcpy(_args[0],"/bin/sh");
            // strcpy(_args[1],"sh");
-//            if (execl("/bin/sh", "sh", "-c", command, NULL) < 0) {
-//                exit(0);
-//            }
-            execvp("/bin/sh", _args);
+            if (execl("/bin/sh", "sh", "-c", _args[0], NULL) < 0) {
+                exit(0);
+            }
+            //execvp("/bin/sh", _args);
         }
     } else if(childpid > 0) {
 
