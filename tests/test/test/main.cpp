@@ -731,6 +731,38 @@ int main(int argc, const char * argv[]) {
     printf("%s\r\n",aa);
     
     
+    
+    
+    char str[] = "  ab\0c   ";
+    int len = 9; //strlen 的二进制安全模拟
+    int index = 0;
+    char *_et  = (char*)(str+9-1);
+    char *_st  = str;
+    
+    //二进制安全去掉右边的空格
+    while(*_et == ' ') {
+        *_et-- = '\0';
+        len--;
+    }
+    
+    printf("%d==>", len);
+    for(index=0;index<len;index++)
+        printf("%c", str[index]);
+    printf("<==\r\n");
+
+    //二进制安全去掉左边的空格
+    while(*_st == ' ') {
+        while(_st <= _et) {*_st = *(_st+1);_st++;}
+        _st = str;
+        len--;
+    }
+    
+    printf("%d==>", len);
+    for(index=0;index<len;index++)
+    printf("%c", str[index]);
+    printf("<==\r\n");
+    
+    
     return 0;
 }
 
