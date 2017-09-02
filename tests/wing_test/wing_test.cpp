@@ -8,6 +8,9 @@
 
 int main()
 {
+	char str[] = " 123   ";
+	wing_str_trim(str);
+	printf(">%s<", str);
     return 0;
 }
 

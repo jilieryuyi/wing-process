@@ -1182,7 +1182,8 @@ char* wing_str_char_to_utf8( _In_ const char* str ){
 	int utf8_str_size    = 0;
 
 	utf8_str_size      = ::MultiByteToWideChar( CP_ACP, 0, str, -1, NULL, NULL );                   //获取转换到Unicode编码后所需要的字符空间长度
-	unicode_str        = (wchar_t*)malloc((utf8_str_size + 1)*sizeof(wchar_t));                     //为Unicode字符串空间
+	size_t msize       = (utf8_str_size + 1) * sizeof(wchar_t);
+	unicode_str        = (wchar_t*)malloc(msize);                     //为Unicode字符串空间
 	memset( unicode_str, 0x0, (utf8_str_size + 1)*sizeof(wchar_t) );
 	utf8_str_size      = ::MultiByteToWideChar( CP_ACP, 0, str, -1, unicode_str, utf8_str_size );   //转换到Unicode编码
 	
@@ -1218,7 +1219,20 @@ void wing_str_trim( _Inout_ char* str ,size_t size ){
 	if( size <= 0 )
 		size = strlen( str );
 	
-	size_t len     = size;
+	//char str[] = "  abc   ";
+	char *_et = (char*)(str + size - 1);
+	char *_st = str;
+
+	while (*_et == ' ') {
+		*_et-- = '\0';
+	}
+
+	while (*_st == ' ') {
+		while (_st <= _et) { *_st = *(_st + 1); _st++; }
+		_st = str;
+	}
+
+	/*size_t len     = size;
 	char *start = str;  
     char *end   = str + len - 1;  
   
@@ -1255,5 +1269,5 @@ void wing_str_trim( _Inout_ char* str ,size_t size ){
 	//复制区间
     memmove(str, start, end - start + 1);  
 	//最后一个值清零
-    str[end - start + 1] = '\0';  
+    str[end - start + 1] = '\0';  */
 }
