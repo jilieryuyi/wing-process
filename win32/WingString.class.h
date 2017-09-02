@@ -1,6 +1,8 @@
 #ifndef __WING_STRING_H__
 #define __WING_STRING_H__
+#ifdef WIN32
 #include "Windows.h"
+#endif
 #include <locale.h>
 #include "math.h"
 
@@ -12,18 +14,18 @@
 #define WING_WCHAR_SIZE(str) (wcslen((wchar_t*)str)+1)*sizeof(wchar_t)
 
 /**
- *@sizeÎª×Ö·û´®³¤¶È,»òÕßsizeof ¶¼¿ÉÒÔ £¬ÒÑ¾­¼æÈÝ²¢ÇÒ¶þ½øÖÆ°²È«
+ *@sizeÎªï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½sizeof ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½Ò¶ï¿½ï¿½ï¿½ï¿½Æ°ï¿½È«
  */
-void      wing_str_trim( _Inout_ char* str ,size_t size = 0 );
-char*     wing_str_wchar_to_char( _In_ const wchar_t* str );
-wchar_t*  wing_str_char_to_wchar( _In_ const char* str );
-char*     wing_str_char_to_utf8( _In_ const char* str );
-char*     wing_str_wchar_to_utf8( _In_ const wchar_t* str );
+void      wing_str_trim(char* str ,size_t size = 0 );
+char*     wing_str_wchar_to_char( const wchar_t* str );
+wchar_t*  wing_str_char_to_wchar( const char* str );
+char*     wing_str_char_to_utf8( const char* str );
+char*     wing_str_wchar_to_utf8( const wchar_t* str );
 
 /**
  *@---- WingString ----
- *@×Ö·û´®´¦Àí·â×° 
- *@×¢Òâ size ¾ùÎªÕ¼ÓÃÄÚ´æ×Ö½Ú ²¢·Ç×Ö·û´®³¤¶È£¬Èç size=sizeof(*data) »òÕß size = (strlen(str)+1)*sizeof(char)
+ *@ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×° 
+ *@×¢ï¿½ï¿½ size ï¿½ï¿½ÎªÕ¼ï¿½ï¿½ï¿½Ú´ï¿½ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½ size=sizeof(*data) ï¿½ï¿½ï¿½ï¿½ size = (strlen(str)+1)*sizeof(char)
  */
 class WingString{
 
@@ -34,7 +36,7 @@ private:
 
 public:
 
-	//¹¹Ôìº¯Êý
+	//ï¿½ï¿½ï¿½ìº¯ï¿½ï¿½
 	WingString(char *_str, size_t _size = 0);
 	WingString(wchar_t *_str, size_t _size = 0);
 	WingString();
@@ -43,36 +45,38 @@ public:
 	size_t size();
 	unsigned int length();
 
-	//¿½±´×Ö·û´®Ô­ÐÍÊý¾Ý ÓÃÍêÐèÒªfree
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªfree
 	void* copy();
-	//·µ»Ø×Ö·û´®Ô­ÐÍÊý¾Ý ²»¸Ä±ä×ÔÉí ÎÞÐèfree
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½free
 	void* data();
-	//·µ»Ø×Ö·û´®ÀàÐÍ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	int   type();
 
-	//·µ»Øchar*×Ö·û´® ²»¸Ä±ä×ÔÉí ·µ»ØÖµÓÃÍêÐèÒªfree
+	//ï¿½ï¿½ï¿½ï¿½char*ï¿½Ö·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªfree
 	char* c_str();
-	//·µ»Øwchar_t*×Ö·û´® ²»¸Ä±ä×ÔÉí ·µ»ØÖµÓÃÍêÐèÒªfree
+	//ï¿½ï¿½ï¿½ï¿½wchar_t*ï¿½Ö·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªfree
 	wchar_t* w_str();
 
-	//×·¼Ó×Ö·û´® ¸Ä±ä×Ö·û´®±¾Éí
+	//×·ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ ï¿½Ä±ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void append( const char *_str, size_t size = 0 );
 	void append( WingString &_str );
 	void append( const wchar_t *_str,size_t size = 0 );
 
-	//×ª»»±àÂë ¸Ä±ä×Ö·û´®±¾Éí
-	BOOL toUTF8( );
-	//È¥µôÁ½¶Ë¿Õ¸ñ ¸Ä±ä×Ö·û´®±¾Éí
-	void trim();
+	//×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä±ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	int toUTF8( );
+	//È¥ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿Õ¸ï¿½ ï¿½Ä±ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	char* trim();
+	char* ltrim();
+	char* rtrim();
 
-	//´òÓ¡º¯Êý Ò»°ãÓÃÓÚµ÷ÊÔ
+	//ï¿½ï¿½Ó¡ï¿½ï¿½ï¿½ï¿½ Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½
 	void print();
 	void savePrint();
 	
-	//×ª»»ÎªÊý×Ö ²»¸Ä±ä×Ö·û´®±¾Éí
+	//×ªï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä±ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	double toNumber();
 
-	//·µ»Ø×Ó×Ö·û´® ²»¸Ä±ä×Ö·û´®±¾Éí  ÓÃÍêÖ®ºó ·µ»ØÖµ ÐèÒª free ,start ´Ó0¿ªÊ¼£¬Ò²¿ÉÒÔÊÇ¸ºÊý£¬´ÓÄ©Î²¿ªÊ¼½ØÈ¡
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä±ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Öµ ï¿½ï¿½Òª free ,start ï¿½ï¿½0ï¿½ï¿½Ê¼ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä©Î²ï¿½ï¿½Ê¼ï¿½ï¿½È¡
 	void* substr(int start,size_t length);
 
 
@@ -85,24 +89,24 @@ public:
 	WingString& operator+=(WingString &_str );
 	WingString& operator+=(const char* _str );
 	WingString& operator+=(const wchar_t* _str );
-	BOOL operator==( WingString &_str )const;
-	BOOL operator==( const char* _str )const;
-	BOOL operator==( const wchar_t* _str )const;
-	BOOL operator!=( WingString &_str )const;
-	BOOL operator!=( const char* _str )const;
-	BOOL operator!=( const wchar_t* _str )const;
-	BOOL operator>( WingString &_str )const;
-	BOOL operator>=( WingString &_str )const;
-	BOOL operator>( const char* _str )const;
-	BOOL operator>=( const char* _str )const;
-	BOOL operator>( const wchar_t* _str )const;
-	BOOL operator>=( const wchar_t* _str )const;
-	BOOL operator<( WingString &_str )const;
-	BOOL operator<=( WingString &_str )const;
-	BOOL operator<( const char* _str )const;
-	BOOL operator<=( const char* _str )const;
-	BOOL operator<( const wchar_t* _str )const;
-	BOOL operator<=( const wchar_t* _str )const;
+	int operator==( WingString &_str )const;
+	int operator==( const char* _str )const;
+	int operator==( const wchar_t* _str )const;
+	int operator!=( WingString &_str )const;
+	int operator!=( const char* _str )const;
+	int operator!=( const wchar_t* _str )const;
+	int operator>( WingString &_str )const;
+	int operator>=( WingString &_str )const;
+	int operator>( const char* _str )const;
+	int operator>=( const char* _str )const;
+	int operator>( const wchar_t* _str )const;
+	int operator>=( const wchar_t* _str )const;
+	int operator<( WingString &_str )const;
+	int operator<=( WingString &_str )const;
+	int operator<( const char* _str )const;
+	int operator<=( const char* _str )const;
+	int operator<( const wchar_t* _str )const;
+	int operator<=( const wchar_t* _str )const;
 
 };
 

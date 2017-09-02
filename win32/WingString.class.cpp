@@ -53,21 +53,21 @@ WingString::~WingString()
 }
 
 
-BOOL WingString::operator != (WingString &_str) const
+int WingString::operator != (WingString &_str) const
 {
 	return !(*this == _str);
 }
-BOOL WingString::operator != (const char* _str) const
-{
-	return !(*this == _str);
-}
-
-BOOL WingString::operator != (const wchar_t* _str) const
+int WingString::operator != (const char* _str) const
 {
 	return !(*this == _str);
 }
 
-BOOL WingString::operator < (const wchar_t* _str) const
+int WingString::operator != (const wchar_t* _str) const
+{
+	return !(*this == _str);
+}
+
+int WingString::operator < (const wchar_t* _str) const
 {
 	switch (this->str_type) {
 		case WING_STR_IS_UNKNOW:
@@ -90,7 +90,7 @@ BOOL WingString::operator < (const wchar_t* _str) const
 	return false;
 }
 
-BOOL WingString::operator <= (const wchar_t* _str) const
+int WingString::operator <= (const wchar_t* _str) const
 {
 	switch (this->str_type) {
 		case WING_STR_IS_UNKNOW:
@@ -113,7 +113,7 @@ BOOL WingString::operator <= (const wchar_t* _str) const
 	return false;
 }
 
-BOOL WingString::operator < (const char* _str) const
+int WingString::operator < (const char* _str) const
 {
 	switch (this->str_type) {
 		case WING_STR_IS_UNKNOW:
@@ -134,7 +134,7 @@ BOOL WingString::operator < (const char* _str) const
 	return false;
 }
 
-BOOL WingString::operator <= (const char* _str) const
+int WingString::operator <= (const char* _str) const
 {
 	switch (this->str_type) {
 	    case WING_STR_IS_UNKNOW:
@@ -155,7 +155,7 @@ BOOL WingString::operator <= (const char* _str) const
 	return false;
 }
 
-BOOL WingString::operator < (WingString &_str) const
+int WingString::operator < (WingString &_str) const
 {
 	switch (_str.type()) {
 		case WING_STR_IS_UNKNOW:
@@ -193,7 +193,7 @@ BOOL WingString::operator < (WingString &_str) const
 	return false;
 }
 
-BOOL WingString::operator <= (WingString &_str) const
+int WingString::operator <= (WingString &_str) const
 {
 	switch (_str.type()) {
 		case WING_STR_IS_UNKNOW:
@@ -230,7 +230,7 @@ BOOL WingString::operator <= (WingString &_str) const
 	return false;
 }
 
-BOOL WingString::operator > (const wchar_t* _str) const
+int WingString::operator > (const wchar_t* _str) const
 {
 	switch (this->str_type) {
     	case WING_STR_IS_UNKNOW:
@@ -250,7 +250,7 @@ BOOL WingString::operator > (const wchar_t* _str) const
 	return false;
 }
 
-BOOL WingString::operator >= (const wchar_t* _str) const
+int WingString::operator >= (const wchar_t* _str) const
 {
 	switch (this->str_type) {
     	case WING_STR_IS_UNKNOW:
@@ -271,7 +271,7 @@ BOOL WingString::operator >= (const wchar_t* _str) const
 	return false;
 }
 
-BOOL WingString::operator > (const char* _str) const
+int WingString::operator > (const char* _str) const
 {
 	switch (this->str_type) {
 	    case WING_STR_IS_UNKNOW:
@@ -292,7 +292,7 @@ BOOL WingString::operator > (const char* _str) const
 	return false;
 }
 
-BOOL WingString::operator >= (const char* _str) const
+int WingString::operator >= (const char* _str) const
 {
 	switch (this->str_type) {
     	case WING_STR_IS_UNKNOW:
@@ -313,7 +313,7 @@ BOOL WingString::operator >= (const char* _str) const
 	return false;
 }
 
-BOOL WingString::operator >= (WingString &_str) const
+int WingString::operator >= (WingString &_str) const
 {
 	switch (_str.type()) {
 	case WING_STR_IS_UNKNOW:
@@ -362,7 +362,7 @@ BOOL WingString::operator >= (WingString &_str) const
 	}
 	return false;
 }
-BOOL WingString::operator>(WingString &_str)const{
+int WingString::operator>(WingString &_str)const{
 	switch (_str.type()) {
 	case WING_STR_IS_UNKNOW:
 		return this->str_type != WING_STR_IS_UNKNOW;
@@ -410,7 +410,7 @@ BOOL WingString::operator>(WingString &_str)const{
 	}
 	return false;
 }
-BOOL WingString::operator==(const wchar_t* _str)const{
+int WingString::operator==(const wchar_t* _str)const{
 	switch (this->str_type) {
 	case WING_STR_IS_UNKNOW:
 		return _str == NULL;
@@ -431,7 +431,7 @@ BOOL WingString::operator==(const wchar_t* _str)const{
 	}
 	return false;
 }
-BOOL WingString::operator==(const char* _str)const{
+int WingString::operator==(const char* _str)const{
 	switch (this->str_type) {
 	case WING_STR_IS_UNKNOW:
 		return _str == NULL;
@@ -452,7 +452,7 @@ BOOL WingString::operator==(const char* _str)const{
 	}
 	return false;
 }
-BOOL WingString::operator==(WingString &_str)const{
+int WingString::operator==(WingString &_str)const{
 	switch (_str.type()) {
 	case WING_STR_IS_UNKNOW:
 		return this->str_type == WING_STR_IS_UNKNOW;
@@ -633,7 +633,13 @@ void WingString::append(const wchar_t *_str, size_t size) {
 
 		memset(res, 0x0, new_size);
 
+        //wsprintfW
+        #ifdef WIN32
 		wsprintfW(res, L"%s%s", this->str, _str);
+		#else
+		swprintf(res, new_size, L"%s%s", this->str, _str);
+		#endif
+		//swprintf
 	
 		free(this->str);
 
@@ -696,7 +702,12 @@ void WingString::append(const char *_str, size_t size)
 		wchar_t* buffer = (wchar_t*)malloc(new_size);
 		memset(buffer, 0x0, new_size);
 
+        //wsprintfWW
+        #ifdef WIN32
 		wsprintfW(buffer, L"%s%s", this->str, buf);
+		#else
+		swprintf(buffer, new_size, L"%s%s", this->str, buf);
+		#endif
 		free(this->str);
 		free(buf);
 
@@ -788,8 +799,11 @@ void WingString::append(WingString &_str) {
 
 			memset(res, 0x0, new_size);
 
+            #ifdef WIN32
 			wsprintfW(res, L"%s%s", this->str, _str.data());
-	
+	        #else
+	        swprintf(res, new_size, L"%s%s", this->str, _str.data());
+	        #endif
 			free(this->str);
 
 			this->str      = res;
@@ -804,8 +818,11 @@ void WingString::append(WingString &_str) {
 
 			wchar_t* buffer = (wchar_t*)malloc(new_size);
 			memset(buffer, 0x0, new_size);
-
+            #ifdef WIN32
 			wsprintfW(buffer, L"%s%s", this->str, buf);
+			#else
+			swprintf(buffer, new_size, L"%s%s", this->str, buf);
+			#endif
 			free(this->str);
 			free(buf);
 
@@ -898,7 +915,7 @@ wchar_t* WingString::w_str() {
 void WingString::print() {
 	 setlocale(LC_ALL, "chs");
 	if (this->str_type == WING_STR_IS_CHAR)
-		printf("---char:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(char*)this->str);
+		printf("---char:size=%zu,len=%d,%s---\r\n",this->size(),this->length(),(char*)this->str);
 	else if (this->str_type == WING_STR_IS_WCHAR)
 		wprintf(L"---wchar_t:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
 }
@@ -912,7 +929,7 @@ void WingString::savePrint() {
 	long end = this->length();
 
 	if (this->str_type == WING_STR_IS_CHAR) {
-		printf("---char:size=%zu,len=%ld,",this->size(),this->length());
+		printf("---char:size=%zu,len=%d,",this->size(),this->length());
 		while(i < end) {
 			char c = ((char*)this->str)[i];
 			if (c == '\0') c = ' ';
@@ -935,9 +952,9 @@ void WingString::savePrint() {
 
 
 /**
- * @�ַ���ת��Ϊutf8���룬��ı�����?
+ * @�ַ���ת��Ϊutf8���룬��ı�����?
  */
-BOOL WingString::toUTF8()
+int WingString::toUTF8()
 {
 	char *utf8_str = NULL;
 	switch (this->str_type) {
@@ -967,17 +984,71 @@ BOOL WingString::toUTF8()
 }
 
 /**
- *@ȥ�����˿ո� ����ı�����?
+ *@ȥ�����˿ո� ����ı�����?
  */
-void WingString::trim() {
+char* WingString::trim() {
 	
 	if (this->str == NULL || this->str_size <= 0) 
-		return;
+		return NULL;
 	if (this->str_type == WING_STR_IS_CHAR)
 	{
 		wing_str_trim((char*)this->str);
 		this->str_size = strlen((char*)this->str)+1;
+		return (char*)this->str;
 	}
+
+	return NULL;
+}
+
+char* WingString::ltrim() {
+
+	if (this->str == NULL || this->str_size <= 0)
+		return NULL;
+	if (this->str_type == WING_STR_IS_CHAR)
+	{
+
+
+
+
+        	char *_et = (char*)((size_t)this->str + this->str_size - 1);
+        	char *_st = (char*)this->str;
+
+//        	while (*_et == ' ') {
+//        		*_et-- = '\0';
+//        	}
+
+        	while (*_st == ' ') {
+        		while (_st <= _et) { *_st = *(_st + 1); _st++; }
+        		_st = (char*)this->str;
+        	}
+
+		this->str_size = strlen((char*)this->str)+1;
+		return (char*)this->str;
+	}
+	return NULL;
+}
+
+char* WingString::rtrim() {
+
+	if (this->str == NULL || this->str_size <= 0)
+		return NULL;
+	if (this->str_type == WING_STR_IS_CHAR)
+	{
+		char *_et = (char*)((size_t)this->str + this->str_size - 2);
+                	//char *_st = (char*)this->str;
+
+                	while (*_et == ' ') {
+                		*_et-- = '\0';
+                	}
+
+//                	while (*_st == ' ') {
+//                		while (_st <= _et) { *_st = *(_st + 1); _st++; }
+//                		_st = str;
+//                	}
+		this->str_size = strlen((char*)this->str)+1;
+		return (char*)this->str;
+	}
+	return NULL;
 }
 
 /***
@@ -1012,8 +1083,8 @@ double WingString::toNumber() {
 	
 	int i          = 0;
 	int len        = this->length();
-	int is_minus   = 0;
-	int is_decimal = 0;
+	//int is_minus   = 0;
+	//int is_decimal = 0;
 
 	
 	double result = 0;
@@ -1042,7 +1113,7 @@ double WingString::toNumber() {
 	    len    = i;
 	double ten = 10;
 
-	//����Ǹ���?
+	//����Ǹ���?
 	if ((int)numstr[start] == 45) {
 		start = 1;
 		while(start < i) {
@@ -1094,7 +1165,7 @@ double WingString::toNumber() {
  */
 void* WingString::substr(int start,size_t length) {
 
-	int len = this->length();
+	//int len = this->length();
 	if (this->str_type == WING_STR_IS_UNKNOW) 
 		return NULL;
 	
@@ -1133,7 +1204,8 @@ void* WingString::substr(int start,size_t length) {
 /**
  *@wchar_tת������Ϊutf8
  */
-char* wing_str_wchar_to_utf8(_In_ const wchar_t* _str) {
+char* wing_str_wchar_to_utf8(const wchar_t* _str) {
+#ifdef WIN32
 	if (_str == NULL)
 		return NULL;
 	int nLen = WideCharToMultiByte(CP_UTF8, 0, _str, -1, NULL, 0, NULL, NULL);
@@ -1142,13 +1214,16 @@ char* wing_str_wchar_to_utf8(_In_ const wchar_t* _str) {
 	memset(m_cUtf8,0,nLen + 1);
 	WideCharToMultiByte (CP_UTF8, 0, _str, -1, m_cUtf8, nLen, NULL,NULL); 
 	return m_cUtf8;
+#endif
+    return NULL;
 
 }
 
 /**
  *@wchar_t ת��Ϊ char
  */
-char* wing_str_wchar_to_char(_In_ const wchar_t* _str) {
+char* wing_str_wchar_to_char(const wchar_t* _str) {
+#ifdef WIN32
 	 if (_str == NULL)
 		 return NULL;
 	 int nLen = WideCharToMultiByte(CP_OEMCP,NULL, _str,-1,NULL,0,NULL,FALSE);  
@@ -1156,10 +1231,12 @@ char* wing_str_wchar_to_char(_In_ const wchar_t* _str) {
      char * m_cDest = (char*)malloc(nLen); 
 	 memset(m_cDest,0,nLen);
      WideCharToMultiByte (CP_OEMCP,NULL,_str,-1, m_cDest, nLen,NULL,FALSE);  
-	 return m_cDest;	
+	 return m_cDest;
+#endif
+    return NULL;
 }
-wchar_t* wing_str_char_to_wchar(_In_ const char* _str) {
-	
+wchar_t* wing_str_char_to_wchar(const char* _str) {
+#ifdef WIN32
 	size_t size     = WING_CHAR_SIZE(_str);
 	size_t len      = MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),NULL,0);
 
@@ -1169,29 +1246,31 @@ wchar_t* wing_str_char_to_wchar(_In_ const char* _str) {
 	MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),buf,(int)len);   
 
 	return buf;
+#endif
+    return NULL;
 }
-char* wing_str_char_to_utf8(_In_ const char* str) {
-	
+char* wing_str_char_to_utf8(const char* str) {
+#ifdef WIN32
 	if (str == NULL)
 		return NULL;
 
 	wchar_t* unicode_str = NULL;
 	int utf8_str_size    = 0;
 
-	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
 	size_t msize       = (utf8_str_size + 1) * sizeof(wchar_t);
 	unicode_str        = (wchar_t*)malloc(msize);                     //ΪUnicode�ַ����ռ�
 	memset(unicode_str, 0x0, (utf8_str_size + 1)*sizeof(wchar_t));
 	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, unicode_str, utf8_str_size);   //ת����Unicode����
 	
-	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
+	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
 	{
 		if (unicode_str) 
 			delete[] unicode_str;
 		return 0;
 	}
 
-	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
 	char *utf8_str = (char*)malloc(utf8_str_size+1);
 
 	memset(utf8_str,0,utf8_str_size+1);
@@ -1205,12 +1284,14 @@ char* wing_str_char_to_utf8(_In_ const char* str) {
 		return 0;
 
 	return utf8_str;
+#endif
+    return NULL;
 }
 
 /**
  *@ȥ���ַ������˿ո�
  */
-void wing_str_trim(_Inout_ char* str ,size_t size) {
+void wing_str_trim(char* str ,size_t size) {
 	if (str == NULL) 
 		return;
 	if (size <= 0)
