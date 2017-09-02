@@ -1,13 +1,6 @@
 #include "WString.h"
 #include "stdio.h"
 
-void      wing_str_trim(char* str ,size_t size = 0 );
-char*     wing_str_wchar_to_char( const wchar_t* str );
-wchar_t*  wing_str_char_to_wchar( const char* str );
-char*     wing_str_char_to_utf8( const char* str );
-char*     wing_str_wchar_to_utf8( const wchar_t* str );
-
-
 WString::WString(char *_str, size_t _size, int _dup)
 {
 	if (_size <= 0) {
@@ -29,6 +22,8 @@ WString::WString(char *_str, size_t _size, int _dup)
     } else {
         this->str      = _str;
     }
+    	std::cout << "构造函数char："<<(char*)this->str<<std::endl;
+
 }
 
 WString::WString(wchar_t *_str, size_t _size, int _dup)
@@ -37,7 +32,7 @@ WString::WString(wchar_t *_str, size_t _size, int _dup)
 	    _size = WING_WCHAR_SIZE(_str);
 	} else {
 	    if (_size == wcslen(_str)) {
-	        _size += sizeof(wchar_t);
+	        _size = (wcslen(_str)+1)*sizeof(wchar_t);
 	    }
 	}
 	
@@ -52,6 +47,8 @@ WString::WString(wchar_t *_str, size_t _size, int _dup)
 	} else {
 	    this->str = _str;
 	}
+	std::cout<<"123构造函数wchar_t：";
+	std::wcout <<(wchar_t*)this->str<<"=========="<<std::endl;
 }
 
 WString::WString()
@@ -214,11 +211,17 @@ void WString::append(const char *_str, size_t size)
 		return;
 	}
 
-	/*if (this->str_type == WING_STR_IS_WCHAR) {
+	if (this->str_type == WING_STR_IS_WCHAR) {
 
-		wchar_t* buf = wing_str_char_to_wchar((const char *)_str);
-		size_t new_size = WING_WCHAR_SIZE(buf) - sizeof(wchar_t) + this->str_size;
-
+        printf("wchar_t appened\r\n");
+		wchar_t* buf    = wing_str_char_to_wchar((const char *)_str);
+		if (!buf) {
+		    printf("convert fail\r\n");
+		    return;
+		}
+		std::wcout << "===>" <<buf << std::endl;
+		size_t new_size = WING_WCHAR_SIZE(buf) -sizeof(wchar_t) + this->str_size;
+std::wcout << "size===>" <<new_size << std::endl;
 		wchar_t* buffer = (wchar_t*)malloc(new_size);
 		memset(buffer, 0x0, new_size);
 
@@ -226,14 +229,28 @@ void WString::append(const char *_str, size_t size)
         #ifdef WIN32
 		wsprintfW(buffer, L"%s%s", this->str, buf);
 		#else
-		swprintf(buffer, new_size, L"%s%s", this->str, buf);
+		swprintf(buffer, new_size, L"%ls%ls", this->str, buf);
 		#endif
-		free(this->str);
+//std::wcout <<(wchar_t*)this->str<<std::endl;
+//		memcpy((void*)buffer,this->str,new_size);
+//		std::cout << "----===>----\r\n";
+//		std::wcout <<buffer << std::endl;
+//
+//		void *next = (void*)(buffer+this->str_size - 2*sizeof(wchar_t));
+//		memcpy(next, buf, new_size - this->str_size - 2*sizeof(wchar_t));
+//		std::cout << "next-\r\n";
+//		std::wcout <<(wchar_t*)next << std::endl;
+        std::wcout <<buffer << std::endl;
+
+		if (this->dup && this->str) {
+		    free(this->str);
+		}
 		free(buf);
 
 		this->str      = buffer;
 		this->str_size = new_size;
-	}*/
+		return;
+	}
 
 }
 
@@ -411,7 +428,7 @@ void WString::print() {
 	if (this->str_type == WING_STR_IS_CHAR)
 		printf("---char,len=%zu,%s---\r\n",this->length(),(char*)this->str);
 	else if (this->str_type == WING_STR_IS_WCHAR)
-		wprintf(L"---wchar_t,len=%zu,%s---\r\n",this->length(),(wchar_t *)this->str);
+		wprintf(L"---wchar_t,len=%zu,%ls---\r\n",this->length(),(wchar_t *)this->str);
 }
 /**
  *@��ȫ��ӡ�ַ��������������ݰ�ȫ
@@ -745,6 +762,50 @@ wchar_t* wing_str_char_to_wchar(const char* _str) {
 	MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),buf,(int)len);   
 
 	return buf;
+#else
+	//int ToWchar(char* &src, wchar_t* &dest, const char *locale = "zh_CN.utf8")
+   // {
+    if (_str == NULL) {
+        return NULL;
+    }
+
+      // 根据环境变量设置locale
+      setlocale(LC_CTYPE, "zh_CN.utf8");
+
+      // 得到转化为需要的宽字符大小
+      int w_size = mbstowcs(NULL, _str, 0) + 1;
+
+      // w_size = 0 说明mbstowcs返回值为-1。即在运行过程中遇到了非法字符(很有可能使locale
+      // 没有设置正确)
+      if (w_size == 0) {
+        return NULL;
+      }
+
+     // wcout << "w_size" << w_size << endl;
+      wchar_t *dest = (wchar_t *)malloc((sizeof(wchar_t)+1)*w_size);// [w_size];
+      if (!dest) {
+          return NULL;
+      }
+
+      int ret = mbstowcs(dest, _str, strlen(_str)+1);
+      if (ret <= 0) {
+        return NULL;
+      }
+
+      return dest;
+    //  return 0;
+    //}
+
+//    int main()
+//    {
+//      char* str = "中国123";
+//      wchar_t *w_str ;
+//      ToWchar(str,w_str);
+//      wcout << w_str[0] << "--" << w_str[1] << "--" << w_str[2];
+//      delete(w_str);
+//      return 0;
+//    }
+
 #endif
     return NULL;
 }

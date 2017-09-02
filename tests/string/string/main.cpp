@@ -9,6 +9,11 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <wchar.h>
+#include <locale.h>
 #include "../../../win32/WString.h"
 #include "../../../win32/WString.cpp"
 
@@ -42,5 +47,20 @@ int main(int argc, const char * argv[]) {
     str.print();
     printf("length:%zu\r\n", str.length());
     //printf(">%s<\r\n", str.substr(2, 2));
+    wchar_t zh[100];// = L"你好中国";
+    std::wcsncpy(zh, L"Another text", 100);
+    std::wcout << ";;;;;"<<zh;
+    WString str3(zh,0,1);
+    str3.append("123");
+    str3.print();
+    
+    std::wcout <<"::::"<< wing_str_char_to_wchar("你好中国");
+    
+    wchar_t tt[10];
+    memset(tt,0, 10*sizeof(wchar_t));
+    
+    memcpy((void*)tt,L"123456789000000000000",9*sizeof(wchar_t));
+    //swprintf(tt, 10*sizeof(wchar_t), L"%ls" L"123456789000000000000000000000");
+    std::wcout << "-----------" <<tt<<"-----------"<<std::endl;
     return 0;
 }

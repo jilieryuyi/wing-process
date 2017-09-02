@@ -13,6 +13,12 @@
 #define WING_CHAR_SIZE(str)  (strlen((char*)str)+1)*sizeof(char)
 #define WING_WCHAR_SIZE(str) (wcslen((wchar_t*)str)+1)*sizeof(wchar_t)
 
+void      wing_str_trim(char* str ,size_t size = 0 );
+char*     wing_str_wchar_to_char( const wchar_t* str );
+wchar_t*  wing_str_char_to_wchar( const char* str );
+char*     wing_str_char_to_utf8( const char* str );
+char*     wing_str_wchar_to_utf8( const wchar_t* str );
+
 
 /**
  *---- WString ----
