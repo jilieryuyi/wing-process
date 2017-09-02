@@ -935,7 +935,7 @@ void WingString::savePrint() {
 
 
 /**
- * @�ַ���ת��Ϊutf8���룬��ı�����?
+ * @�ַ���ת��Ϊutf8���룬��ı�����?
  */
 BOOL WingString::toUTF8()
 {
@@ -967,7 +967,7 @@ BOOL WingString::toUTF8()
 }
 
 /**
- *@ȥ�����˿ո� ����ı�����?
+ *@ȥ�����˿ո� ����ı�����?
  */
 void WingString::trim() {
 	
@@ -1042,7 +1042,7 @@ double WingString::toNumber() {
 	    len    = i;
 	double ten = 10;
 
-	//����Ǹ���?
+	//����Ǹ���?
 	if ((int)numstr[start] == 45) {
 		start = 1;
 		while(start < i) {
@@ -1178,20 +1178,20 @@ char* wing_str_char_to_utf8(_In_ const char* str) {
 	wchar_t* unicode_str = NULL;
 	int utf8_str_size    = 0;
 
-	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
 	size_t msize       = (utf8_str_size + 1) * sizeof(wchar_t);
 	unicode_str        = (wchar_t*)malloc(msize);                     //ΪUnicode�ַ����ռ�
 	memset(unicode_str, 0x0, (utf8_str_size + 1)*sizeof(wchar_t));
 	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, unicode_str, utf8_str_size);   //ת����Unicode����
 	
-	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
+	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
 	{
 		if (unicode_str) 
 			delete[] unicode_str;
 		return 0;
 	}
 
-	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
 	char *utf8_str = (char*)malloc(utf8_str_size+1);
 
 	memset(utf8_str,0,utf8_str_size+1);
