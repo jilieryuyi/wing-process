@@ -1035,16 +1035,11 @@ char* WingString::rtrim() {
 	if (this->str_type == WING_STR_IS_CHAR)
 	{
 		char *_et = (char*)((size_t)this->str + this->str_size - 2);
-                	//char *_st = (char*)this->str;
 
-                	while (*_et == ' ') {
-                		*_et-- = '\0';
-                	}
+        while (*_et == ' ') {
+            *_et-- = '\0';
+        }
 
-//                	while (*_st == ' ') {
-//                		while (_st <= _et) { *_st = *(_st + 1); _st++; }
-//                		_st = str;
-//                	}
 		this->str_size = strlen((char*)this->str)+1;
 		return (char*)this->str;
 	}
