@@ -7,7 +7,7 @@
 #include "WingString.class.h"
 #include "stdio.h"
 
-WingString::WingString( char *_str, int _size ){
+WingString::WingString( char *_str, size_t _size ){
 	if( _size <= 0 ) 
 		_size = WING_CHAR_SIZE( _str );
 	this->str      = malloc( _size );
@@ -18,7 +18,7 @@ WingString::WingString( char *_str, int _size ){
 	memcpy( this->str, _str, _size ); 
 }
 
-WingString::WingString( wchar_t *_str, int _size ){
+WingString::WingString( wchar_t *_str, size_t _size ){
 	if( _size <= 0 ) 
 		_size = WING_WCHAR_SIZE( _str );
 	this->str      = malloc( _size );
@@ -561,7 +561,7 @@ WingString &WingString::operator+=( const wchar_t* _str ){
     return *this;
 }
 
-unsigned int WingString::size(){
+size_t WingString::size(){
 	return this->str_size;
 }
 unsigned int WingString::length(){
@@ -583,7 +583,7 @@ unsigned int WingString::length(){
 /**
  *@追加字符串
  */
-void WingString::append( const wchar_t *_str, int size ){
+void WingString::append( const wchar_t *_str, size_t size ){
 		
 	if( _str == NULL )
     {
@@ -607,8 +607,8 @@ void WingString::append( const wchar_t *_str, int size ){
 		
 		char *res = wing_str_wchar_to_char( (const wchar_t*)_str );
 
-		int len       = WING_CHAR_SIZE( res );
-		int new_len   = this->str_size + len - 1 ;
+		size_t len       = WING_CHAR_SIZE( res );
+		size_t new_len   = this->str_size + len - 1 ;
 
 		char *new_str = (char*)malloc(new_len);
 
@@ -631,7 +631,7 @@ void WingString::append( const wchar_t *_str, int size ){
 	if( this->str_type == WING_STR_IS_WCHAR ) {
 	    
 		int wl       = sizeof(wchar_t);
-		int new_size = this->str_size + size - wl;
+		size_t new_size = this->str_size + size - wl;
 		
 		wchar_t* res = (wchar_t*)malloc( new_size );
 
@@ -650,7 +650,7 @@ void WingString::append( const wchar_t *_str, int size ){
 /**
  *@追加字符串
  */
-void WingString::append( const char *_str, int size ){
+void WingString::append( const char *_str, size_t size ){
 		
 	if( _str == NULL )
     {
@@ -673,7 +673,7 @@ void WingString::append( const char *_str, int size ){
 
 	if( this->str_type == WING_STR_IS_CHAR ){
 		
-		int new_size = this->str_size - 1 + size;
+		size_t new_size = this->str_size - 1 + size;
 		char *res = (char*)malloc( new_size );
 		memset( res, 0, new_size );
 
@@ -694,7 +694,7 @@ void WingString::append( const char *_str, int size ){
 	if( this->str_type == WING_STR_IS_WCHAR ) {
 
 		wchar_t* buf = wing_str_char_to_wchar( (const char *)_str );
-		int new_size = WING_WCHAR_SIZE( buf ) - sizeof(wchar_t) + this->str_size;
+		size_t new_size = WING_WCHAR_SIZE( buf ) - sizeof(wchar_t) + this->str_size;
 
 		wchar_t* buffer = (wchar_t*)malloc(new_size);
 		memset( buffer, 0x0, new_size );
@@ -715,7 +715,7 @@ void WingString::append( WingString &_str ){
 		
 	if( this->str_type == WING_STR_IS_UNKNOW ) {
 
-		int size       = _str.size();
+		size_t size       = _str.size();
 		this->str      = malloc( size );
 		this->str_size = size;
 		this->str_type = _str.type();
@@ -732,7 +732,7 @@ void WingString::append( WingString &_str ){
 
 		else if( _str.type() == WING_STR_IS_CHAR ){
 			
-			int new_size = this->str_size - 1 + _str.size();
+			size_t new_size = this->str_size - 1 + _str.size();
 			char *res = (char*)malloc( new_size );
 			memset( res, 0, new_size );
 
@@ -753,8 +753,8 @@ void WingString::append( WingString &_str ){
 
 			char *res = wing_str_wchar_to_char( (const wchar_t*)_str.data() );
 
-			int len       = WING_CHAR_SIZE( res );
-			int new_len   = this->str_size + len - 1 ;
+			size_t len       = WING_CHAR_SIZE( res );
+			size_t new_len   = this->str_size + len - 1 ;
 
 			char *new_str = (char*)malloc(new_len);
 
@@ -785,7 +785,7 @@ void WingString::append( WingString &_str ){
 		else if( _str.type() == WING_STR_IS_WCHAR ) {
 			
 			int wl       = sizeof(wchar_t);
-			int new_size = this->str_size + _str.size() - wl;
+			size_t new_size = this->str_size + _str.size() - wl;
 		
 			wchar_t* res = (wchar_t*)malloc( new_size );
 
@@ -803,7 +803,7 @@ void WingString::append( WingString &_str ){
 		else if( _str.type() == WING_STR_IS_CHAR ) {
 			
 			wchar_t* buf = wing_str_char_to_wchar( (const char *)_str.data() );
-			int new_size = WING_WCHAR_SIZE( buf ) - sizeof(wchar_t) + this->str_size;
+			size_t new_size = WING_WCHAR_SIZE( buf ) - sizeof(wchar_t) + this->str_size;
 
 			wchar_t* buffer = (wchar_t*)malloc(new_size);
 			memset( buffer, 0x0, new_size );
@@ -901,9 +901,9 @@ wchar_t* WingString::w_str(){
 void WingString::print(){
 	 setlocale(LC_ALL, "chs");
 	if( this->str_type == WING_STR_IS_CHAR )
-		printf("---char:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),(char*)this->str);
+		printf("---char:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(char*)this->str);
 	else if( this->str_type == WING_STR_IS_WCHAR )
-		wprintf(L"---wchar_t:size=%ld,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
+		wprintf(L"---wchar_t:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
 }
 /**
  *@安全打印字符串，二进制数据安全
@@ -915,7 +915,7 @@ void WingString::savePrint(){
 	long end = this->length();
 
 	if( this->str_type == WING_STR_IS_CHAR ) {
-		printf("---char:size=%ld,len=%ld,",this->size(),this->length());
+		printf("---char:size=%zu,len=%ld,",this->size(),this->length());
 		while( i < end ){
 			char c = ((char*)this->str)[i];
 			if( c == '\0') c = ' ';
@@ -926,7 +926,7 @@ void WingString::savePrint(){
 	}
 	else if( this->str_type == WING_STR_IS_WCHAR ) {
 		
-		wprintf(L"---wchar_t:size=%ld,len=%ld,",this->size(),this->length());
+		wprintf(L"---wchar_t:size=%zu,len=%ld,",this->size(),this->length());
 		while( i < end ){
 			wprintf(L"%c",((wchar_t*)this->str)[i]);
 			i++;
@@ -1095,7 +1095,7 @@ double WingString::toNumber(){
  *@返回子字符串 不改变字符串本身  
  *@用完之后 返回值 如果返回值不为null 需要 free ,start 从0开始，也可以是负数，从末尾开始截取
  */
-void* WingString::substr(int start,int length) {
+void* WingString::substr(int start,size_t length) {
 
 	int len = this->length();
 	if( this->str_type == WING_STR_IS_UNKNOW ) 
@@ -1107,20 +1107,20 @@ void* WingString::substr(int start,int length) {
 	else if( this->str_type == WING_STR_IS_WCHAR )
 		sl = sizeof(wchar_t);
 
-	unsigned long end_str   = (unsigned long)this->str + this->str_size - 1*sl;
-	unsigned long start_str = NULL;
+	size_t end_str   = (size_t)this->str + this->str_size - 1*sl;
+	size_t start_str = NULL;
 
 	if( start >= 0 ){
-		start_str =  (unsigned long)this->str + start*sl ;
+		start_str =  (size_t)this->str + start*sl ;
 		if( start_str >= end_str ) 
 			return NULL;
 	}else{
-		start_str = (unsigned long)this->str + this->str_size + (start - 1)*sl;
-		if( start_str < (unsigned long)this->str )
-			start_str = (unsigned long)this->str;
+		start_str = (size_t)this->str + this->str_size + (start - 1)*sl;
+		if( start_str < (size_t)this->str )
+			start_str = (size_t)this->str;
 	}
 
-	if( (unsigned long)length > (end_str-start_str)/sl ) 
+	if( (size_t)length > (end_str-start_str)/sl ) 
 		length = (end_str-start_str)/sl;
 
 	void* _subatr = malloc( (length+1)*sl );
@@ -1163,13 +1163,13 @@ char* wing_str_wchar_to_char( _In_ const wchar_t* _str ){
 }
 wchar_t* wing_str_char_to_wchar( _In_ const char* _str ){
 	
-	int size     = WING_CHAR_SIZE( _str );
-	int len      = MultiByteToWideChar(CP_ACP,0,(const char *)_str,size-1,NULL,0);
+	size_t size     = WING_CHAR_SIZE( _str );
+	size_t len      = MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),NULL,0);
 
-	int buf_size = (len+1)*sizeof(wchar_t);
+	size_t buf_size = (len+1)*sizeof(wchar_t);
 	wchar_t* buf = (wchar_t*)malloc( buf_size );
 	memset( buf, 0x0, buf_size );
-	MultiByteToWideChar( CP_ACP,0,(const char *)_str,size-1,buf,len);   
+	MultiByteToWideChar( CP_ACP,0,(const char *)_str,(int)(size-1),buf,(int)len);   
 
 	return buf;
 }
@@ -1212,13 +1212,13 @@ char* wing_str_char_to_utf8( _In_ const char* str ){
 /**
  *@去除字符串两端空格
  */
-void wing_str_trim( _Inout_ char* str ,int size ){
+void wing_str_trim( _Inout_ char* str ,size_t size ){
 	if( str == NULL ) 
 		return;
 	if( size <= 0 )
 		size = strlen( str );
 	
-	int len     = size;
+	size_t len     = size;
 	char *start = str;  
     char *end   = str + len - 1;  
   

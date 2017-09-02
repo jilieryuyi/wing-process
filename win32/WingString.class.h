@@ -14,7 +14,7 @@
 /**
  *@size为字符串长度,或者sizeof 都可以 ，已经兼容并且二进制安全
  */
-void      wing_str_trim( _Inout_ char* str ,int size = 0 );
+void      wing_str_trim( _Inout_ char* str ,size_t size = 0 );
 char*     wing_str_wchar_to_char( _In_ const wchar_t* str );
 wchar_t*  wing_str_char_to_wchar( _In_ const char* str );
 char*     wing_str_char_to_utf8( _In_ const char* str );
@@ -29,18 +29,18 @@ class WingString{
 
 private:
 	void *str;
-	unsigned int str_size;
+	size_t str_size;
 	unsigned int str_type;
 
 public:
 
 	//构造函数
-	WingString( char *_str, int _size = 0 );
-	WingString( wchar_t *_str, int _size = 0 );
+	WingString( char *_str, size_t _size = 0 );
+	WingString( wchar_t *_str, size_t _size = 0 );
 	WingString( );
 	~WingString( );
 
-	unsigned int size();
+	size_t size();
 	unsigned int length();
 
 	//拷贝字符串原型数据 用完需要free
@@ -56,9 +56,9 @@ public:
 	wchar_t* w_str();
 
 	//追加字符串 改变字符串本身
-	void append( const char *_str, int size = 0 );
+	void append( const char *_str, size_t size = 0 );
 	void append( WingString &_str );
-	void append( const wchar_t *_str,int size = 0 );
+	void append( const wchar_t *_str,size_t size = 0 );
 
 	//转换编码 改变字符串本身
 	BOOL toUTF8( );
@@ -73,7 +73,7 @@ public:
 	double toNumber();
 
 	//返回子字符串 不改变字符串本身  用完之后 返回值 需要 free ,start 从0开始，也可以是负数，从末尾开始截取
-	void* substr(int start,int length);
+	void* substr(int start,size_t length);
 
 
 	WingString& operator=(WingString &_str );
