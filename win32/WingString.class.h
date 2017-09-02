@@ -35,10 +35,10 @@ private:
 public:
 
 	//¹¹Ôìº¯Êý
-	WingString( char *_str, size_t _size = 0 );
-	WingString( wchar_t *_str, size_t _size = 0 );
-	WingString( );
-	~WingString( );
+	WingString(char *_str, size_t _size = 0);
+	WingString(wchar_t *_str, size_t _size = 0);
+	WingString();
+	~WingString();
 
 	size_t size();
 	unsigned int length();

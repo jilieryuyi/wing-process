@@ -7,37 +7,45 @@
 #include "WingString.class.h"
 #include "stdio.h"
 
-WingString::WingString( char *_str, size_t _size ){
+WingString::WingString(char *_str, size_t _size)
+{
+	
 	if( _size <= 0 ) 
-		_size = WING_CHAR_SIZE( _str );
-	this->str      = malloc( _size );
+		_size = WING_CHAR_SIZE(_str);
+	
+	this->str      = malloc(_size);
 	this->str_size = _size;
 	this->str_type = WING_STR_IS_CHAR;
 
-	memset( this->str, 0, _size );
-	memcpy( this->str, _str, _size ); 
+	memset(this->str, 0, _size);
+	memcpy(this->str, _str, _size); 
 }
 
-WingString::WingString( wchar_t *_str, size_t _size ){
+WingString::WingString(wchar_t *_str, size_t _size)
+{
+	
 	if( _size <= 0 ) 
-		_size = WING_WCHAR_SIZE( _str );
-	this->str      = malloc( _size );
+		_size = WING_WCHAR_SIZE(_str);
+	
+	this->str      = malloc(_size);
 	this->str_size = _size;
 	this->str_type = WING_STR_IS_WCHAR;
 
-	memset( this->str, 0x0, _size );
-	memcpy( this->str, _str, _size ); 
+	memset(this->str, 0x0, _size);
+	memcpy(this->str, _str, _size); 
 }
 
-WingString::WingString(){
+WingString::WingString()
+{
 	this->str      = NULL;
 	this->str_size = 0;
 	this->str_type = WING_STR_IS_UNKNOW;
 }
 
-WingString::~WingString(){
-	if( this->str != NULL ) {
-		free( this->str );
+WingString::~WingString()
+{
+	if (this->str != NULL) {
+		free(this->str);
 		this->str = NULL;
 	}
 	this->str_size = 0;
@@ -45,58 +53,68 @@ WingString::~WingString(){
 }
 
 
-BOOL WingString::operator!=( WingString &_str )const{
+BOOL WingString::operator != (WingString &_str) const
+{
 	return !(*this == _str);
 }
-BOOL WingString::operator!=( const char* _str )const{
+BOOL WingString::operator != (const char* _str) const
+{
 	return !(*this == _str);
 }
-BOOL WingString::operator!=( const wchar_t* _str )const{
+
+BOOL WingString::operator != (const wchar_t* _str) const
+{
 	return !(*this == _str);
 }
-BOOL WingString::operator<( const wchar_t* _str )const{
-	switch( this->str_type ) {
-	case WING_STR_IS_UNKNOW:
-		return _str!=NULL;
+
+BOOL WingString::operator < (const wchar_t* _str) const
+{
+	switch (this->str_type) {
+		case WING_STR_IS_UNKNOW:
+			return _str!=NULL;
 		break;
-	case WING_STR_IS_WCHAR:
-		{
-				return wcscmp( (wchar_t*)this->str, _str ) < 0;
+		case WING_STR_IS_WCHAR: {
+			return wcscmp( (wchar_t*)this->str, _str ) < 0;
 		}
 		break;
-	case WING_STR_IS_CHAR:
-		{
-			wchar_t *res = wing_str_char_to_wchar( (char*)this->str );
+		case WING_STR_IS_CHAR:{
+			wchar_t *res = wing_str_char_to_wchar((char*)this->str);
 			int d = wcscmp( res, _str );
-			if( res ) free( res );
+			if (res) {
+				free(res);
+			}
 			return d < 0;
-
-		}break;
-	}
-	return false;
-}
-BOOL WingString::operator<=( const wchar_t* _str )const{
-	switch( this->str_type ) {
-	case WING_STR_IS_UNKNOW:
-		return 1;
-		break;
-	case WING_STR_IS_WCHAR:
-		{
-				return wcscmp( (wchar_t*)this->str, _str ) <= 0;
 		}
 		break;
-	case WING_STR_IS_CHAR:
-		{
-			wchar_t *res = wing_str_char_to_wchar( (char*)this->str );
-			int d = wcscmp( res, _str );
-			if( res ) free( res );
-			return d <= 0;
+	}
+	return false;
+}
 
+BOOL WingString::operator <= (const wchar_t* _str) const
+{
+	switch (this->str_type) {
+		case WING_STR_IS_UNKNOW:
+			//NULL 永远小于等于一个字符串
+			return 1;
+		break;
+		case WING_STR_IS_WCHAR: {
+			return wcscmp((wchar_t*)this->str, _str) <= 0;
+		}
+		break;
+		case WING_STR_IS_CHAR: {
+			wchar_t *res = wing_str_char_to_wchar((char*)this->str);
+			int d = wcscmp(res, _str);
+			if (res) {
+				free(res);
+			}
+			return d <= 0;
 		}break;
 	}
 	return false;
 }
-BOOL WingString::operator<( const char* _str )const{
+
+BOOL WingString::operator < (const char* _str) const
+{
 	switch( this->str_type ) {
 	case WING_STR_IS_UNKNOW:
 		return _str != NULL;
