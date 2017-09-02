@@ -1216,7 +1216,6 @@ void wing_str_trim(_Inout_ char* str ,size_t size) {
 	if (size <= 0)
 		size = strlen(str);
 	
-	//char str[] = "  abc   ";
 	char *_et = (char*)(str + size - 1);
 	char *_st = str;
 
@@ -1228,43 +1227,4 @@ void wing_str_trim(_Inout_ char* str ,size_t size) {
 		while (_st <= _et) { *_st = *(_st + 1); _st++; }
 		_st = str;
 	}
-
-	/*size_t len     = size;
-	char *start = str;  
-    char *end   = str + len - 1;  
-  
-	//�ҵ���һ����Ϊ�յ��ַ�
-    while (1)   
-    {     
-        char c = *start;  
-        if (!isspace(c))  
-            break;  
-  
-        start++;  
-        if (start > end)  
-        {     
-            str[0] = '\0';  
-            return;  
-        }    
-    }     
-  
-	//�ҵ����һ����Ϊ�յ��ַ�?
-    while (1)   
-    {     
-        char c = *end;  
-        if (!isspace(c) && c != '\0')  //���ݴ������size����strlen
-            break;  
-  
-        end--;  
-        if (start > end)  
-        {     
-            str[0] = '\0';  
-            return;  
-        }  
-    }  
-  
-	//��������
-    memmove(str, start, end - start + 1);  
-	//���һ��ֵ����?
-    str[end - start + 1] = '\0';  */
 }
