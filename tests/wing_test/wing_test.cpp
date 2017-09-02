@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "../../win32/WingString.class.h"
-#include "../../win32/WingString.class.c"
+#include "../../win32/WingString.class.cpp"
 
 class Test {
 private:

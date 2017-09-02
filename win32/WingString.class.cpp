@@ -115,95 +115,83 @@ BOOL WingString::operator <= (const wchar_t* _str) const
 
 BOOL WingString::operator < (const char* _str) const
 {
-	switch( this->str_type ) {
-	case WING_STR_IS_UNKNOW:
-		return _str != NULL;
+	switch (this->str_type) {
+		case WING_STR_IS_UNKNOW:
+			return _str != NULL;
 		break;
-	case WING_STR_IS_CHAR:
-		{
-				return strcmp( (char*)this->str, _str ) < 0;
+		case WING_STR_IS_CHAR: {
+			return strcmp((char*)this->str, _str) < 0;
 		}
 		break;
-	case WING_STR_IS_WCHAR:
-		{
-			char *res = wing_str_wchar_to_char( (wchar_t*)this->str );
-			int d = strcmp( res, _str );
-			if( res ) free( res );
+		case WING_STR_IS_WCHAR:	{
+			char *res = wing_str_wchar_to_char((wchar_t*)this->str);
+			int d = strcmp(res, _str);
+			if (res) free( res );
 			return d < 0;
 
 		}break;
 	}
 	return false;
 }
-BOOL WingString::operator<=( const char* _str )const{
-	switch( this->str_type ) {
+
+BOOL WingString::operator <= (const char* _str) const
+{
+	switch (this->str_type) {
 	case WING_STR_IS_UNKNOW:
 		return 1;
 		break;
-	case WING_STR_IS_CHAR:
-		{
-				return strcmp( (char*)this->str, _str ) <= 0;
-		}
-		break;
-	case WING_STR_IS_WCHAR:
-		{
-			char *res = wing_str_wchar_to_char( (wchar_t*)this->str );
-			int d = strcmp( res, _str );
-			if( res ) free( res );
-			return d <= 0;
-
-		}break;
+	case WING_STR_IS_CHAR: {
+		return strcmp((char*)this->str, _str) <= 0;
+	}
+						   break;
+	case WING_STR_IS_WCHAR: {
+		char *res = wing_str_wchar_to_char((wchar_t*)this->str);
+		int d = strcmp(res, _str);
+		if (res) free(res);
+		return d <= 0;
+	}break;
 	}
 	return false;
 }
-BOOL WingString::operator<( WingString &_str )const{
-	switch( _str.type() ) {
-	case WING_STR_IS_UNKNOW:
-		return 0;
+
+BOOL WingString::operator < (WingString &_str) const
+{
+	switch (_str.type()) {
+		case WING_STR_IS_UNKNOW:
+			return 0;
 		break;
-	case WING_STR_IS_CHAR:
-		{
-			if( this->str_type == WING_STR_IS_CHAR ){
-
-				return strcmp( (char*)this->str, (char*)_str.data() ) < 0;
-
-			}else if( this->str_type == WING_STR_IS_UNKNOW ) {
-
+		case WING_STR_IS_CHAR: {
+			if (this->str_type == WING_STR_IS_CHAR){
+				return strcmp((char*)this->str, (char*)_str.data()) < 0;
+			} else if (this->str_type == WING_STR_IS_UNKNOW) {
 				return _str.type() != WING_STR_IS_UNKNOW;
-
-			}else if( this->str_type == WING_STR_IS_WCHAR ){
-
-				char *res = wing_str_wchar_to_char( (wchar_t*)this->str );
-				int d = strcmp( res, (char*)_str.data() );
-				if( res ) free( res );
+			} else if (this->str_type == WING_STR_IS_WCHAR) {
+				char *res = wing_str_wchar_to_char((wchar_t*)this->str);
+				int d = strcmp(res, (char*)_str.data());
+				if (res) free(res);
 				return d < 0;
 			}
 			return false;
 		}
 		break;
-	case WING_STR_IS_WCHAR:
-		{
-			if( this->str_type == WING_STR_IS_WCHAR ){
-
-				return wcscmp( (wchar_t*)this->str, (wchar_t*)_str.data() ) < 0;
-
-			}else if( this->str_type == WING_STR_IS_UNKNOW ) {
-
+		case WING_STR_IS_WCHAR: {
+			if (this->str_type == WING_STR_IS_WCHAR) {
+				return wcscmp((wchar_t*)this->str, (wchar_t*)_str.data()) < 0;
+			} else if (this->str_type == WING_STR_IS_UNKNOW) {
 				return _str.type() != WING_STR_IS_UNKNOW;
-
-			}else if( this->str_type == WING_STR_IS_CHAR ){
-
+			} else if (this->str_type == WING_STR_IS_CHAR) {
 				wchar_t *res = wing_str_char_to_wchar( (char*)this->str );
-				int d = wcscmp( res, (wchar_t*)_str.data() );
-				if( res ) free( res );
+				int d = wcscmp(res, (wchar_t*)_str.data());
+				if (res) free(res);
 				return d < 0;
 			}
 			return false;
-
-		}break;
+		}
+		break;
 	}
 	return false;
 }
+
 BOOL WingString::operator<=( WingString &_str )const{
 	switch( _str.type() ) {
 	case WING_STR_IS_UNKNOW:
