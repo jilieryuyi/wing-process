@@ -56,12 +56,12 @@ int wing_file_is_php(const char *file)
     char *ext = strrchr(path, '.');
     if (ext) {
         ext++;
-        if (strcmp(ext, "php") == 0 && access(path, R_OK) == 0) {
+        if (strcmp(ext, "php") == 0 && wing_access(path, R_OK) == 0) {
             return 1;
         }
     }
 
-    if (access(path, R_OK) != 0) {
+    if (wing_access(path, R_OK) != 0) {
         return 0;
     }
 
