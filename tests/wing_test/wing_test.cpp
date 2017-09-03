@@ -2,8 +2,10 @@
 //
 
 #include "stdafx.h"
+#include <Locale.h>
 #include "../../win32/WingString.class.h"
 #include "../../win32/WingString.class.cpp"
+#define WIN32 1
 
 class Test {
 private:
@@ -37,6 +39,27 @@ int main()
 		printf("deng\r\n");
 	}
 
+	//WingString 的测试用例
+	setlocale(LC_ALL, "chs");
+	char trim_str1[] = " 123 ";
+	wing_str_trim(trim_str1);
+	printf("==>%s<==\r\n", trim_str1);
+
+	char* wing_str1 =  wing_str_wchar_to_char(L"你好中国");
+	printf("1==>%s<==\r\n", wing_str1);
+	if (wing_str1) free(wing_str1);
+	
+	wchar_t* wing_str2 = wing_str_char_to_wchar("你好中国");
+	wprintf(L"2==>%ls<==\r\n" ,wing_str2);
+	if (wing_str2) free(wing_str2);
+
+	char* wing_str3 = wing_str_char_to_utf8("你好中国");
+	printf("3==>%s<==\r\n", wing_str3);
+	if (wing_str3) free(wing_str3);
+
+	char* wing_str4 = wing_str_wchar_to_utf8(L"你好中国");
+	printf("4==>%s<==\r\n", wing_str4);
+	if (wing_str4) free(wing_str4);
     return 0;
 }
 

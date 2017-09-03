@@ -1,8 +1,6 @@
 #ifndef __WING_STRING_H__
 #define __WING_STRING_H__
-#ifdef WIN32
 #include "Windows.h"
-#endif
 #include <locale.h>
 #include "math.h"
 
@@ -16,11 +14,23 @@
 /**
  *@sizeΪ�ַ�������,����sizeof ������ ���Ѿ����ݲ��Ҷ����ư�ȫ
  */
-void      wing_str_trim(char* str ,size_t size = 0 );
-char*     wing_str_wchar_to_char( const wchar_t* str );
-wchar_t*  wing_str_char_to_wchar( const char* str );
-char*     wing_str_char_to_utf8( const char* str );
-char*     wing_str_wchar_to_utf8( const wchar_t* str );
+void      wing_str_trim(char* str ,size_t size = 0);
+/**
+ * need free the return value if not null
+ */
+char*     wing_str_wchar_to_char(const wchar_t* str);
+/**
+ * need free the return value if not null
+ */
+wchar_t*  wing_str_char_to_wchar(const char* str);
+/**
+ * need free the return value if not null
+ */
+char*     wing_str_char_to_utf8(const char* str);
+/**
+ * need free the return value if not null
+ */
+char*     wing_str_wchar_to_utf8(const wchar_t* str);
 
 /**
  *@---- WingString ----
@@ -58,12 +68,12 @@ public:
 	wchar_t* w_str();
 
 	//׷���ַ��� �ı��ַ�������
-	void append( const char *_str, size_t size = 0 );
-	void append( WingString &_str );
-	void append( const wchar_t *_str,size_t size = 0 );
+	void append(const char *_str, size_t size = 0);
+	void append(WingString &_str);
+	void append(const wchar_t *_str,size_t size = 0);
 
 	//ת������ �ı��ַ�������
-	int toUTF8( );
+	int toUTF8();
 	//ȥ�����˿ո� �ı��ַ�������
 	char* trim();
 	char* ltrim();
@@ -80,33 +90,33 @@ public:
 	void* substr(int start,size_t length);
 
 
-	WingString& operator=(WingString &_str );
-	WingString& operator=(const char* _str );
-	WingString& operator=(const wchar_t* _str );
-	WingString& operator+(WingString &_str );
-	WingString& operator+(const char* _str );
-	WingString& operator+(const wchar_t* _str );
-	WingString& operator+=(WingString &_str );
-	WingString& operator+=(const char* _str );
-	WingString& operator+=(const wchar_t* _str );
-	int operator==( WingString &_str )const;
-	int operator==( const char* _str )const;
-	int operator==( const wchar_t* _str )const;
-	int operator!=( WingString &_str )const;
-	int operator!=( const char* _str )const;
-	int operator!=( const wchar_t* _str )const;
-	int operator>( WingString &_str )const;
-	int operator>=( WingString &_str )const;
-	int operator>( const char* _str )const;
-	int operator>=( const char* _str )const;
-	int operator>( const wchar_t* _str )const;
-	int operator>=( const wchar_t* _str )const;
-	int operator<( WingString &_str )const;
-	int operator<=( WingString &_str )const;
-	int operator<( const char* _str )const;
-	int operator<=( const char* _str )const;
-	int operator<( const wchar_t* _str )const;
-	int operator<=( const wchar_t* _str )const;
+	WingString& operator=(WingString &_str);
+	WingString& operator=(const char* _str);
+	WingString& operator=(const wchar_t* _str);
+	WingString& operator+(WingString &_str);
+	WingString& operator+(const char* _str);
+	WingString& operator+(const wchar_t* _str);
+	WingString& operator+=(WingString &_str);
+	WingString& operator+=(const char* _str);
+	WingString& operator+=(const wchar_t* _str);
+	int operator==(WingString &_str)const;
+	int operator==(const char* _str)const;
+	int operator==(const wchar_t* _str)const;
+	int operator!=(WingString &_str)const;
+	int operator!=(const char* _str)const;
+	int operator!=(const wchar_t* _str)const;
+	int operator>(WingString &_str)const;
+	int operator>=(WingString &_str)const;
+	int operator>(const char* _str)const;
+	int operator>=(const char* _str)const;
+	int operator>(const wchar_t* _str)const;
+	int operator>=(const wchar_t* _str)const;
+	int operator<(WingString &_str)const;
+	int operator<=(WingString &_str)const;
+	int operator<(const char* _str)const;
+	int operator<=(const char* _str)const;
+	int operator<(const wchar_t* _str)const;
+	int operator<=(const wchar_t* _str)const;
 
 };
 
