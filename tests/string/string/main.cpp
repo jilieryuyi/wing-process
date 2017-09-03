@@ -62,5 +62,11 @@ int main(int argc, const char * argv[]) {
     memcpy((void*)tt,L"123456789000000000000",9*sizeof(wchar_t));
     //swprintf(tt, 10*sizeof(wchar_t), L"%ls" L"123456789000000000000000000000");
     std::wcout << "-----------" <<tt<<"-----------"<<std::endl;
+    
+    
+    
+    wchar_t *testss = L"asfsfd";
+    wprintf(L"%ls\r\n", testss);
+    
     return 0;
 }
