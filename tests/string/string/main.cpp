@@ -18,6 +18,9 @@
 #include "../../../win32/WString.cpp"
 
 int main(int argc, const char * argv[]) {
+    std::locale::global(std::locale(""));
+    setlocale(LC_CTYPE, "");    // MinGW gcc.
+    std::wcout.imbue(std::locale(""));
     // insert code here...
     std::cout << "Hello, World!\n";
     
@@ -47,8 +50,15 @@ int main(int argc, const char * argv[]) {
     str.print();
     printf("length:%zu\r\n", str.length());
     //printf(">%s<\r\n", str.substr(2, 2));
+    
+    
+    
     wchar_t zh[100];// = L"你好中国";
     std::wcsncpy(zh, L"你好中国", 100);
+    
+    std::wcout << L"$$$" <<zh << std::endl;
+     printf("###%ls\n", zh);
+    
     std::wcout << ";;;;;"<<zh;
     WString str3(zh,0,1);
     str3.append("123");
