@@ -22,6 +22,8 @@ int main(int argc, const char * argv[]) {
 //    setlocale(LC_CTYPE, "");    // MinGW gcc.
 //    std::wcout.imbue(std::locale(""));
     // insert code here...
+    // 根据环境变量设置locale
+    setlocale(LC_CTYPE, "zh_CN.utf8");
     std::cout << "Hello, World!\n";
     
     WString str1;
@@ -53,11 +55,11 @@ int main(int argc, const char * argv[]) {
     
     
     
-    wchar_t zh[100];// = L"你好中国";
-    std::wcsncpy(zh, L"你好中国", 100);
+   // wchar_t zh[100] = L"你好中国";
+  //  std::wcsncpy(zh, L"你好中国", 100);
     
-   // std::wcout << L"$$$" <<zh << std::endl;
-     //printf("###%ls\n", zh);
+  // std::wcout << L"$$$" <<zh << std::endl;
+    // printf("###%ls|||||\n", zh);
     
 //    std::wcout << ";;;;;"<<zh;
 //    WString str3(zh,0,1);

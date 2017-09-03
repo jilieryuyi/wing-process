@@ -769,8 +769,7 @@ wchar_t* wing_str_char_to_wchar(const char* _str) {
         return NULL;
     }
 
-      // 根据环境变量设置locale
-      setlocale(LC_CTYPE, "zh_CN.utf8");
+     
 
       // 得到转化为需要的宽字符大小
       int w_size = mbstowcs(NULL, _str, 0) + 1;
