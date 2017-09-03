@@ -48,7 +48,7 @@ WString::WString(wchar_t *_str, size_t _size, int _dup)
 	    this->str = _str;
 	}
 	std::cout<<"123构造函数wchar_t：";
-	std::wcout <<(wchar_t*)this->str<<"=========="<<std::endl;
+	wprintf(L"####==>%ls<==####\r\n", this->str);//<<(wchar_t*)this->str<<"=========="<<std::endl;
 }
 
 WString::WString()

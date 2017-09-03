@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]) {
     printf("length:%zu\r\n", str.length());
     //printf(">%s<\r\n", str.substr(2, 2));
     wchar_t zh[100];// = L"你好中国";
-    std::wcsncpy(zh, L"Another text", 100);
+    std::wcsncpy(zh, L"你好中国", 100);
     std::wcout << ";;;;;"<<zh;
     WString str3(zh,0,1);
     str3.append("123");
