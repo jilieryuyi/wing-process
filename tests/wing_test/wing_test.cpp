@@ -60,6 +60,22 @@ int main()
 	char* wing_str4 = wing_str_wchar_to_utf8(L"你好中国");
 	printf("4==>%s<==\r\n", wing_str4);
 	if (wing_str4) free(wing_str4);
+
+	WingString str1;
+	WingString str2("123中国");
+	WingString str3(L"456中国");
+
+	printf("str1 size:%zu,length:%d\r\n", str1.size(), str1.length());
+	printf("str2 size:%zu,length:%d\r\n", str2.size(), str2.length());
+	printf("str3 size:%zu,length:%d\r\n", str3.size(), str3.length());
+
+	WingString str4("123中国", sizeof("123中国"));
+	WingString str5(L"456中国", sizeof(L"123中国"));
+
+	//printf("str1 size:%zu,length:%d\r\n", str1.size(), str1.length());
+	printf("str4 size:%zu,length:%d\r\n", str4.size(), str4.length());
+	printf("str5 size:%zu,length:%d\r\n", str5.size(), str5.length());
+
     return 0;
 }
 
