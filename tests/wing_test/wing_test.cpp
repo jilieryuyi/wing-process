@@ -65,16 +65,16 @@ int main()
 	WingString str2("123中国");
 	WingString str3(L"456中国");
 
-	printf("str1 size:%zu,length:%d\r\n", str1.size(), str1.length());
-	printf("str2 size:%zu,length:%d\r\n", str2.size(), str2.length());
-	printf("str3 size:%zu,length:%d\r\n", str3.size(), str3.length());
+	printf("str1 size:%zu,length:%d,data:%s\r\n", str1.size(), str1.length(), str1.data());
+	printf("str2 size:%zu,length:%d,data:%s\r\n", str2.size(), str2.length(), str2.data());
+	wprintf(L"str3 size:%zu,length:%d,data:%ls\r\n", str3.size(), str3.length(), str3.data());
 
 	WingString str4("123中国", sizeof("123中国"));
 	WingString str5(L"456中国", sizeof(L"123中国"));
 
 	//printf("str1 size:%zu,length:%d\r\n", str1.size(), str1.length());
-	printf("str4 size:%zu,length:%d\r\n", str4.size(), str4.length());
-	printf("str5 size:%zu,length:%d\r\n", str5.size(), str5.length());
+	printf("str4 size:%zu,length:%d,data:%s\r\n", str4.size(), str4.length(), str4.data());
+	wprintf(L"str5 size:%zu,length:%d,data:%ls\r\n", str5.size(), str5.length(), str5.data());
 
 	//copy
 	void* cstr1 = str1.copy();
@@ -82,7 +82,11 @@ int main()
 	void* cstr3 = str3.copy();
 	void* cstr4 = str4.copy();
 	void* cstr5 = str5.copy();
-
+	printf("str1:%s\r\n", cstr1);
+	printf("str2:%s\r\n", cstr2);
+	wprintf(L"str3:%ls\r\n", cstr3);
+	printf("str4:%s\r\n", cstr4);
+	wprintf(L"str5:%s\r\n", cstr5);
 
 	if (cstr1) free(cstr1);
 	if (cstr2) free(cstr2);

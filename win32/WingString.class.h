@@ -55,9 +55,11 @@ public:
 	size_t size();
 	unsigned int length();
 
-	//�����ַ���ԭ������ ������Ҫfree
+	/**
+	* need free the return value if not null
+	*/
 	void* copy();
-	//�����ַ���ԭ������ ���ı����� ����free
+
 	void* data();
 	//�����ַ�������
 	int   type();
