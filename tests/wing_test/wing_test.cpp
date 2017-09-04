@@ -76,6 +76,20 @@ int main()
 	printf("str4 size:%zu,length:%d\r\n", str4.size(), str4.length());
 	printf("str5 size:%zu,length:%d\r\n", str5.size(), str5.length());
 
+	//copy
+	void* cstr1 = str1.copy();
+	void* cstr2 = str2.copy();
+	void* cstr3 = str3.copy();
+	void* cstr4 = str4.copy();
+	void* cstr5 = str5.copy();
+
+
+	if (cstr1) free(cstr1);
+	if (cstr2) free(cstr2);
+	if (cstr3) free(cstr3);
+	if (cstr4) free(cstr4);
+	if (cstr5) free(cstr5);
+
     return 0;
 }
 
