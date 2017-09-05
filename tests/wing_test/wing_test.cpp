@@ -94,6 +94,44 @@ int main()
 	if (cstr4) free(cstr4);
 	if (cstr5) free(cstr5);
 
+
+	 cstr1 = str1.c_str();
+	 cstr2 = str2.c_str();
+	 cstr3 = str3.c_str();
+	 cstr4 = str4.c_str();
+	 cstr5 = str5.c_str();
+	
+	printf("c_str str1:%s\r\n", cstr1);
+	printf("c_str str2:%s\r\n", cstr2);
+	printf("c_str str3:%s\r\n", cstr3);
+	printf("c_str str4:%s\r\n", cstr4);
+	printf("c_str str5:%s\r\n", cstr5);
+
+	if (cstr1) free(cstr1);
+	if (cstr2) free(cstr2);
+	if (cstr3) free(cstr3);
+	if (cstr4) free(cstr4);
+	if (cstr5) free(cstr5);
+
+
+	cstr1 = str1.w_str();
+	cstr2 = str2.w_str();
+	cstr3 = str3.w_str();
+	cstr4 = str4.w_str();
+	cstr5 = str5.w_str();
+
+	wprintf(L"w_str str1:%ls\r\n", cstr1);
+	wprintf(L"w_str str2:%ls\r\n", cstr2);
+	wprintf(L"w_str str3:%ls\r\n", cstr3);
+	wprintf(L"w_str str4:%ls\r\n", cstr4);
+	wprintf(L"w_str str5:%ls\r\n", cstr5);
+
+	if (cstr1) free(cstr1);
+	if (cstr2) free(cstr2);
+	if (cstr3) free(cstr3);
+	if (cstr4) free(cstr4);
+	if (cstr5) free(cstr5);
+
     return 0;
 }
 

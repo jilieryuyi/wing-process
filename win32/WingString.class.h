@@ -64,9 +64,13 @@ public:
 	//�����ַ�������
 	int   type();
 
-	//����char*�ַ��� ���ı����� ����ֵ������Ҫfree
+	/**
+	* need free the return value if not null
+	*/
 	char* c_str();
-	//����wchar_t*�ַ��� ���ı����� ����ֵ������Ҫfree
+	/**
+	* need free the return value if not null
+	*/
 	wchar_t* w_str();
 
 	//׷���ַ��� �ı��ַ�������
