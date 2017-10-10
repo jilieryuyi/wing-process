@@ -28,10 +28,31 @@ unsigned long wing_get_memory(int process_id);
 int wing_kill(int process_id);
 zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name);
 void wing_get_tmp_dir(char *buffer);
-//int wing_write_cmdline(unsigned long process_id, char *cmdline);
 void wing_get_cmdline(int process_id, char **buffer);
 
-int wing_access(const char* file, int mode) {
+/**
+ * 判断文件是否存在、是否可读、可写等等
+ * @param const char* file 文件路径
+ * @param int mode 可直接使用系统定义的常量，可以组合使用，比如判断是否可读并且可写，传入 R_OK|W_OK
+     在头文件unistd.h中的预定义如下：
+     #define R_OK 4
+     #define W_OK 2
+     #define X_OK 1
+     #define F_OK 0
+     具体含义如下：
+     R_OK 只判断是否有读权限
+     W_OK 只判断是否有写权限
+     X_OK 判断是否有执行权限
+     F_OK 只判断是否存在
+     在宏定义里面分别对应：
+     00 只存在
+     02 写权限
+     04 读权限
+     06 读和写权限
+ * @return int 0代表成功 -1代表失败，使用的时候判断 == 0 或者 == -1 、!= 0 即可
+ */
+int wing_access(const char* file, int mode)
+{
 #ifdef PHP_WIN32
 	return _access(file, mode);
 #else 

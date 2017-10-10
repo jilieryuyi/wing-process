@@ -1,4 +1,6 @@
-
+/**
+ * 读取类的属性，这里为了兼容php7和其他版本所做的简单的条件编译封装
+ */
 zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char *name)
 {
 	TSRMLS_FETCH();
@@ -11,11 +13,11 @@ zval *wing_zend_read_property(zend_class_entry *scope, zval *object, const char 
 
 
 /**
-* ?��?????php??????????????php???????? <?php ???
-*
-* @param char* file
-* @return BOOL
-*/
+ * 判断文件是否为php文件
+ *
+ * @param const char* file
+ * @return BOOL
+ */
 int wing_file_is_php(const char *file)
 {
     char path[MAX_PATH] = {0};
@@ -91,10 +93,6 @@ int wing_file_is_php(const char *file)
     return 0;
 }
 
-
-
-
-
 //int wing_write_cmdline(unsigned long process_id, char *cmdline)
 //{
 //    char buffer[MAX_PATH];
@@ -133,14 +131,18 @@ int wing_file_is_php(const char *file)
     return 0;*/
 //}
 #ifdef __APPLE__
-
-void wing_get_cmdline(int pid, char **buffer) {
+/**
+ * mac下面获取进程的启动命令
+ *
+ * @param int pid 进程id
+ * @param char **buffer 输出结果到buffer
+ */
+void wing_get_cmdline(int pid, char **buffer)
+{
     int    mib[3], argmax, nargs, c = 0;
-    size_t    size;
-    char    *procargs, *sp, *np, *cp;
-    int show_args = 1;
-
-    //fprintf(stderr, "Getting argv of PID %d\n", pid);
+    size_t size;
+    char   *procargs, *sp, *np, *cp;
+    int    show_args = 1;
 
     mib[0] = CTL_KERN;
     mib[1] = KERN_ARGMAX;
@@ -155,7 +157,6 @@ void wing_get_cmdline(int pid, char **buffer) {
     if (procargs == NULL) {
         goto ERROR_A;
     }
-
 
     /*
      * Make a sysctl() call to get the raw argument space of the process.
@@ -295,8 +296,14 @@ ERROR_A:
     //exit(2);
 }
 
-
 #else
+/**
+ * linux下获取进程的启动命令（进程名称），这里获取到的命令可能不准确
+ * 如果被set_process_title重命名过的进程无法正常获取，只会返回
+ *
+ * @param int pid 进程id
+ * @param char **buffer 输出结果到buffer
+ */
 void wing_get_cmdline(int process_id, char **buffer)
 {
     *buffer = NULL;

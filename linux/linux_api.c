@@ -3,6 +3,12 @@ extern char* PHP_PATH;
 /**
  * linux或者mac查找命令所在路径，使用完需要free释放资源
  * 如：get_command_path("php"); //返回 /usr/bin/php
+ *
+ * @param const char* command 需要查询的命令
+ * @return char* 堆内存，需要手动free，如：
+ *    char *path =  wing_get_command_path("php");
+ *    ...//其他操作
+ *    free(path);
  */
 char* wing_get_command_path(const char* command)
 {
@@ -58,7 +64,11 @@ char* wing_get_command_path(const char* command)
     return NULL;
 }
 
-
+/**
+ * 启用守护进程模式
+ *
+ * @param const char* dir 工作目录
+ */
 void init_daemon(const char* dir)
 {
     int pid = fork();
@@ -89,6 +99,13 @@ void init_daemon(const char* dir)
     return;
 }
 
+/**
+ * 创建一个新的进程
+ *
+ * @param const char *command 需要以守护进程运行的指令
+ * @param char* output_file 输出重定向到文件，如果不等于NULL，则认为是以守护方式运行
+ * @return unsigned long 进程id
+ */
 unsigned long wing_create_process(const char *command, char* output_file)
 {
     TSRMLS_FETCH();
@@ -268,6 +285,11 @@ unsigned long wing_create_process(const char *command, char* output_file)
     return (unsigned long )childpid;
 }
 
+/**
+ * 获取当前进程id
+ *
+ * @return pid_t （int）
+ */
 int wing_get_process_id()
 {
     return getpid();
@@ -276,6 +298,9 @@ int wing_get_process_id()
 #ifdef __APPLE__
 /**
  * mac下面获取进程占用内存 返回单位为k
+ *
+ * @param int process_id 进程id
+ * @return int
  */
 unsigned long wing_get_memory(int process_id)
 {
@@ -291,6 +316,9 @@ unsigned long wing_get_memory(int process_id)
 #else
 /**
  * linux下面获取进程占用内存 返回单位为k
+ *
+ * @param int process_id 进程id
+ * @return int
  */
 unsigned long wing_get_memory(int process_id)
 {

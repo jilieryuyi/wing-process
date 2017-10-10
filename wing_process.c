@@ -48,7 +48,6 @@ typedef struct _WING_PROCESS_INFO {
 
 /**
  * 构造函数，第一个参数为需要以守护进程执行的php文件或者是其他可执行的命令和文件
- * 第二个参数为重定向输出的文件路径
  * 如果传入的文件是一个数字，则认为根据进程id打开进程，后续可以对此进程进行控制，比如kill
  *
  * @param string $file
@@ -212,7 +211,7 @@ ZEND_METHOD(wing_process, __destruct) {
  */
 ZEND_METHOD(wing_process, run)
 {
-   char *output_file = NULL;
+    char *output_file = NULL;
 
     #if PHP_MAJOR_VERSION >= 7
 
@@ -252,8 +251,8 @@ ZEND_METHOD(wing_process, run)
  * @param int $timout windows下面的意思为等待超时时间，linux下面的意思为是否等待，可选参数如 WNOHANG | WUNTRACED
  * @return int
  */
-ZEND_METHOD(wing_process, wait) {
-
+ZEND_METHOD(wing_process, wait)
+{
 	int timeout = INFINITE;
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeout);
 
@@ -295,7 +294,8 @@ ZEND_METHOD(wing_process, wait) {
  *
  * @return int
  */
-ZEND_METHOD(wing_process, getProcessId) {
+ZEND_METHOD(wing_process, getProcessId)
+{
 	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
     RETURN_LONG(info->process_id);
@@ -307,7 +307,8 @@ ZEND_METHOD(wing_process, getProcessId) {
  *
  * @return int
  */
-ZEND_METHOD(wing_process, getThreadId) {
+ZEND_METHOD(wing_process, getThreadId)
+{
     zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
     #ifdef PHP_WIN32
@@ -354,6 +355,7 @@ ZEND_METHOD(wing_process, kill)
 		PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)(info->ext_info);
 		process   = pi->hProcess;
 	}
+
     //非安全的方式直接退出 可能造成进程数据丢失
 	if (!TerminateProcess(process, 0)) {
 		RETURN_FALSE;//LONG(WING_ERROR_FAILED);
@@ -363,29 +365,36 @@ ZEND_METHOD(wing_process, kill)
 	RETURN_TRUE;
 	#else
     int process_id = 0;
+
     if (is_numeric_string(info->file, strlen(info->file), NULL, NULL, 0)) {
         process_id = zend_atoi(info->file, strlen(info->file));
     } else {
         process_id = info->process_id;
     }
+
     int status = kill(process_id, SIGKILL);
+
     if (status == -1) {
         RETURN_FALSE;
     }
+
     wait(&status);
+
     if (WIFSIGNALED(status)) {
         RETURN_TRUE;
     }
+
     RETURN_FALSE;
 	#endif
 }
 
 /**
- * 返回进程占用的实际内存，单位为字节
+ * 返回进程占用的实际内存，单位为k
  *
  * @return int
  */
-ZEND_METHOD(wing_process, getMemory) {
+ZEND_METHOD(wing_process, getMemory)
+{
 	zval *_info = wing_zend_read_property(wing_process_ce, getThis(),"process_info");
     WING_PROCESS_INFO *info = (WING_PROCESS_INFO *)Z_LVAL_P(_info);
 
@@ -414,15 +423,17 @@ ZEND_METHOD(wing_process, getMemory) {
 
 /**
  * 静态方法，获取当前进程id
- *
+ * @call \wing\wing_process::getCurrentProcessId()
  * @return int
  */
-ZEND_METHOD(wing_process, getCurrentProcessId) {
+ZEND_METHOD(wing_process, getCurrentProcessId)
+{
 	ZVAL_LONG(return_value, wing_get_process_id());
 }
 
 
-static zend_function_entry wing_process_methods[] = {
+static zend_function_entry wing_process_methods[] =
+{
 	ZEND_ME(wing_process, __construct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
 	ZEND_ME(wing_process, wait, NULL,ZEND_ACC_PUBLIC)
@@ -438,7 +449,9 @@ static zend_function_entry wing_process_methods[] = {
 	}
 };
 
-
+/**
+ * 模块初始化，这里会初始化PHP_PATH，也就是php的可执行文件路径
+ */
 PHP_MINIT_FUNCTION(wing_process)
 {
 
@@ -455,6 +468,9 @@ PHP_MINIT_FUNCTION(wing_process)
 	return SUCCESS;
 }
 
+/**
+ * 模块释放
+ */
 PHP_MSHUTDOWN_FUNCTION(wing_process)
 {
 	if (PHP_PATH) {
@@ -463,6 +479,9 @@ PHP_MSHUTDOWN_FUNCTION(wing_process)
 	return SUCCESS;
 }
 
+/**
+ * 模块请求初始化
+ */
 PHP_RINIT_FUNCTION(wing_process)
 {
 #if PHP_MAJOR_VERSION >= 7
@@ -473,11 +492,17 @@ PHP_RINIT_FUNCTION(wing_process)
 	return SUCCESS;
 }
 
+/**
+ * 模块请求释放
+ */
 PHP_RSHUTDOWN_FUNCTION(wing_process)
 {
 	return SUCCESS;
 }
 
+/**
+ * 模块相关的信息 phpinfo
+ */
 PHP_MINFO_FUNCTION(wing_process)
 {
 	php_info_print_table_start();
@@ -487,13 +512,14 @@ PHP_MINFO_FUNCTION(wing_process)
 
 
 const zend_function_entry wing_process_functions[] = {
-//	PHP_FE(wing_process_wait,NULL)
-//	PHP_FE(wing_create_process_ex,NULL)
+    //PHP_FE(wing_process_wait,NULL)
+    //PHP_FE(wing_create_process_ex,NULL)
 	//PHP_FE(alarm, NULL)
 	PHP_FE_END	/* Must be the last line in wing_process_functions[] */
 };
 
-zend_module_entry wing_process_module_entry = {
+zend_module_entry wing_process_module_entry =
+{
 	STANDARD_MODULE_HEADER,
 	"wing_process",
 	wing_process_functions,
