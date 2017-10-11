@@ -852,18 +852,13 @@ void* WingString::copy()
  */
 char* WingString::c_str()
 {
-
 	char* res = NULL;
-
 	switch (this->str_type) {
-	
-	case WING_STR_IS_CHAR:
-		{
+	    case WING_STR_IS_CHAR: {
 			res = (char*)this->copy();
 		}
 		break;
-	case WING_STR_IS_WCHAR:
-		{
+	    case WING_STR_IS_WCHAR: {
 			res = wing_str_wchar_to_char((const wchar_t*)str);	   
 		}
 		break;
@@ -884,7 +879,7 @@ wchar_t* WingString::w_str()
 			res = wing_str_char_to_wchar((const char*)this->str);
 		}
 		break;
-	case WING_STR_IS_WCHAR: {
+	    case WING_STR_IS_WCHAR: {
 			res = (wchar_t*)this->copy(); 
 		}
 		break;
