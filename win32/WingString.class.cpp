@@ -1191,9 +1191,12 @@ char* wing_str_wchar_to_utf8(const wchar_t* _str) {
 }
 
 /**
- *@wchar_t ת��Ϊ char
+ * wchar_t字符串转换为char字符串
+ * @param const wchar_t* _str 需要转换的字符串
+ * @return char* 堆内存，需要手动free释放
  */
-char* wing_str_wchar_to_char(const wchar_t* _str) {
+char* wing_str_wchar_to_char(const wchar_t* _str)
+{
 #ifdef WIN32
 	 if (_str == NULL)
 		 return NULL;
@@ -1226,8 +1229,9 @@ wchar_t* wing_str_char_to_wchar(const char* _str)
 char* wing_str_char_to_utf8(const char* str)
 {
 #ifdef WIN32
-	if (str == NULL)
-		return NULL;
+	if (str == NULL) {
+	    return NULL;
+	}
 
 	wchar_t* unicode_str = NULL;
 	int utf8_str_size    = 0;
@@ -1238,10 +1242,10 @@ char* wing_str_char_to_utf8(const char* str)
 	memset(unicode_str, 0x0, (utf8_str_size + 1)*sizeof(wchar_t));
 	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, unicode_str, utf8_str_size);   //ת����Unicode����
 	
-	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
-	{
-		if (unicode_str) 
-			delete[] unicode_str;
+	if (!utf8_str_size) {
+		if (unicode_str) {
+		    delete[] unicode_str;
+		}
 		return 0;
 	}
 
@@ -1251,12 +1255,14 @@ char* wing_str_char_to_utf8(const char* str)
 	memset(utf8_str,0,utf8_str_size+1);
 
 	utf8_str_size = WideCharToMultiByte(CP_UTF8, 0, unicode_str, -1, (char *)utf8_str, utf8_str_size+1, NULL, NULL);  
-	                                                                                                    //ת����UTF8����
-	if (unicode_str)
-		delete []unicode_str;
 
-	if (!utf8_str_size)
+	if (unicode_str) {
+		delete []unicode_str;
+    }
+
+	if (!utf8_str_size) {
 		return 0;
+	}
 
 	return utf8_str;
 #endif
