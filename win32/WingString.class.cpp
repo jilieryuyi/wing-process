@@ -1,7 +1,7 @@
 /**
- *@�ַ�������
- *@auth yuyi
- *@email 297341015@qq.com
+ * 字符串对象实现
+ * @auth yuyi
+ * @email 297341015@qq.com
  */
 #define _CRT_GETPUTWCHAR_NOINLINE
 #include "WingString.class.h"
@@ -9,9 +9,9 @@
 
 WingString::WingString(char *_str, size_t _size)
 {
-	
-	if (_size <= 0) 
-		_size = WING_CHAR_SIZE(_str);
+	if (_size <= 0) {
+	    _size = WING_CHAR_SIZE(_str);
+	}
 	
 	this->str      = malloc(_size);
 	this->str_size = _size;
@@ -24,8 +24,9 @@ WingString::WingString(char *_str, size_t _size)
 WingString::WingString(wchar_t *_str, size_t _size)
 {
 	
-	if (_size <= 0) 
-		_size = WING_WCHAR_SIZE(_str);
+	if (_size <= 0) {
+	    _size = WING_WCHAR_SIZE(_str);
+	}
 	
 	this->str      = malloc(_size);
 	this->str_size = _size;
@@ -57,6 +58,7 @@ int WingString::operator != (WingString &_str) const
 {
 	return !(*this == _str);
 }
+
 int WingString::operator != (const char* _str) const
 {
 	return !(*this == _str);
@@ -94,7 +96,7 @@ int WingString::operator <= (const wchar_t* _str) const
 {
 	switch (this->str_type) {
 		case WING_STR_IS_UNKNOW:
-			//NULL ��ԶС�ڵ���һ���ַ���
+			//NULL 小于等于任意字符串
 			return 1;
 		break;
 		case WING_STR_IS_WCHAR: {
@@ -562,7 +564,7 @@ unsigned int WingString::length()
 }
 
 /**
- *@׷���ַ���
+ * 追加字符串
  */
 void WingString::append(const wchar_t *_str, size_t size)
 {
@@ -630,7 +632,7 @@ void WingString::append(const wchar_t *_str, size_t size)
 }
 
 /**
- *@׷���ַ���
+ * 追加字符串重载
  */
 void WingString::append(const char *_str, size_t size)
 {
@@ -642,7 +644,6 @@ void WingString::append(const char *_str, size_t size)
 	    size = WING_CHAR_SIZE(_str);
 	}
 
-	//��������ʱ�� û�г�ʼ��
 	if (this->str_type == WING_STR_IS_UNKNOW) {
 		this->str_type = WING_STR_IS_CHAR;
 		this->str      = malloc(size);
@@ -691,8 +692,9 @@ void WingString::append(const char *_str, size_t size)
 		this->str_size = new_size;
 	}
 }
+
 /**
- *@׷���ַ���
+ * 追加字符串重载
  */
 void WingString::append(WingString &_str)
 {
@@ -812,27 +814,33 @@ void WingString::append(WingString &_str)
 
 
 }
+
 /**
- *@ԭ������
+ * 原始数据
  */
 void * WingString::data() {
 	return this->str;
 }
+
 /**
- *@�ַ����������� char ���� wachr_t ���� unkonw ����ֵ
- *@ WING_STR_IS_CHAR   1
- *@ WING_STR_IS_WCHAR  2
- *@ WING_STR_IS_UNKNOW 3
+ * 获取字符串类型
+ * WING_STR_IS_CHAR   1
+ * WING_STR_IS_WCHAR  2
+ * WING_STR_IS_UNKNOW 3
  */
-int WingString::type() {
+int WingString::type()
+{
 	return this->str_type;
 }
+
 /**
- *@��������
+ * 字符串复制
  */
-void* WingString::copy() {
-	if (str == NULL || str_size <= 0)
-		return NULL;
+void* WingString::copy()
+{
+	if (str == NULL || str_size <= 0) {
+	    return NULL;
+	}
 	void* res = malloc(str_size);
 	memset(res,0,str_size);
 	memcpy(res,str,str_size);
@@ -840,9 +848,10 @@ void* WingString::copy() {
 }
 
 /**
- *@�˴�����char* ��Ҫʹ��free�ͷţ����Ҳ��ı�������?
+ * 返回c str
  */
-char* WingString::c_str() {
+char* WingString::c_str()
+{
 
 	char* res = NULL;
 
