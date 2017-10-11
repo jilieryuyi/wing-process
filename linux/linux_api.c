@@ -91,9 +91,9 @@ void init_daemon(const char* dir)
     }
     //是第二子进程，继续
     //第二子进程不再是会话组长
-//    for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
-//        close(i);
-//    }
+    //for (i = 0; i < NOFILE; ++i) {//关闭打开的文件描述符
+    //    close(i);
+    //}
     chdir(dir);//改变工作目录到/tmp
     umask(0);//重设文件创建掩模
     return;
@@ -288,7 +288,7 @@ unsigned long wing_create_process(const char *command, char* output_file)
 /**
  * 获取当前进程id
  *
- * @return pid_t （int）
+ * @return int
  */
 int wing_get_process_id()
 {
@@ -351,10 +351,23 @@ unsigned long wing_get_memory(int process_id)
 }
 
 #endif
+/**
+ * @todo 杀死进程
+ * @param int process_id
+ * @return int 0成功 -1失败
+ */
 int wing_kill(int process_id)
 {
     return 0;
 }
+
+/**
+ * 获取系统临时路径
+ *
+ * @param char *buffer 输出结果，这里的buffer使用char数组，如：
+ *    char buffer[MAX_PATH];
+ *    wing_get_tmp_dir(buffer);
+ */
 void wing_get_tmp_dir(char *buffer)
 {
     const char* tmp = "/tmp";
