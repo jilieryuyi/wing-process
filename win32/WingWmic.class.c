@@ -2,8 +2,8 @@
 #include "OleAuto.h"
 #pragma comment(lib,"OleAut32.lib")
 
-WingWmic::WingWmic(){
-
+WingWmic::WingWmic()
+{
 	this->pSvc			= NULL;
 	this->pEnumerator	= NULL;
 	this->has_error		= 0;
@@ -13,93 +13,87 @@ WingWmic::WingWmic(){
 
 	HRESULT hres;
 	hres =  CoInitializeEx(0, COINIT_MULTITHREADED); 
-	if (FAILED(hres))
-	{
+	if (FAILED(hres)) {
 		this->has_error = 1;
 		return;             
 	}
 
 	hres =  CoInitializeSecurity( NULL, -1,  NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL );
 
-	if (FAILED(hres))
-	{
+	if (FAILED(hres)) {
 		this->has_error = 1;
 		return ;
 	}
 
-
 	hres = CoCreateInstance( CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,  IID_IWbemLocator, (LPVOID *) &pLoc );
 
-	if (FAILED(hres))
-	{
+	if (FAILED(hres)) {
 		this->has_error = 1;
 		return ;            
 	}
 
 	hres = pLoc->ConnectServer( _bstr_t(L"ROOT\\CIMV2"), NULL, NULL,  0,  NULL,  0,  0,   &this->pSvc  );
 
-	if (FAILED(hres))
-	{   
+	if (FAILED(hres)) {   
 		this->has_error = 1;
 		return ;             
 	}
 
 	hres = CoSetProxyBlanket( pSvc,  RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE,  NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE,  NULL,  EOAC_NONE );
 
-	if (FAILED(hres))
-	{    
+	if (FAILED(hres)) {    
 		this->has_error = 1;
 		return;        
 	}
-
 }
 
-WingWmic::~WingWmic(){
-	if( pSvc != NULL ) 
+WingWmic::~WingWmic()
+{
+	if (pSvc != NULL) 
 		pSvc->Release();
-	if( pLoc != NULL ) 
+	if (pLoc != NULL) 
 		pLoc->Release();
-	if( pEnumerator != NULL )
+	if (pEnumerator != NULL)
 		pEnumerator->Release();
-	if( this->query_table != NULL ) 
+	if (this->query_table != NULL)
 		delete[] this->query_table;
-	if( this->pclsObj != NULL)
+	if (this->pclsObj != NULL)
 		this->pclsObj->Release();
 	CoUninitialize();
 }
 
 
-void WingWmic::query( const char* _sql ){
+void WingWmic::query(const char* _sql){
 
-	if( this->has_error ) return;
-	/*char *sql = _strdup( _sql );
+	if (this->has_error) return;
+	/*char *sql = _strdup(_sql);
 
 	int i = 0;
-	while( sql[i] != '\0' ){
+	while(sql[i] != '\0'){
 		sql[i] = tolower(sql[i]);
 		i++;
 	}
 
-	char *from = strstr( sql , "from" )+4;
-	while( 1 ) {
+	char *from = strstr(sql , "from")+4;
+	while(1) {
 		char c = *from;
-		if( !isspace(c) ) break;
+		if (!isspace(c)) break;
 		from++;
 	}
 
-	//µÃµ½²éÑ¯µÄÊÇÄÇÕÅ±í
+	//ï¿½Ãµï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±ï¿½
 	this->query_table = new char[32];
-	memset( this->query_table , 0 , 32);
+	memset(this->query_table , 0 , 32);
 	int index = 0;
 	while(1) {
 		char c = *from;
-		if( isspace(c) || c == '\0' ) break;
+		if (isspace(c) || c == '\0') break;
 		this->query_table[index] = c;
 		index++;
 		from++;
 	}*/
 
-	HRESULT hres = pSvc->ExecQuery( bstr_t("WQL"), bstr_t(_sql),WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,&this->pEnumerator);
+	HRESULT hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t(_sql),WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,&this->pEnumerator);
 
 	if (FAILED(hres))
 	{
@@ -111,13 +105,13 @@ void WingWmic::query( const char* _sql ){
 
 BOOL WingWmic::next(){
 
-	if( pclsObj != NULL ) {
+	if (pclsObj != NULL) {
 		pclsObj->Release();
 		pclsObj=NULL;
 	}
 
 	ULONG uReturn = 0;
-	HRESULT hr = pEnumerator->Next( WBEM_INFINITE, 1,  &pclsObj, &uReturn );
+	HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
 
 	return uReturn;
 }
@@ -129,10 +123,10 @@ void DecimalToString(VARIANT var,char *&buf)
 {              
                
 	UINT64 u64  = (UINT64)var.decVal.Lo64;
-	UINT64 iMod = 1; //Ô­ÎÄÕÂÊÇint  iMod = 1;£¬¸Ä¶¯Ò»ÏÂ
+	UINT64 iMod = 1; //Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½int  iMod = 1;ï¿½ï¿½ï¿½Ä¶ï¿½Ò»ï¿½ï¿½
 	UINT64 ui   = (UINT64)var.decVal.Lo64;       
 	int _min    = min(var.decVal.signscale,var.decVal.scale);
-	for( int  i = 0; i < _min ; i++ )              
+	for(int  i = 0; i < _min ; i++)
 	{                   
 
 		ui /= 10;                  
@@ -153,13 +147,13 @@ void DecimalToString(VARIANT var,char *&buf)
 	memset(buf,0,128);
 
 	int zeroSize = var.decVal.scale-strlen(sz1);
-	for( int i=0; i<zeroSize; i++ )    //Ð¡Êý²¿·Ö×ó±ßÌî³ä0
+	for(int i=0; i<zeroSize; i++)    //Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
 	{
 		sprintf(sz2, "0%s", sz1);
 		memcpy(sz1, sz2,64);
 	}                                                                                                  
 
-	if( var.decVal.sign < 128 )              
+	if (var.decVal.sign < 128)
 	{                   
 
 		if (var.decVal.signscale > 0)                   
@@ -192,11 +186,11 @@ void DecimalToString(VARIANT var,char *&buf)
 
 
 /**
- * @ ·µ»ØÖµÐèÒªÊ¹ÓÃfreeÊÍ·Å
+ * @ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ÒªÊ¹ï¿½ï¿½freeï¿½Í·ï¿½
  */
-char* WingWmic::get( const char *key){
+char* WingWmic::get(const char *key){
 
-	if( this->has_error ) 
+	if (this->has_error)
 	{
 		pEnumerator->Release();
 		pEnumerator = NULL;
@@ -206,29 +200,29 @@ char* WingWmic::get( const char *key){
 
 	VARIANT vtProp;
 
-	wchar_t *wkey = wing_str_char_to_wchar( key );
-	HRESULT hr    = pclsObj->Get( wkey , 0, &vtProp, 0, 0);
+	wchar_t *wkey = wing_str_char_to_wchar(key);
+	HRESULT hr    = pclsObj->Get(wkey , 0, &vtProp, 0, 0);
 	char *res     = NULL;
 
-	if( SUCCEEDED( hr ) && vtProp.bstrVal )
+	if (SUCCEEDED(hr) && vtProp.bstrVal)
 	{	
-		//¸ù¾Ý²»Í¬µÄÀàÐÍ½øÐÐ¸ñÊ½»¯
-		switch ( V_VT( &vtProp ) ){  
+		//ï¿½ï¿½ï¿½Ý²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½Ð¸ï¿½Ê½ï¿½ï¿½
+		switch (V_VT(&vtProp)){
 
-			case VT_BSTR:   //×Ö·û´®
-				res = wing_str_wchar_to_utf8( (const wchar_t*)vtProp.bstrVal );
+			case VT_BSTR:   //ï¿½Ö·ï¿½ï¿½ï¿½
+				res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.bstrVal);
 				break;
-			case VT_LPSTR:  //×Ö·û´®
+			case VT_LPSTR:  //ï¿½Ö·ï¿½ï¿½ï¿½
 				{
-					int size = sizeof( strlen((char*)vtProp.pvRecord)+1 );
+					int size = sizeof(strlen((char*)vtProp.pvRecord)+1);
 					res = (char*)malloc(size);
-					memset( res, 0, size );
-					memcpy( res, vtProp.pvRecord, size-1 );
+					memset(res, 0, size);
+					memcpy(res, vtProp.pvRecord, size-1);
 				}
 				break;
-			case VT_LPWSTR: //×Ö·û´®
+			case VT_LPWSTR: //ï¿½Ö·ï¿½ï¿½ï¿½
 				{
-					res = wing_str_wchar_to_utf8( (const wchar_t*)vtProp.pvRecord );
+					res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.pvRecord);
 				}
 				break;
 			case VT_I1:
@@ -240,7 +234,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_I2://¶ÌÕûÐÍ
+			case VT_I2://ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -248,7 +242,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_UI2://ÎÞ·ûºÅ¶ÌÕûÐÍ
+			case VT_UI2://ï¿½Þ·ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -256,7 +250,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_INT://ÕûÐÍ
+			case VT_INT://ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -264,7 +258,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_I4: //ÕûÐÍ
+			case VT_I4: //ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -272,7 +266,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_I8: //³¤ÕûÐÍ
+			case VT_I8: //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -280,7 +274,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_UINT://ÎÞ·ûºÅÕûÐÍ
+			case VT_UINT://ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -288,7 +282,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_UI4: //ÎÞ·ûºÅÕûÐÍ
+			case VT_UI4: //ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -296,7 +290,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_UI8: //ÎÞ·ûºÅ³¤ÕûÐÍ
+			case VT_UI8: //ï¿½Þ·ï¿½ï¿½Å³ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -312,7 +306,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_R4://¸¡µãÐÍ
+			case VT_R4://ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -320,7 +314,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_R8://Ë«¾«¶ÈÐÍ
+			case VT_R8://Ë«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(32);
 					memset(res,0,32);
@@ -328,7 +322,7 @@ char* WingWmic::get( const char *key){
 				}
 				break;
 
-			case VT_DECIMAL: //Ð¡Êý
+			case VT_DECIMAL: //Ð¡ï¿½ï¿½
 			
 				DecimalToString(vtProp,res);
 
@@ -348,15 +342,15 @@ char* WingWmic::get( const char *key){
 				//strValue = "[BLOB]";
 				break;
 
-			case VT_BOOL://²¼¶ûÐÍ
+			case VT_BOOL://ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					res = (char*)malloc(5);
 					memset(res,0,5);
-					sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE" );
+					sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE");
 				}
 				break;
 
-			case VT_DATE: //ÈÕÆÚÐÍ
+			case VT_DATE: //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					SYSTEMTIME st = {0};
 					res = (char*)malloc(32);
@@ -371,11 +365,11 @@ char* WingWmic::get( const char *key){
 				//strValue = "VT_NULL";
 				break;
 
-			case VT_EMPTY://¿Õ
+			case VT_EMPTY://ï¿½ï¿½
 				//strValue = "";
 				break;
 
-			case VT_UNKNOWN://Î´ÖªÀàÐÍ
+			case VT_UNKNOWN://Î´Öªï¿½ï¿½ï¿½ï¿½
 			default:
 				//strValue = "UN_KNOWN";
 				break;

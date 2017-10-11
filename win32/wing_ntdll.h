@@ -24,15 +24,15 @@ typedef struct _PROCESSINFO {
 	//int thread_id;
 	int parent_process_id;
 	unsigned long working_set_size;
-	unsigned long base_priority;//基本的优先级
+	unsigned long base_priority;
 	unsigned long thread_count ;
 	unsigned long handle_count ;
 	unsigned long cpu_time;
 } PROCESSINFO;
 
-unsigned long  WingQueryProcess( PROCESSINFO *&all_process , int max_count );
+unsigned long  WingQueryProcess(PROCESSINFO *&all_process, int max_count);
 unsigned long WingQueryProcessByProcessID(PROCESSINFO *process_item, unsigned long process_id);
-int WingQueryObject( HANDLE handle );
+int WingQueryObject(HANDLE handle);
 int WingWindowsVersion();
 
 #endif
