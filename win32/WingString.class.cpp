@@ -928,7 +928,7 @@ void WingString::savePrint() {
 
 
 /**
- * @�ַ���ת��Ϊutf8���룬��ı�����?
+ * @�ַ���ת��Ϊutf8���룬��ı�����?
  */
 int WingString::toUTF8()
 {
@@ -960,7 +960,7 @@ int WingString::toUTF8()
 }
 
 /**
- *@ȥ�����˿ո� ����ı�����?
+ *@ȥ�����˿ո� ����ı�����?
  */
 char* WingString::trim() {
 	
@@ -1084,7 +1084,7 @@ double WingString::toNumber() {
 	    len    = i;
 	double ten = 10;
 
-	//����Ǹ���?
+	//����Ǹ���?
 	if ((int)numstr[start] == 45) {
 		start = 1;
 		while(start < i) {
@@ -1206,7 +1206,9 @@ char* wing_str_wchar_to_char(const wchar_t* _str) {
 #endif
     return NULL;
 }
-wchar_t* wing_str_char_to_wchar(const char* _str) {
+
+wchar_t* wing_str_char_to_wchar(const char* _str)
+{
 #ifdef WIN32
 	size_t size     = WING_CHAR_SIZE(_str);
 	size_t len      = MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),NULL,0);
@@ -1220,7 +1222,9 @@ wchar_t* wing_str_char_to_wchar(const char* _str) {
 #endif
     return NULL;
 }
-char* wing_str_char_to_utf8(const char* str) {
+
+char* wing_str_char_to_utf8(const char* str)
+{
 #ifdef WIN32
 	if (str == NULL)
 		return NULL;
@@ -1228,20 +1232,20 @@ char* wing_str_char_to_utf8(const char* str) {
 	wchar_t* unicode_str = NULL;
 	int utf8_str_size    = 0;
 
-	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, NULL);                   //��ȡת����Unicode���������Ҫ���ַ��ռ䳤��?
 	size_t msize       = (utf8_str_size + 1) * sizeof(wchar_t);
 	unicode_str        = (wchar_t*)malloc(msize);                     //ΪUnicode�ַ����ռ�
 	memset(unicode_str, 0x0, (utf8_str_size + 1)*sizeof(wchar_t));
 	utf8_str_size      = ::MultiByteToWideChar(CP_ACP, 0, str, -1, unicode_str, utf8_str_size);   //ת����Unicode����
 	
-	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
+	if (!utf8_str_size)                                                                                 //ת��ʧ��������˳�?
 	{
 		if (unicode_str) 
 			delete[] unicode_str;
 		return 0;
 	}
 
-	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
+	utf8_str_size  = WideCharToMultiByte(CP_UTF8,0,unicode_str,-1,NULL,0,NULL,NULL);                    //��ȡת����UTF8���������Ҫ���ַ��ռ䳤��?
 	char *utf8_str = (char*)malloc(utf8_str_size+1);
 
 	memset(utf8_str,0,utf8_str_size+1);
@@ -1260,9 +1264,17 @@ char* wing_str_char_to_utf8(const char* str) {
 }
 
 /**
- *@ȥ���ַ������˿ո�
+ * 去掉字符串两端的空格
+ * @param char* str 需要去掉空格的字符串，必须是可修改的
+ * @param size_t size 内存字节，主要是考虑二进制安全，此参数为可选参数
+ * @demo
+ *    char strn[] = " hello123 ";
+      wing_str_trim(strn);
+      printf("==>%s<==", strn);
+      //==>hello123<==
  */
-void wing_str_trim(char* str ,size_t size) {
+void wing_str_trim(char* str ,size_t size)
+{
 	if (str == NULL) 
 		return;
 	if (size <= 0)
@@ -1275,8 +1287,14 @@ void wing_str_trim(char* str ,size_t size) {
 		*_et-- = '\0';
 	}
 
+//	while (*_st == ' ') {
+//		while (_st <= _et) { *_st = *(_st + 1); _st++; }
+//		_st = str;
+//	}
+
 	while (*_st == ' ') {
-		while (_st <= _et) { *_st = *(_st + 1); _st++; }
-		_st = str;
-	}
+    	_st++;
+    }
+
+    str = _st;
 }

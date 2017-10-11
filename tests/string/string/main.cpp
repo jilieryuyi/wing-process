@@ -80,5 +80,9 @@ int main(int argc, const char * argv[]) {
     wchar_t *testss = L"asfsfd";
     wprintf(L"%ls\r\n", testss);
     
+    char strn[] = " hello123 ";
+    wing_str_trim(strn);
+    printf("==>%s<==", strn);
+    
     return 0;
 }
