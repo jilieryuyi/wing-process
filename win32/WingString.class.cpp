@@ -1281,10 +1281,13 @@ char* wing_str_char_to_utf8(const char* str)
  */
 void wing_str_trim(char* str ,size_t size)
 {
-	if (str == NULL) 
-		return;
-	if (size <= 0)
-		size = strlen(str);
+	if (str == NULL) {
+	    return;
+	}
+
+	if (size <= 0) {
+	    size = strlen(str);
+	}
 	
 	char *_et = (char*)(str + size - 1);
 	char *_st = str;
@@ -1292,11 +1295,6 @@ void wing_str_trim(char* str ,size_t size)
 	while (*_et == ' ') {
 		*_et-- = '\0';
 	}
-
-//	while (*_st == ' ') {
-//		while (_st <= _et) { *_st = *(_st + 1); _st++; }
-//		_st = str;
-//	}
 
 	while (*_st == ' ') {
     	_st++;
