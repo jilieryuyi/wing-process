@@ -862,22 +862,20 @@ char* WingString::c_str() {
 
 	return res;
 }
-/**
- *@�˴�����wchar_t* ��Ҫʹ��free�ͷţ����Ҳ��ı�������?
- */
-wchar_t* WingString::w_str() {
 
+/**
+ * 转换为wchar_t*，返回堆内存，需要手动free
+ */
+wchar_t* WingString::w_str()
+{
 	wchar_t* res = NULL;
 
 	switch (this->str_type) {
-	
-	case WING_STR_IS_CHAR:
-		{
+	    case WING_STR_IS_CHAR: {
 			res = wing_str_char_to_wchar((const char*)this->str);
 		}
 		break;
-	case WING_STR_IS_WCHAR:
-		{
+	case WING_STR_IS_WCHAR: {
 			res = (wchar_t*)this->copy(); 
 		}
 		break;
@@ -885,20 +883,27 @@ wchar_t* WingString::w_str() {
 
 	return res;
 }
+
 /**
- *@��ӡ�ַ���
+ * 打印字符串
  */
-void WingString::print() {
-	 setlocale(LC_ALL, "chs");
-	if (this->str_type == WING_STR_IS_CHAR)
-		printf("---char:size=%zu,len=%d,%s---\r\n",this->size(),this->length(),(char*)this->str);
-	else if (this->str_type == WING_STR_IS_WCHAR)
-		wprintf(L"---wchar_t:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
+void WingString::print()
+{
+	setlocale(LC_ALL, "chs");
+	if (this->str_type == WING_STR_IS_CHAR) {
+	    printf("---char:size=%zu,len=%d,%s---\r\n",this->size(),this->length(),(char*)this->str);
+	}
+
+	else if (this->str_type == WING_STR_IS_WCHAR) {
+	    wprintf(L"---wchar_t:size=%zu,len=%ld,%s---\r\n",this->size(),this->length(),(wchar_t *)this->str);
+	}
 }
+
 /**
- *@��ȫ��ӡ�ַ��������������ݰ�ȫ
+ * 安全的打印字符串（二进制安全）
  */
-void WingString::savePrint() {
+void WingString::savePrint()
+{
 	setlocale(LC_ALL, "chs");
 
 	long i   = 0;
@@ -908,42 +913,41 @@ void WingString::savePrint() {
 		printf("---char:size=%zu,len=%d,",this->size(),this->length());
 		while(i < end) {
 			char c = ((char*)this->str)[i];
-			if (c == '\0') c = ' ';
+			if (c == '\0') {
+			    c = ' ';
+			}
 			printf("%c", c);
 			i++;
 		}
 		printf("---\r\n");
 	}
+
 	else if (this->str_type == WING_STR_IS_WCHAR) {
-		
 		wprintf(L"---wchar_t:size=%zu,len=%ld,",this->size(),this->length());
 		while(i < end) {
 			wprintf(L"%c",((wchar_t*)this->str)[i]);
 			i++;
 		}
-		
 		wprintf(L"---\r\n");
 	}
 }
 
 
 /**
- * @�ַ���ת��Ϊutf8���룬��ı�����?
+ * 将编码转换为utf8
  */
 int WingString::toUTF8()
 {
 	char *utf8_str = NULL;
 	switch (this->str_type) {
-	case WING_STR_IS_CHAR:
-		{
+	case WING_STR_IS_CHAR: {
 			utf8_str = wing_str_char_to_utf8((const char*)str);
 		}
 		break;
 	case WING_STR_IS_UNKNOW:
-		return 1;
+		    return 1;
 		break;
-	case WING_STR_IS_WCHAR:
-		{
+	case WING_STR_IS_WCHAR: {
 			utf8_str = wing_str_wchar_to_utf8((const wchar_t*)this->str);
 		}
 		break;
@@ -955,19 +959,22 @@ int WingString::toUTF8()
 		this->str_size = WING_CHAR_SIZE(utf8_str);
 		this->str_type = WING_STR_IS_CHAR;
 		return 1;
-	} else
-		return 0;
+	} else {
+	    return 0;
+	}
 }
 
 /**
- *@ȥ�����˿ո� ����ı�����?
+ * 去除字符串两端的空格
  */
-char* WingString::trim() {
+char* WingString::trim()
+{
 	
-	if (this->str == NULL || this->str_size <= 0) 
-		return NULL;
-	if (this->str_type == WING_STR_IS_CHAR)
-	{
+	if (this->str == NULL || this->str_size <= 0) {
+	    return NULL;
+	}
+
+	if (this->str_type == WING_STR_IS_CHAR) {
 		wing_str_trim((char*)this->str);
 		this->str_size = strlen((char*)this->str)+1;
 		return (char*)this->str;
@@ -976,40 +983,37 @@ char* WingString::trim() {
 	return NULL;
 }
 
-char* WingString::ltrim() {
+char* WingString::ltrim()
+{
 
-	if (this->str == NULL || this->str_size <= 0)
-		return NULL;
-	if (this->str_type == WING_STR_IS_CHAR)
-	{
+	if (this->str == NULL || this->str_size <= 0) {
+	    return NULL;
+	}
 
+	if (this->str_type == WING_STR_IS_CHAR) {
+        char *_et = (char*)((size_t)this->str + this->str_size - 1);
+        char *_st = (char*)this->str;
 
-
-
-        	char *_et = (char*)((size_t)this->str + this->str_size - 1);
-        	char *_st = (char*)this->str;
-
-//        	while (*_et == ' ') {
-//        		*_et-- = '\0';
-//        	}
-
-        	while (*_st == ' ') {
-        		while (_st <= _et) { *_st = *(_st + 1); _st++; }
-        		_st = (char*)this->str;
-        	}
+        while (*_st == ' ') {
+            while (_st <= _et) { *_st = *(_st + 1); _st++; }
+            _st = (char*)this->str;
+        }
 
 		this->str_size = strlen((char*)this->str)+1;
 		return (char*)this->str;
 	}
+
 	return NULL;
 }
 
-char* WingString::rtrim() {
+char* WingString::rtrim()
+{
 
-	if (this->str == NULL || this->str_size <= 0)
-		return NULL;
-	if (this->str_type == WING_STR_IS_CHAR)
-	{
+	if (this->str == NULL || this->str_size <= 0) {
+	    return NULL;
+	}
+
+	if (this->str_type == WING_STR_IS_CHAR) {
 		char *_et = (char*)((size_t)this->str + this->str_size - 2);
 
         while (*_et == ' ') {
@@ -1023,14 +1027,15 @@ char* WingString::rtrim() {
 }
 
 /***
- * @��ȫ�Ľ��ַ���ת��Ϊdouble����
+ * 将字符串以安全的方式转换为数字
  */
-double WingString::toNumber() {
-	
-	//0��asciiΪ48 
-	//9��asciiΪ57 
-	//.��ascii��Ϊ46
-	//-��ascii��Ϊ45
+double WingString::toNumber()
+{
+	//ascii参照
+	//0 ascii 48
+	//9 ascii 57
+	//. ascii 46
+	//- ascii 45
 	
 	char *numstr  = NULL;
 	int need_free = 0;
@@ -1041,77 +1046,79 @@ double WingString::toNumber() {
 		case WING_STR_IS_CHAR:
 			numstr = (char*)this->str;
 			break;
-		case WING_STR_IS_WCHAR:
-			{
+		case WING_STR_IS_WCHAR:{
 				numstr = wing_str_wchar_to_char((const wchar_t*)this->str);
 				if (numstr) {
 					need_free = 1;
-				} else
-					return 0;
+				} else {
+				    return 0;
+				}
 			}
 			break;
 	}
 	
-	int i          = 0;
-	int len        = this->length();
-	//int is_minus   = 0;
-	//int is_decimal = 0;
+	int i   = 0;
+	int len = this->length();
 
-	
 	double result = 0;
 	int maxmi     = 0;
 	int haspoint  = 0;
 
-	//������Ϊ�˵õ������ݺ����ֳ���
 	while(i < len) {
 		int ascii = (int)numstr[i];
-		if ((ascii < 48 || ascii > 57) && ascii != 45 && ascii != 46) break;
-		if ((i+1)<len) {
-			if ((ascii==45 || ascii == 46) && ((int)numstr[i+1] == 45 || (int)numstr[i+1] == 46)) break;
+
+		if ((ascii < 48 || ascii > 57) && ascii != 45 && ascii != 46) {
+		    break;
 		}
+
+		if ((i+1) < len) {
+			if ((ascii==45 || ascii == 46) && ((int)numstr[i+1] == 45 || (int)numstr[i+1] == 46)) {
+			    break;
+			}
+		}
+
 		if ((ascii >= 48 && ascii <= 57) && !haspoint) {
 			maxmi++;
-			
-		} 
-		if (ascii == 46)
-			haspoint=1;
+		}
+
+		if (ascii == 46) {
+		    haspoint=1;
+		}
 		i++;
 	}
 
-	if (i <= 0) return 0;
+	if (i <= 0) {
+	    return 0;
+	}
 
 	int start  = 0;
 	    len    = i;
 	double ten = 10;
 
-	//����Ǹ���?
 	if ((int)numstr[start] == 45) {
 		start = 1;
-		while(start < i) {
+		while (start < i) {
 
 			if ((int)numstr[start] == 46) {
 				start++; 
 				continue;
 			}
 
-			int m =maxmi-1;
+			int m = maxmi-1;
 			result -= ((int)numstr[start]-48)*pow(ten,m);
 
 			start++;
 			maxmi--;
 		}
 
-		if (need_free) 
-			free(numstr);
+		if (need_free) {
+		    free(numstr);
+		}
 		return result;
 	}
 
-	
-
-	
 	start = 0;
-	while(start < i) {
-
+	while (start < i) {
 		if ((int)numstr[start] == 46) {
 			start++; 
 			continue;
@@ -1124,43 +1131,53 @@ double WingString::toNumber() {
 		maxmi--;
 	}
 
-	if (need_free) 
-		free(numstr);
+	if (need_free) {
+	    free(numstr);
+	}
 	
 	return result;
 }
 
 /**
- *@�������ַ��� ���ı��ַ�������  
- *@����֮�� ����ֵ �������ֵ��Ϊnull ��Ҫ free ,start ��0��ʼ��Ҳ�����Ǹ�������ĩβ��ʼ��ȡ
+ * 截取字符串
+ * @param int start 开始截取的位置
+ * @param size_t length 截取长度
+ * @return void* 堆内存，需要手动free
  */
-void* WingString::substr(int start,size_t length) {
+void* WingString::substr(int start,size_t length)
+{
 
-	//int len = this->length();
-	if (this->str_type == WING_STR_IS_UNKNOW) 
-		return NULL;
+	if (this->str_type == WING_STR_IS_UNKNOW) {
+	    return NULL;
+	}
 	
 	unsigned long sl = 0;
-	if (this->str_type == WING_STR_IS_CHAR)
-		sl = sizeof(char);
-	else if (this->str_type == WING_STR_IS_WCHAR)
-		sl = sizeof(wchar_t);
+	if (this->str_type == WING_STR_IS_CHAR) {
+	    sl = sizeof(char);
+	}
+
+	else if (this->str_type == WING_STR_IS_WCHAR) {
+	    sl = sizeof(wchar_t);
+	}
 
 	size_t end_str   = (size_t)this->str + this->str_size - 1*sl;
 	size_t start_str = NULL;
 
 	if (start >= 0) {
 		start_str =  (size_t)this->str + start*sl ;
-		if (start_str >= end_str) 
-			return NULL;
-	} else{
+		if (start_str >= end_str) {
+		    return NULL;
+		}
+	} else {
 		start_str = (size_t)this->str + this->str_size + (start - 1)*sl;
-		if (start_str < (size_t)this->str)
-			start_str = (size_t)this->str;
+		if (start_str < (size_t)this->str) {
+		    start_str = (size_t)this->str;
+		}
 	}
 
-	if ((size_t)length > (end_str-start_str)/sl) 
-		length = (end_str-start_str)/sl;
+	if ((size_t)length > (end_str-start_str)/sl) {
+	    length = (end_str-start_str)/sl;
+	}
 
 	void* _subatr = malloc((length+1)*sl);
 	memset(_subatr, 0 , (length+1)*sl);
