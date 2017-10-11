@@ -1173,14 +1173,18 @@ void* WingString::substr(int start,size_t length) {
 
 
 /**
- *@wchar_tת������Ϊutf8
+ * wchar_t to utf8
  */
-char* wing_str_wchar_to_utf8(const wchar_t* _str) {
+char* wing_str_wchar_to_utf8(const wchar_t* _str)
+{
 #ifdef WIN32
-	if (_str == NULL)
-		return NULL;
+	if (_str == NULL) {
+	    return NULL;
+	}
 	int nLen = WideCharToMultiByte(CP_UTF8, 0, _str, -1, NULL, 0, NULL, NULL);
-	if (nLen <= 0) return NULL;
+	if (nLen <= 0) {
+	    return NULL;
+	}
 	char*  m_cUtf8 = (char*)malloc(nLen + 1);  
 	memset(m_cUtf8,0,nLen + 1);
 	WideCharToMultiByte (CP_UTF8, 0, _str, -1, m_cUtf8, nLen, NULL,NULL); 
@@ -1198,10 +1202,13 @@ char* wing_str_wchar_to_utf8(const wchar_t* _str) {
 char* wing_str_wchar_to_char(const wchar_t* _str)
 {
 #ifdef WIN32
-	 if (_str == NULL)
-		 return NULL;
+	 if (_str == NULL) {
+	     return NULL;
+	 }
 	 int nLen = WideCharToMultiByte(CP_OEMCP,NULL, _str,-1,NULL,0,NULL,FALSE);  
-	 if (nLen <= 0) return NULL;
+	 if (nLen <= 0) {
+	     return NULL;
+	 }
      char * m_cDest = (char*)malloc(nLen); 
 	 memset(m_cDest,0,nLen);
      WideCharToMultiByte (CP_OEMCP,NULL,_str,-1, m_cDest, nLen,NULL,FALSE);  
@@ -1215,9 +1222,9 @@ wchar_t* wing_str_char_to_wchar(const char* _str)
 #ifdef WIN32
 	size_t size     = WING_CHAR_SIZE(_str);
 	size_t len      = MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),NULL,0);
-
 	size_t buf_size = (len+1)*sizeof(wchar_t);
-	wchar_t* buf = (wchar_t*)malloc(buf_size);
+	wchar_t* buf     = (wchar_t*)malloc(buf_size);
+
 	memset(buf, 0x0, buf_size);
 	MultiByteToWideChar(CP_ACP,0,(const char *)_str,(int)(size-1),buf,(int)len);   
 
