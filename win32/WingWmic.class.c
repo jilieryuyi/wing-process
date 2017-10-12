@@ -158,7 +158,6 @@ void DecimalToString(VARIANT var,char *&buf)
 	}                                                                                                  
 
 	if (var.decVal.sign < 128) {
-
 		if (var.decVal.signscale > 0) {
 			sprintf(buf, "%s.%s" , sz0, sz1);                   
 		} else {
