@@ -284,10 +284,10 @@ char* WingWmic::get(const char *key)
 				    DecimalToString(vtProp,res);
 			    break;
 			case VT_CY: {
-                //vtProp.cyVal.Hi
-                //COleCurrency cy = vtProp.cyVal;
-                //strValue = cy.Format();
-            }
+                    //vtProp.cyVal.Hi
+                    //COleCurrency cy = vtProp.cyVal;
+                    //strValue = cy.Format();
+                }
                 break;
 			case VT_BLOB:
 			case VT_BLOB_OBJECT:
@@ -295,18 +295,18 @@ char* WingWmic::get(const char *key)
 				//strValue = "[BLOB]";
 			    break;
 			case VT_BOOL: {
-                res = (char*)malloc(5);
-                memset(res,0,5);
-                sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE");
-            }
+                    res = (char*)malloc(5);
+                    memset(res,0,5);
+                    sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE");
+                }
                 break;
 			case VT_DATE: {
-                SYSTEMTIME st = {0};
-                res = (char*)malloc(32);
-                memset(res,0,32);
-                VariantTimeToSystemTime(vtProp.date,&st);
-                sprintf(res,"%04d-%02d-%02d %02d:%02d:%02d",st.wYear,st.wMonth,st.wDay,   st.wHour, st.wMinute, st.wSecond);
-            }
+                    SYSTEMTIME st = {0};
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    VariantTimeToSystemTime(vtProp.date,&st);
+                    sprintf(res,"%04d-%02d-%02d %02d:%02d:%02d",st.wYear,st.wMonth,st.wDay,   st.wHour, st.wMinute, st.wSecond);
+                }
                 break;
 			case VT_NULL:
 				//strValue = "VT_NULL";
