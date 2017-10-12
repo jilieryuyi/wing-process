@@ -49,23 +49,34 @@ WingWmic::WingWmic()
 
 WingWmic::~WingWmic()
 {
-	if (pSvc != NULL) 
+	if (pSvc != NULL) {
 		pSvc->Release();
-	if (pLoc != NULL) 
+	}
+
+	if (pLoc != NULL) {
 		pLoc->Release();
-	if (pEnumerator != NULL)
+	}
+
+	if (pEnumerator != NULL) {
 		pEnumerator->Release();
-	if (this->query_table != NULL)
+	}
+
+	if (this->query_table != NULL) {
 		delete[] this->query_table;
-	if (this->pclsObj != NULL)
+	}
+
+	if (this->pclsObj != NULL) {
 		this->pclsObj->Release();
+	}
+
 	CoUninitialize();
 }
 
-
 void WingWmic::query(const char* _sql){
 
-	if (this->has_error) return;
+	if (this->has_error) {
+	    return;
+	}
 	/*char *sql = _strdup(_sql);
 
 	int i = 0;
@@ -81,7 +92,6 @@ void WingWmic::query(const char* _sql){
 		from++;
 	}
 
-	//�õ���ѯ�������ű�
 	this->query_table = new char[32];
 	memset(this->query_table , 0 , 32);
 	int index = 0;
@@ -95,15 +105,14 @@ void WingWmic::query(const char* _sql){
 
 	HRESULT hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t(_sql),WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,&this->pEnumerator);
 
-	if (FAILED(hres))
-	{
+	if (FAILED(hres)) {
 		this->has_error = 1;
 	}
-
 	//delete[] sql;
 }
 
-BOOL WingWmic::next(){
+BOOL WingWmic::next()
+{
 
 	if (pclsObj != NULL) {
 		pclsObj->Release();
@@ -111,25 +120,20 @@ BOOL WingWmic::next(){
 	}
 
 	ULONG uReturn = 0;
-	HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
+	HRESULT hr    = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
 
 	return uReturn;
 }
 
-
-
-
 void DecimalToString(VARIANT var,char *&buf)  
 {              
-               
 	UINT64 u64  = (UINT64)var.decVal.Lo64;
-	UINT64 iMod = 1; //ԭ������int  iMod = 1;���Ķ�һ��
+	UINT64 iMod = 1;
 	UINT64 ui   = (UINT64)var.decVal.Lo64;       
 	int _min    = min(var.decVal.signscale,var.decVal.scale);
-	for(int  i = 0; i < _min ; i++)
-	{                   
 
-		ui /= 10;                  
+	for(int  i = 0; i < _min ; i++) {
+		ui /= 10;
 		iMod *= 10;               
 	}               
 
@@ -147,51 +151,34 @@ void DecimalToString(VARIANT var,char *&buf)
 	memset(buf,0,128);
 
 	int zeroSize = var.decVal.scale-strlen(sz1);
-	for(int i=0; i<zeroSize; i++)    //С������������0
-	{
+
+	for(int i = 0; i < zeroSize; i++) {
 		sprintf(sz2, "0%s", sz1);
 		memcpy(sz1, sz2,64);
 	}                                                                                                  
 
-	if (var.decVal.sign < 128)
-	{                   
+	if (var.decVal.sign < 128) {
 
-		if (var.decVal.signscale > 0)                   
-		{                       
+		if (var.decVal.signscale > 0) {
 			sprintf(buf, "%s.%s" , sz0, sz1);                   
-		}                   
-
-		else                    {                       
+		} else {
 			sprintf(buf, "%s" , sz0);                   
-
-		}               
-	}               
-
-	else               
-	{                   
-		if (var.decVal.signscale > 0)                   
-		{                       
+		}
+	} else {
+		if (var.decVal.signscale > 0) {
 			sprintf(buf, "-%s.%s" , sz0, sz1);                   
-		}                   
-		else                    
-		{                       
+		} else {
 			sprintf(buf, "-%s" , sz0);                   
 		}               
 	}                 
-
-}  
-
-
-
-
+}
 
 /**
- * @ ����ֵ��Ҫʹ��free�ͷ�
+ * 获取指定key的值，返回堆内存，需要手动free
  */
-char* WingWmic::get(const char *key){
-
-	if (this->has_error)
-	{
+char* WingWmic::get(const char *key)
+{
+	if (this->has_error) {
 		pEnumerator->Release();
 		pEnumerator = NULL;
 		return NULL;
@@ -204,172 +191,130 @@ char* WingWmic::get(const char *key){
 	HRESULT hr    = pclsObj->Get(wkey , 0, &vtProp, 0, 0);
 	char *res     = NULL;
 
-	if (SUCCEEDED(hr) && vtProp.bstrVal)
-	{	
-		//���ݲ�ͬ�����ͽ��и�ʽ��
-		switch (V_VT(&vtProp)){
-
-			case VT_BSTR:   //�ַ���
-				res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.bstrVal);
-				break;
-			case VT_LPSTR:  //�ַ���
-				{
-					int size = sizeof(strlen((char*)vtProp.pvRecord)+1);
-					res = (char*)malloc(size);
-					memset(res, 0, size);
-					memcpy(res, vtProp.pvRecord, size-1);
-				}
-				break;
-			case VT_LPWSTR: //�ַ���
-				{
-					res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.pvRecord);
-				}
-				break;
+	if (SUCCEEDED(hr) && vtProp.bstrVal) {
+		switch (V_VT(&vtProp)) {
+			case VT_BSTR:
+                    res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.bstrVal);
+                break;
+			case VT_LPSTR: {
+                    int size = sizeof(strlen((char*)vtProp.pvRecord)+1);
+                    res = (char*)malloc(size);
+                    memset(res, 0, size);
+                    memcpy(res, vtProp.pvRecord, size-1);
+                }
+                break;
+			case VT_LPWSTR: {
+                    res = wing_str_wchar_to_utf8((const wchar_t*)vtProp.pvRecord);
+                }
+                break;
 			case VT_I1:
-			case VT_UI1:
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%d", vtProp.bVal);
-				}
-				break;
-
-			case VT_I2://������
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%d", vtProp.iVal);
-				}
-				break;
-
-			case VT_UI2://�޷��Ŷ�����
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%d", vtProp.uiVal);
-				}
-				break;
-
-			case VT_INT://����
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%d", vtProp.intVal);
-				}
-				break;
-
-			case VT_I4: //����
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%d", vtProp.lVal);
-				}
-				break;
-
-			case VT_I8: //������
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res,"%ld", vtProp.bVal);
-				}
-				break;
-
-			case VT_UINT://�޷�������
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%u", vtProp.uintVal);
-				}
-				break;
-
-			case VT_UI4: //�޷�������
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%u", vtProp.ulVal);
-				}
-				break;
-
-			case VT_UI8: //�޷��ų�����
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%u", vtProp.ulVal);
-				}
-				break;
-
-			case VT_VOID:
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%8x", (unsigned int)vtProp.byref);
-				}
-				break;
-
-			case VT_R4://������
-				{
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					sprintf(res, "%.4f", vtProp.fltVal);
-				}
-				break;
-
-			case VT_R8://˫������
-				{
+			case VT_UI1: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%d", vtProp.bVal);
+                }
+			    break;
+			case VT_I2: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%d", vtProp.iVal);
+                }
+			    break;
+			case VT_UI2: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%d", vtProp.uiVal);
+                }
+			    break;
+			case VT_INT: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%d", vtProp.intVal);
+                }
+			    break;
+			case VT_I4: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%d", vtProp.lVal);
+                }
+			    break;
+			case VT_I8: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res,"%ld", vtProp.bVal);
+                }
+			    break;
+			case VT_UINT: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%u", vtProp.uintVal);
+                }
+                break;
+			case VT_UI4: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%u", vtProp.ulVal);
+                }
+                break;
+			case VT_UI8: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%u", vtProp.ulVal);
+                }
+                break;
+			case VT_VOID: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%8x", (unsigned int)vtProp.byref);
+                }
+                break;
+			case VT_R4: {
+                    res = (char*)malloc(32);
+                    memset(res,0,32);
+                    sprintf(res, "%.4f", vtProp.fltVal);
+                }
+                break;
+			case VT_R8: {
 					res = (char*)malloc(32);
 					memset(res,0,32);
 					sprintf(res, "%.8f", vtProp.dblVal);
 				}
 				break;
-
-			case VT_DECIMAL: //С��
-			
-				DecimalToString(vtProp,res);
-
-				break;
-
-			case VT_CY:
-				{
-					//vtProp.cyVal.Hi
-					//COleCurrency cy = vtProp.cyVal;
-					//strValue = cy.Format();
-				}
-				break;
-
+			case VT_DECIMAL:
+				    DecimalToString(vtProp,res);
+			    break;
+			case VT_CY: {
+                //vtProp.cyVal.Hi
+                //COleCurrency cy = vtProp.cyVal;
+                //strValue = cy.Format();
+            }
+                break;
 			case VT_BLOB:
 			case VT_BLOB_OBJECT:
 			case 0x2011:
 				//strValue = "[BLOB]";
-				break;
-
-			case VT_BOOL://������
-				{
-					res = (char*)malloc(5);
-					memset(res,0,5);
-					sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE");
-				}
-				break;
-
-			case VT_DATE: //������
-				{
-					SYSTEMTIME st = {0};
-					res = (char*)malloc(32);
-					memset(res,0,32);
-					VariantTimeToSystemTime(vtProp.date,&st);
-					sprintf(res,"%04d-%02d-%02d %02d:%02d:%02d",st.wYear,st.wMonth,st.wDay,   st.wHour, st.wMinute, st.wSecond);
-	
-				}
-				break;
-
-			case VT_NULL://NULLֵ
+			    break;
+			case VT_BOOL: {
+                res = (char*)malloc(5);
+                memset(res,0,5);
+                sprintf(res,"%s",vtProp.boolVal ? "TRUE" : "FASLE");
+            }
+                break;
+			case VT_DATE: {
+                SYSTEMTIME st = {0};
+                res = (char*)malloc(32);
+                memset(res,0,32);
+                VariantTimeToSystemTime(vtProp.date,&st);
+                sprintf(res,"%04d-%02d-%02d %02d:%02d:%02d",st.wYear,st.wMonth,st.wDay,   st.wHour, st.wMinute, st.wSecond);
+            }
+                break;
+			case VT_NULL:
 				//strValue = "VT_NULL";
-				break;
-
-			case VT_EMPTY://��
+			    break;
+			case VT_EMPTY:
 				//strValue = "";
-				break;
-
-			case VT_UNKNOWN://δ֪����
+			    break;
+			case VT_UNKNOWN:
 			default:
 				//strValue = "UN_KNOWN";
 				break;
@@ -379,7 +324,9 @@ char* WingWmic::get(const char *key){
 	}
 
 	VariantClear(&vtProp);
-	if(wkey) free(wkey);
+	if(wkey) {
+	    free(wkey);
+	}
 
 	return res;
 }
