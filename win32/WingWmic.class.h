@@ -5,10 +5,10 @@
 #include <comdef.h>
 #include <Wbemidl.h>
 #include "WingString.class.h"
-
 #pragma comment(lib, "wbemuuid.lib")
 
-class WingWmic{
+class WingWmic
+{
 private:
 	IWbemServices *pSvc; 
 	int has_error; 

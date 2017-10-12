@@ -13,9 +13,6 @@
 #define WING_CHAR_SIZE(str)  (strlen((char*)str)+1)*sizeof(char)
 #define WING_WCHAR_SIZE(str) (wcslen((wchar_t*)str)+1)*sizeof(wchar_t)
 
-/**
- *@sizeΪ�ַ�������,����sizeof ������ ���Ѿ����ݲ��Ҷ����ư�ȫ
- */
 void      wing_str_trim(char* str ,size_t size = 0);
 /**
  * need free the return value if not null
@@ -35,9 +32,7 @@ char*     wing_str_char_to_utf8(const char* str);
 char*     wing_str_wchar_to_utf8(const wchar_t* str);
 
 /**
- *@---- WingString ----
- *@�ַ��������װ 
- *@ע�� size ��Ϊռ���ڴ��ֽ� �����ַ������ȣ��� size=sizeof(*data) ���� size = (strlen(str)+1)*sizeof(char)
+ * ---- WingString ----
  */
 class WingString{
 
@@ -48,7 +43,6 @@ private:
 
 public:
 
-	//���캯��
 	WingString(char *_str, size_t _size = 0);
 	WingString(wchar_t *_str, size_t _size = 0);
 	WingString();
@@ -63,7 +57,6 @@ public:
 	void* copy();
 
 	void* data();
-	//�����ַ�������
 	int   type();
 
 	/**
@@ -75,28 +68,19 @@ public:
 	*/
 	wchar_t* w_str();
 
-	//׷���ַ��� �ı��ַ�������
 	void append(const char *_str, size_t size = 0);
 	void append(WingString &_str);
 	void append(const wchar_t *_str,size_t size = 0);
 
-	//ת������ �ı��ַ�������
 	int toUTF8();
-	//ȥ�����˿ո� �ı��ַ�������
 	char* trim();
 	char* ltrim();
 	char* rtrim();
 
-	//��ӡ���� һ�����ڵ���
 	void print();
 	void savePrint();
-	
-	//ת��Ϊ���� ���ı��ַ�������
 	double toNumber();
-
-	//�������ַ��� ���ı��ַ�������  ����֮�� ����ֵ ��Ҫ free ,start ��0��ʼ��Ҳ�����Ǹ�������ĩβ��ʼ��ȡ
 	void* substr(int start,size_t length);
-
 
 	WingString& operator=(WingString &_str);
 	WingString& operator=(const char* _str);
@@ -127,6 +111,5 @@ public:
 	int operator<=(const wchar_t* _str)const;
 
 };
-
 
 #endif
