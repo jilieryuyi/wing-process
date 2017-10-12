@@ -1,21 +1,20 @@
 #ifndef _NTEXAPI_H
 #define _NTEXAPI_H
 
-
 #include "minwindef.h"
 #include "winnt.h"
 
-#define STATUS_BUFFER_OVERFLOW          ((NTSTATUS)0x80000005L)
-#define STATUS_BUFFER_TOO_SMALL         ((NTSTATUS)0xC0000023L)
+#define STATUS_BUFFER_OVERFLOW       ((NTSTATUS)0x80000005L)
+#define STATUS_BUFFER_TOO_SMALL      ((NTSTATUS)0xC0000023L)
 #define MAX_INFO_BUF_LEN             0x500000
 #define NT_PROCESSTHREAD_INFO        0x05
 #define STATUS_SUCCESS               ((NTSTATUS)0x00000000L)
 #define STATUS_INFO_LENGTH_MISMATCH  ((NTSTATUS)0xC0000004L)
 
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+#define NT_SUCCESS(Status)     (((NTSTATUS)(Status)) >= 0)
 #define NT_INFORMATION(Status) ((((ULONG)(Status)) >> 30) == 1)
-#define NT_WARNING(Status) ((((ULONG)(Status)) >> 30) == 2)
-#define NT_ERROR(Status) ((((ULONG)(Status)) >> 30) == 3)
+#define NT_WARNING(Status)     ((((ULONG)(Status)) >> 30) == 2)
+#define NT_ERROR(Status)       ((((ULONG)(Status)) >> 30) == 3)
 
 #define WINDOWS_ANCIENT 0
 #define WINDOWS_XP 51
@@ -36,7 +35,6 @@
 #define WINDOWS_HAS_SERVICE_TAGS (WindowsVersion >= WINDOWS_VISTA)
 #define WINDOWS_HAS_UAC (WindowsVersion >= WINDOWS_VISTA)
 
-
 #define InitializeObjectAttributes(p, n, a, r, s) { \
     (p)->Length = sizeof(OBJECT_ATTRIBUTES); \
     (p)->RootDirectory = r; \
@@ -45,7 +43,6 @@
     (p)->SecurityDescriptor = s; \
     (p)->SecurityQualityOfService = NULL; \
 }
-
 
 // rev
 // private
@@ -328,8 +325,7 @@ typedef UNICODE_STRING *PUNICODE_STRING;
 typedef const UNICODE_STRING *PCUNICODE_STRING;
 typedef LONG KPRIORITY;
 
-typedef struct _VM_COUNTERS
-{
+typedef struct _VM_COUNTERS {
 	ULONG PeakVirtualSize;
 	ULONG VirtualSize;
 	ULONG PageFaultCount;
@@ -341,17 +337,15 @@ typedef struct _VM_COUNTERS
 	ULONG QuotaNonPagedPoolUsage;
 	ULONG PagefileUsage;
 	ULONG PeakPagefileUsage;
-}VM_COUNTERS,*PVM_COUNTERS;
+} VM_COUNTERS, *PVM_COUNTERS;
 
-typedef struct _CLIENT_ID
-{
+typedef struct _CLIENT_ID {
 	HANDLE UniqueProcess;
 	HANDLE UniqueThread;
-}CLIENT_ID;
-typedef CLIENT_ID *PCLIENT_ID;
+} CLIENT_ID;
 
-typedef enum _THREAD_STATE
-{
+typedef CLIENT_ID *PCLIENT_ID;
+typedef enum _THREAD_STATE {
 	StateInitialized,
 	StateReady,
 	StateRunning,
@@ -360,10 +354,9 @@ typedef enum _THREAD_STATE
 	StateWait,
 	StateTransition,
 	StateUnknown
-}THREAD_STATE;
+} THREAD_STATE;
 
-typedef enum _KWAIT_REASON
-{
+typedef enum _KWAIT_REASON {
 	Executive,
 	FreePage,
 	PageIn,
@@ -391,11 +384,9 @@ typedef enum _KWAIT_REASON
 	Spare5,
 	Spare6,
 	WrKernel
-}KWAIT_REASON;
+} KWAIT_REASON;
 
-
-typedef struct _SYSTEM_THREADS
-{
+typedef struct _SYSTEM_THREADS {
 	LARGE_INTEGER KernelTime;
 	LARGE_INTEGER UserTime;
 	LARGE_INTEGER CreateTime;
@@ -407,10 +398,9 @@ typedef struct _SYSTEM_THREADS
 	ULONG         ContextSwitchCount;
 	THREAD_STATE  State;
 	KWAIT_REASON  WaitReason;
-}SYSTEM_THREADS,*PSYSTEM_THREADS;
+} SYSTEM_THREADS, *PSYSTEM_THREADS;
 
-typedef struct _SYSTEM_PROCESSES
-{
+typedef struct _SYSTEM_PROCESSES {
 	ULONG          NextEntryDelta;
 	ULONG          ThreadCount;
 	ULONG          Reserved1[6];
@@ -426,22 +416,19 @@ typedef struct _SYSTEM_PROCESSES
 	VM_COUNTERS    VmCounters;
 	IO_COUNTERS    IoCounters;
 	SYSTEM_THREADS Threads[1];
-}SYSTEM_PROCESSES,*PSYSTEM_PROCESSES;
+} SYSTEM_PROCESSES, *PSYSTEM_PROCESSES;
 
-
-
-typedef struct _SYSTEM_SESSION_PROCESS_INFORMATION
-{
+typedef struct _SYSTEM_SESSION_PROCESS_INFORMATION {
     ULONG SessionId;
     ULONG SizeOfBuf;
     PVOID Buffer;
 } SYSTEM_SESSION_PROCESS_INFORMATION, *PSYSTEM_SESSION_PROCESS_INFORMATION;
 
-typedef   struct   _SYSTEM_HANDLE_STATE   { 
+typedef struct _SYSTEM_HANDLE_STATE {
 	DWORD   r1; 
 	DWORD   GrantedAccess; 
-	DWORD   HandleCount;      // 减1为句柄计数 
-	DWORD   ReferenceCount;   // 减1为指针引用计数 
+	DWORD   HandleCount;
+	DWORD   ReferenceCount;
 	DWORD   r5; 
 	DWORD   r6; 
 	DWORD   r7; 
@@ -452,22 +439,21 @@ typedef   struct   _SYSTEM_HANDLE_STATE   {
 	DWORD   r12;   
 	DWORD   r13;   
 	DWORD   r14;   
-}SYSTEM_HANDLE_STATE,   *PSYSTEM_HANDLE_STATE;
+} SYSTEM_HANDLE_STATE, *PSYSTEM_HANDLE_STATE;
 
 typedef enum _OBJECT_INFORMATION_CLASS {
     ObjectBasicInformation = 0,
     ObjectTypeInformation = 2
 } OBJECT_INFORMATION_CLASS;
 
- typedef NTSTATUS (__stdcall *NTQUERYSYSTEMINFORMATION)
-(
+typedef NTSTATUS (__stdcall *NTQUERYSYSTEMINFORMATION) (
 	IN      SYSTEM_INFORMATION_CLASS SystemInformationClass,
     IN OUT  PVOID                    SystemInformation,
     IN      ULONG                    SystemInformationLength,
     OUT     PULONG                   ReturnLength  OPTIONAL
 );
 
-typedef  NTSTATUS (__stdcall *NTQUERYINFORMATIONPROCESS)(
+typedef  NTSTATUS (__stdcall *NTQUERYINFORMATIONPROCESS) (
 	_In_      HANDLE           ProcessHandle,
 	_In_      PROCESSINFOCLASS ProcessInformationClass,
 	_Out_     PVOID            ProcessInformation,
@@ -475,13 +461,11 @@ typedef  NTSTATUS (__stdcall *NTQUERYINFORMATIONPROCESS)(
 	_Out_opt_ PULONG           ReturnLength
 );
 
-typedef  NTSTATUS (__stdcall *RTLGETVERSION)(
+typedef  NTSTATUS (__stdcall *RTLGETVERSION) (
 	_Out_ PRTL_OSVERSIONINFOW lpVersionInformation
 );
- typedef NTSTATUS (NTAPI* WingNtQueryObject)( HANDLE, OBJECT_INFORMATION_CLASS, PVOID, ULONG, PULONG );
-
-typedef struct _OBJECT_ATTRIBUTES
-{
+typedef NTSTATUS (NTAPI* WingNtQueryObject)( HANDLE, OBJECT_INFORMATION_CLASS, PVOID, ULONG, PULONG );
+typedef struct _OBJECT_ATTRIBUTES {
     ULONG Length;
     HANDLE RootDirectory;
     PUNICODE_STRING ObjectName;
@@ -490,7 +474,7 @@ typedef struct _OBJECT_ATTRIBUTES
     PVOID SecurityQualityOfService; // PSECURITY_QUALITY_OF_SERVICE
 } OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
 
-typedef NTSTATUS (__stdcall *NTOPENPROCESS)(
+typedef NTSTATUS (__stdcall *NTOPENPROCESS) (
     _Out_    PHANDLE            ProcessHandle,
     _In_     ACCESS_MASK        DesiredAccess,
     _In_     POBJECT_ATTRIBUTES ObjectAttributes,

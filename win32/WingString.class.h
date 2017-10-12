@@ -1,6 +1,8 @@
 #ifndef __WING_STRING_H__
 #define __WING_STRING_H__
+#ifdef WIN32
 #include "Windows.h"
+#endif
 #include <locale.h>
 #include "math.h"
 

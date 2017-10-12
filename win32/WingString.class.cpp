@@ -1325,8 +1325,7 @@ void wing_str_trim(char* str ,size_t size)
 	}
 
 	while (*_st == ' ') {
-    	_st++;
+    	while (_st <= _et) { *_st = *(_st + 1); _st++; }
+    	_st = str;
     }
-
-    str = _st;
 }

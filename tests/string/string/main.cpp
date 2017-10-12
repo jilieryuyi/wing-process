@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <wchar.h>
 #include <locale.h>
-#include "../../../win32/WString.h"
-#include "../../../win32/WString.cpp"
+#include "../../../win32/WingString.class.h"
+#include "../../../win32/WingString.class.cpp"
 
 int main(int argc, const char * argv[]) {
 //    std::locale::global(std::locale(""));
@@ -26,19 +26,19 @@ int main(int argc, const char * argv[]) {
     setlocale(LC_CTYPE, "zh_CN.utf8");
     std::cout << "Hello, World!\n";
     
-    WString str1;
+    WingString str1;
     str1.append("123");
     str1.print();
     
-    WString str2("123",0,1);
-    str2.append("456");
-    str2.print();
+   // WingString str2("123",0,1);
+   // str2.append("456");
+   // str2.print();
     
-    str1.append(str2);
-    str1.print();
-    
-    char *_str = " 123456789 ";
-    WString str(_str, 0, 1);
+   // str1.append(str2);
+   // str1.print();
+  // /
+   /* char *_str = " 123456789 ";
+    WingString str(_str, 0, 1);
     printf("length:%zu\r\n", str.length());
 //    printf(">%s<\r\n", str.rtrim());
 //    printf("length:%zu\r\n", str.length());
@@ -62,7 +62,7 @@ int main(int argc, const char * argv[]) {
     // printf("###%ls|||||\n", zh);
     
 //    std::wcout << ";;;;;"<<zh;
-//    WString str3(zh,0,1);
+//    WingString str3(zh,0,1);
 //    str3.append("123");
 //    str3.print();
     
@@ -79,8 +79,8 @@ int main(int argc, const char * argv[]) {
     
     wchar_t *testss = L"asfsfd";
     wprintf(L"%ls\r\n", testss);
-    
-    char strn[] = " hello123 ";
+    */
+    char strn[] = "       hello123 ";
     wing_str_trim(strn);
     printf("==>%s<==", strn);
     
