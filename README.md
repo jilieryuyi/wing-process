@@ -8,7 +8,7 @@ This library provides a better API to work with daemon processes on windows、ma
 	interface wing_process
 	{
 		/**
-		 * @__construct all file path onle support full path
+		 * __construct only support full path like "C:/php/runer.php" or "C:/exe/some.exe"
 		 *
 		 * @param string|int $mixed command or process_id
 		 */
