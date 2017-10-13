@@ -3,7 +3,7 @@
 This library provides a better API to work with daemon processes on windows、mac and linux systems using PHP.
 
 
-## class prototype
+## Prototype
     namespace wing;
 	class wing_process
 	{
