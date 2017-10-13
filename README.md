@@ -37,9 +37,8 @@ This library provides a better API to work with daemon processes on windows、ma
 
 #### run.php
 	$count = 0;
-	while( 1 )
-	{
-		echo $count,"\r\n";
+	while (1) {
+		echo $count, "\r\n";
 		sleep(1);
 		$count++;
 	}
