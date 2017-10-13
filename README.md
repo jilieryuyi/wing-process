@@ -9,14 +9,14 @@ This library provides a better API to work with daemon processes on windows、ma
 	{
 		/**
 		 * __construct only support full path like "C:/php/runer.php" or "C:/exe/some.exe"
-		 *
 		 * @param string|int $mixed command or process_id
 		 */
 		public function __construct($mixed);
 		
 		/**
 		 * run as deamon process
-		 * @param string $output_file if $output_file is not empty and is a file, process will run as a daemon process
+		 * @param string $output_file   if $output_file is not empty and is a file, process will run as a daemon process
+		 * @return int process id
 		 */
 		public function run($output_file = '');
 
@@ -28,6 +28,7 @@ This library provides a better API to work with daemon processes on windows、ma
 		
 		/**
 		 * return memory useage, unit k
+		 * @return int
 		 */
 		public function getMemory();
 		public static function getCurrentProcessId();
