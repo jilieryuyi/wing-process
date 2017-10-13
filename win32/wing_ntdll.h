@@ -30,7 +30,7 @@ typedef struct _PROCESSINFO {
 	unsigned long cpu_time;
 } PROCESSINFO;
 
-unsigned long  WingQueryProcess(PROCESSINFO *&all_process, int max_count);
+unsigned long WingQueryProcess(PROCESSINFO *&all_process, int max_count);
 unsigned long WingQueryProcessByProcessID(PROCESSINFO *process_item, unsigned long process_id);
 int WingQueryObject(HANDLE handle);
 int WingWindowsVersion();

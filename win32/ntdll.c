@@ -457,7 +457,7 @@ int WingQueryObject(HANDLE handle)
 		return 0;
 	}
 
-	int count =  pOutBuffer->HandleCount;
+	int count = pOutBuffer->HandleCount;
 	free(pOutBuffer);
 	FreeLibrary(hNtDll);
 

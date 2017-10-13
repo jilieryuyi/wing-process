@@ -86,17 +86,18 @@ unsigned long wing_create_process(const char *command, char* output_file)
 {
 	int redirect_output = output_file == NULL ? 0 : 1;
 	STARTUPINFO sui;
-	PROCESS_INFORMATION *pi = new PROCESS_INFORMATION(); // ?????????????????????
-	SECURITY_ATTRIBUTES sa;                            // ?????????????????��???
+	PROCESS_INFORMATION *pi = new PROCESS_INFORMATION();
+	SECURITY_ATTRIBUTES sa;
 
-	sa.bInheritHandle = TRUE;                         // ????????????��???????????
+	sa.bInheritHandle       = TRUE;
 	sa.lpSecurityDescriptor = NULL;
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.nLength              = sizeof(SECURITY_ATTRIBUTES);
 
-	SECURITY_ATTRIBUTES *psa = NULL;
-	DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-	OSVERSIONINFO osVersion = { 0 };
+	SECURITY_ATTRIBUTES *psa      = NULL;
+	DWORD dwShareMode             = FILE_SHARE_READ | FILE_SHARE_WRITE;
+	OSVERSIONINFO osVersion       = { 0 };
 	osVersion.dwOSVersionInfoSize = sizeof(osVersion);
+
 	if (GetVersionEx(&osVersion)) {
 		if (osVersion.dwPlatformId == VER_PLATFORM_WIN32_NT) {
 			psa = &sa;
@@ -105,36 +106,41 @@ unsigned long wing_create_process(const char *command, char* output_file)
 	}
 
 	HANDLE hConsoleRedirect = CreateFile(
-		output_file,
-		GENERIC_WRITE,
-		dwShareMode,
-		psa,
-		OPEN_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
+                                    output_file,
+                                    GENERIC_WRITE,
+                                    dwShareMode,
+                                    psa,
+                                    OPEN_ALWAYS,
+                                    FILE_ATTRIBUTE_NORMAL,
+                                    NULL
+                                );
 	SetLastError(0);
 	ZeroMemory(&sui, sizeof(STARTUPINFO));         // ???????????????????ZeroMemory, ????????????memset
 
-	sui.cb = sizeof(STARTUPINFO);
-	sui.dwFlags = STARTF_USESTDHANDLES;
-	sui.hStdInput = NULL;//m_hRead;
+	sui.cb         = sizeof(STARTUPINFO);
+	sui.dwFlags    = STARTF_USESTDHANDLES;
+	sui.hStdInput  = NULL;//m_hRead;
 	sui.hStdOutput = hConsoleRedirect;//m_hWrite;
-	sui.hStdError = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
+	sui.hStdError  = hConsoleRedirect;//GetStdHandle(STD_ERROR_HANDLE);
 									 //sui.wShowWindow = SW_SHOW;
 	if (!redirect_output) {
 		sui.dwFlags = STARTF_USESHOWWINDOW;// | STARTF_USESTDHANDLES;;
 	}
-	/*if( params_len >0 ) {
-	DWORD byteWrite  = 0;
-	if( ::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE ) {
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
+
+	/*
+	if (params_len >0) {
+	    DWORD byteWrite  = 0;
+	    if (::WriteFile( m_hWrite, params, params_len, &byteWrite, NULL ) == FALSE) {
+	        php_error_docref(NULL TSRMLS_CC, E_WARNING, "write data to process error");
+	    }
 	}
-	}*/
+	*/
+
 	if (!CreateProcessA(NULL, (LPSTR)command, NULL, NULL, TRUE, 0, NULL, NULL, &sui, pi)) {
 		CloseHandle(hConsoleRedirect);
 		return 0;
 	}
-	CloseHandle(hConsoleRedirect);
 
+	CloseHandle(hConsoleRedirect);
 	return (unsigned long)pi;
 }
