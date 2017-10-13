@@ -53,4 +53,6 @@ Release/tests/*.pid
 /tests/.idea/
 /tests/log.txt
 /tests/*.log
-.DS_Store
+/.DS_Store
+/EXPERIMENTAL
+/CREDITS
