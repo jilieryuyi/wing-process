@@ -56,3 +56,4 @@ Release/tests/*.pid
 /.DS_Store
 /EXPERIMENTAL
 /CREDITS
+/wing_process.php
