@@ -3,9 +3,9 @@
 This library provides a better API to work with daemon processes on windows、mac and linux systems using PHP.
 
 
-## Interface
-
-	interface wing_process
+## class prototype
+    namespace wing;
+	class wing_process
 	{
 		/**
 		 * __construct only support full path like "C:/php/runer.php" or "C:/exe/some.exe"
