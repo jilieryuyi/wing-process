@@ -77,7 +77,7 @@ This library provides a better API to work with daemon processes on windows、ma
 	//$process->kill();
 
 ### Help
-For more information QQ group 535218312	 
+For more information QQ group 535218312	     
 how to build wing-process in windows? visit: http://www.itdfy.com/details/1004
 
 ### Release Dll
