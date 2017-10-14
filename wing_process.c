@@ -431,19 +431,35 @@ ZEND_METHOD(wing_process, getCurrentProcessId)
 	ZVAL_LONG(return_value, wing_get_process_id());
 }
 
+ZEND_METHOD(wing_process, signal)
+{
+    int sig = -1;
+    zval* callback;
+
+    zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lz", &sig, &callback);
+
+    #ifdef PHP_WIN32
+
+    #else
+
+    #endif
+	RETURN_TRUE
+}
+
 
 static zend_function_entry wing_process_methods[] =
 {
-	ZEND_ME(wing_process, __construct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	ZEND_ME(wing_process, __destruct, NULL,ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-	ZEND_ME(wing_process, wait, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, run, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getProcessId, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getThreadId, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getCommandLine, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, kill, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getMemory, NULL,ZEND_ACC_PUBLIC)
-	ZEND_ME(wing_process, getCurrentProcessId, NULL,ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	ZEND_ME(wing_process, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	ZEND_ME(wing_process, __destruct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
+	ZEND_ME(wing_process, wait, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, run, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getProcessId, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getThreadId, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCommandLine, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, kill, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getMemory, NULL, ZEND_ACC_PUBLIC)
+	ZEND_ME(wing_process, getCurrentProcessId, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	ZEND_ME(wing_process, signal, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{
 	    NULL,NULL,NULL
 	}
