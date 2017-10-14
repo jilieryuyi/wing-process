@@ -439,7 +439,7 @@ unsigned long WingQueryProcess(PROCESSINFO *&all_process , int max_count)
 
 int WingQueryObject(HANDLE handle)
 {
-	if (handle == INVALID_HANDLE_VALUE || (int)handle == 0) {
+	if (handle == INVALID_HANDLE_VALUE || !handle) {
 		return -1;
 	}
 
