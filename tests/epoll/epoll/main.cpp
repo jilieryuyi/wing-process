@@ -21,6 +21,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include "stdlib.h"
+#include "queue.hpp"
 
 #define exit_if(r, ...) \
 if (r) {\
@@ -32,13 +34,13 @@ if (r) {\
 const int kReadEvent  = 1;
 const int kWriteEvent = 2;
 
-char* popQueue();
+char* pop_queue();
 
 /**
  * 将socket设置为非阻塞
  * @params fd socket资源句柄
  */
-void setNonBlock(int fd)
+void set_non_block(int fd)
 {
     int flags = fcntl(fd, F_GETFL, 0);
     exit_if(flags < 0, "fcntl failed");
@@ -54,7 +56,7 @@ void setNonBlock(int fd)
  * @param events 操作类型
  * @param modify 是否修改
  */
-void updateEvents(int efd, int fd, int events, bool modify)
+void update_events(int efd, int fd, int events, bool modify)
 {
     struct kevent ev[2];
     int n = 0;
@@ -97,7 +99,7 @@ void updateEvents(int efd, int fd, int events, bool modify)
  * @param fd listen的socket句柄
  * @param nums 新连接的个数
  */
-void handleAccept(int efd, int fd, long nums)
+void handle_accept(int efd, int fd, long nums)
 {
     struct sockaddr_in raddr;
     socklen_t rsz = sizeof(raddr);
@@ -115,8 +117,8 @@ void handleAccept(int efd, int fd, long nums)
         exit_if(r < 0, "getpeername failed");
         printf("accept a connection from %s:%d\n", inet_ntoa(raddr.sin_addr), raddr.sin_port);
     
-        setNonBlock(cfd);
-        updateEvents(efd, cfd, kReadEvent|kWriteEvent, false);
+        set_non_block(cfd);
+        update_events(efd, cfd, kReadEvent|kWriteEvent, false);
     }
 }
 
@@ -126,7 +128,7 @@ void handleAccept(int efd, int fd, long nums)
  * @param fd socket句柄
  * @param bytes 缓冲区可读字节数
  */
-void handleRead(int efd, int fd, long bytes)
+void handle_read(int efd, int fd, long bytes)
 {
     char buf[bytes];
     ssize_t n = 0;
@@ -151,13 +153,13 @@ void handleRead(int efd, int fd, long bytes)
  * @param efd kqueue
  * @param fd socket句柄
  */
-void handleWrite(int efd, int fd)
+void handle_write(int efd, int fd)
 {
-    char *send_data = popQueue();
+    char *send_data = pop_queue();
     //实际应用应当实现可写时写出数据，无数据可写才关闭可写事件
     if (send_data == NULL) {
         //关闭写事件
-        updateEvents(efd, fd, kWriteEvent, true);
+        update_events(efd, fd, kWriteEvent, true);
         return;
     }
     
@@ -174,13 +176,13 @@ void handleWrite(int efd, int fd)
 void endQueue(int efd, int fd, const char *buf)
 {
     //启用写事件
-    updateEvents(efd, fd, kWriteEvent, false);
+    update_events(efd, fd, kWriteEvent, false);
 }
 
 /**
  * 弹出队列 
  */
-char* popQueue()
+char* pop_queue()
 {
     return NULL;
 }
@@ -235,12 +237,12 @@ void loop(int efd, int lfd, int waitms)
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
             if (fd == lfd) {
-                handleAccept(efd, fd, data);
+                handle_accept(efd, fd, data);
             } else {
-                handleRead(efd, fd, data);
+                handle_read(efd, fd, data);
             }
         } else if (events == EVFILT_WRITE) {
-            handleWrite(efd, fd);
+            handle_write(efd, fd);
         } else {
             printf("unknown event %d\r\n", events);
             goto error;
@@ -255,7 +257,7 @@ error:
     exit_if(1, "unknown event");
 }
 
-int main()
+int main1()
 {
     short port  = 9998;
     int epollfd = kqueue();
@@ -279,12 +281,41 @@ int main()
     
     printf("fd %d listening at %d\n", listenfd, port);
     
-    setNonBlock(listenfd);
-    updateEvents(epollfd, listenfd, kReadEvent, false);
+    set_non_block(listenfd);
+    update_events(epollfd, listenfd, kReadEvent, false);
 
     for (;;) { //实际应用应当注册信号处理函数，退出时清理资源
         loop(epollfd, listenfd, 10000);
     }
 
+    return 0;
+}
+
+int main()
+{
+    queue* q = create_queue();
+    node* n = (node*)malloc(sizeof(node));
+    n->next = NULL;
+    
+    char* data = (char*)malloc(5);
+    memset(data, 0, 5);
+    sprintf(data, "%s", "hello");
+    
+    
+    n->data = data;
+    push(q, n);
+    
+    printf("queue length = %lu\n", q->length);
+    node* c = q->first;
+    printf("======================\n");
+    while(c->next != NULL) {
+        printf("%s\n", c->data);
+    }
+    
+    if (c) printf("%s\n", c->data);
+    printf("======================\n");
+    
+    free_queue(q);
+    
     return 0;
 }
