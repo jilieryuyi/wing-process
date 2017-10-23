@@ -40,27 +40,38 @@ void setNonBlock(int fd)
     exit_if(flags < 0, "fcntl failed");
     
     int r = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-    exit_if(r<0, "fcntl failed");
+    exit_if(r < 0, "fcntl failed");
 }
 
+/**
+ * 添加或删除read、write监听
+ * @param efd
+ * @param fd
+ * @param events
+ * @param modify
+ */
 void updateEvents(int efd, int fd, int events, bool modify)
 {
     struct kevent ev[2];
     int n = 0;
 
+    //添加read事件
     if (events & kReadEvent) {
         EV_SET(&ev[n++], fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
     } else if (modify) {
         EV_SET(&ev[n++], fd, EVFILT_READ, EV_DELETE, 0, 0, (void*)(intptr_t)fd);
     }
 
+    //添加write事件
     if (events & kWriteEvent) {
         EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_ADD|EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
-    } else if (modify){
+    } else if (modify) {
         EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, (void*)(intptr_t)fd);
     }
     printf("%s fd %d events read %d write %d\n",
            modify ? "mod" : "add", fd, events & kReadEvent, events & kWriteEvent);
+
+    //使read、write事件生效
     int r = kevent(efd, ev, n, NULL, 0, NULL);
     exit_if(r, "kevent failed ");
 }
@@ -97,7 +108,7 @@ void handleRead(int efd, int fd)
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
         return;
     }
-    exit_if(n<0, "read error"); //实际应用中，n<0应当检查各类错误，如EINTR
+    exit_if(n < 0, "read error"); //实际应用中，n<0应当检查各类错误，如EINTR
     printf("fd %d closed\n", fd);
     close(fd);
 }
