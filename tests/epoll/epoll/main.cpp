@@ -45,16 +45,27 @@ void setNonBlock(int fd)
 
 /**
  * 添加或删除read、write监听
- * @param efd
- * @param fd
- * @param events
- * @param modify
+ * @param efd kqueue返回值
+ * @param fd listen的socket句柄
+ * @param events 操作类型
+ * @param modify 是否修改
  */
 void updateEvents(int efd, int fd, int events, bool modify)
 {
     struct kevent ev[2];
     int n = 0;
 
+    /**
+     #define EV_SET(kevp, a, b, c, d, e, f) do {	\
+     struct kevent *__kevp__ = (kevp);	\
+     __kevp__->ident = (a);			\
+     __kevp__->filter = (b);			\
+     __kevp__->flags = (c);			\
+     __kevp__->fflags = (d);			\
+     __kevp__->data = (e);			\
+     __kevp__->udata = (f);			\
+     } while(0)
+     */
     //添加read事件
     if (events & kReadEvent) {
         EV_SET(&ev[n++], fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
@@ -76,31 +87,41 @@ void updateEvents(int efd, int fd, int events, bool modify)
     exit_if(r, "kevent failed ");
 }
 
+/**
+ * accept接受连接
+ * @param efd kqueue
+ * @param fd listen的socket句柄
+ */
 void handleAccept(int efd, int fd)
 {
     struct sockaddr_in raddr;
     socklen_t rsz = sizeof(raddr);
     int cfd = accept(fd,(struct sockaddr *)&raddr,&rsz);
-    exit_if(cfd<0, "accept failed");
+    exit_if(cfd < 0, "accept failed");
     
-    sockaddr_in peer, local;
+    sockaddr_in peer;//, local;
     socklen_t alen = sizeof(peer);
     int r = getpeername(cfd, (sockaddr*)&peer, &alen);
     exit_if(r < 0, "getpeername failed");
-    printf("accept a connection from %s\n", inet_ntoa(raddr.sin_addr));
+    printf("accept a connection from %s:%d\n", inet_ntoa(raddr.sin_addr), raddr.sin_port);
     
     setNonBlock(cfd);
     updateEvents(efd, cfd, kReadEvent|kWriteEvent, false);
 }
 
+/**
+ * 读事件回调
+ * @param efd kqueue
+ * @param fd socket句柄
+ */
 void handleRead(int efd, int fd)
 {
     char buf[4096];
-    int n = 0;
+    ssize_t n = 0;
     
     while ((n = ::read(fd, buf, sizeof buf)) > 0) {
-        printf("read %d bytes %s\n", n, buf);
-        int r = ::write(fd, buf, n); //写出读取的数据
+        printf("read %zd bytes %s\n", n, buf);
+        ssize_t r = ::write(fd, buf, n); //写出读取的数据
         //实际应用中，写出数据可能会返回EAGAIN，此时应当监听可写事件，当可写时再把数据写出
         exit_if(r <= 0, "write error");
     }
@@ -113,12 +134,23 @@ void handleRead(int efd, int fd)
     close(fd);
 }
 
+/**
+ * 写事件回调
+ * @param efd kqueue
+ * @param fd socket句柄
+ */
 void handleWrite(int efd, int fd)
 {
     //实际应用应当实现可写时写出数据，无数据可写才关闭可写事件
     updateEvents(efd, fd, kReadEvent, true);
 }
 
+/**
+ * 事件轮训
+ * @param efd kqueue
+ * @param lfd 监听 socket
+ * @param waitms 超时时间
+ */
 void loop(int efd, int lfd, int waitms)
 {
     struct timespec timeout;
@@ -128,13 +160,16 @@ void loop(int efd, int lfd, int waitms)
     timeout.tv_nsec = (waitms % 1000) * 1000 * 1000;
 
     struct kevent activeEvs[kMaxEvents];
+    //获取ready的fd，类似epoll_wait
     int n = kevent(efd, NULL, 0, activeEvs, kMaxEvents, &timeout);
     printf("epoll_wait return %d\n", n);
 
     for (int i = 0; i < n; i ++) {
         int fd = (int)(intptr_t)activeEvs[i].udata;
         int events = activeEvs[i].filter;
+        
         if (events == EVFILT_READ) {
+            //如果触发的socket等于监听的socket，说明有新的连接
             if (fd == lfd) {
                 handleAccept(efd, fd);
             } else {
