@@ -30,7 +30,10 @@ if (r) {\
 const int kReadEvent  = 1;
 const int kWriteEvent = 2;
 
-
+/**
+ * 将socket设置为非阻塞
+ * @params fd socket资源句柄
+ */
 void setNonBlock(int fd)
 {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -84,7 +87,7 @@ void handleRead(int efd, int fd)
     char buf[4096];
     int n = 0;
     
-    while ((n=::read(fd, buf, sizeof buf)) > 0) {
+    while ((n = ::read(fd, buf, sizeof buf)) > 0) {
         printf("read %d bytes %s\n", n, buf);
         int r = ::write(fd, buf, n); //写出读取的数据
         //实际应用中，写出数据可能会返回EAGAIN，此时应当监听可写事件，当可写时再把数据写出
@@ -105,7 +108,7 @@ void handleWrite(int efd, int fd)
     updateEvents(efd, fd, kReadEvent, true);
 }
 
-void loop_once(int efd, int lfd, int waitms)
+void loop(int efd, int lfd, int waitms)
 {
     struct timespec timeout;
     const int kMaxEvents = 20;
@@ -130,9 +133,16 @@ void loop_once(int efd, int lfd, int waitms)
             handleWrite(efd, fd);
         } else {
             printf("unknown event %d\r\n", events);
-            exit_if(1, "unknown event");
+            goto error;
+            break;
         }
     }
+    
+    return;
+    
+error:
+    close(lfd);
+    exit_if(1, "unknown event");
 }
 
 int main()
@@ -163,7 +173,7 @@ int main()
     updateEvents(epollfd, listenfd, kReadEvent, false);
 
     for (;;) { //实际应用应当注册信号处理函数，退出时清理资源
-        loop_once(epollfd, listenfd, 10000);
+        loop(epollfd, listenfd, 10000);
     }
 
     return 0;
