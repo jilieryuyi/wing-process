@@ -24,13 +24,7 @@
 #include "stdlib.h"
 #include "queue.hpp"
 #include "assert.h"
-
-#define exit_if(r, ...) \
-if (r) {\
-    printf(__VA_ARGS__); \
-    printf("error no: %d error msg %s\n", errno, strerror(errno)); \
-    exit(1);\
-}
+#include "wing.h"
 
 const int kReadEvent  = 1;
 const int kWriteEvent = 2;
@@ -258,8 +252,52 @@ error:
     exit_if(1, "unknown event");
 }
 
-int main1()
+
+//释放data的函数，用于释放队列以及其节点的函数指针
+void free_data(void* data)
 {
+    if (data) {
+        free(data);
+    }
+    data = NULL;
+}
+
+int queue_test()
+{
+    queue* q = create_queue();
+    mem_block *block = create_mem_block(10240);
+    
+    char* data = (char*)malloc(5);
+    memset(data, 0, 5);
+    sprintf(data, "%s", "hello");
+    
+    node* n = create_node(block, data);
+    push(q, n);
+    
+    exit_if(q->length != 1, "队列出错");
+    
+    printf("queue length = %lu\n", q->length);
+    node* c = q->first;
+    printf("======================\n");
+    while(c->next != NULL) {
+        printf("%s\n", c->data);
+    }
+    if (c) printf("%s\n", c->data);
+    printf("======================\n");
+    
+    node* n1 = pop_queue(block, q);
+    printf("%s\n", n1->data);
+    
+    free_queue(block, q, free_data);
+    
+    return 0;
+}
+
+int main()
+{
+    queue_test();
+    return 0;
+    
     short port  = 9998;
     int epollfd = kqueue();
     exit_if(epollfd < 0, "epoll_create failed");
@@ -284,49 +322,11 @@ int main1()
     
     set_non_block(listenfd);
     update_events(epollfd, listenfd, kReadEvent, false);
-
+    
     for (;;) { //实际应用应当注册信号处理函数，退出时清理资源
         loop(epollfd, listenfd, 10000);
     }
-
-    return 0;
-}
-
-//释放data的函数，用于释放队列以及其节点的函数指针
-void free_data(void* data)
-{
-    if (data) {
-        free(data);
-    }
-}
-
-int main()
-{
-    queue* q = create_queue();
-    node* n = (node*)malloc(sizeof(node));
-    n->next = NULL;
-    
-    char* data = (char*)malloc(5);
-    memset(data, 0, 5);
-    sprintf(data, "%s", "hello");
-    
-    
-    n->data = data;
-    push(q, n);
-    
-    assert(q->length == 1);
-    
-    printf("queue length = %lu\n", q->length);
-    node* c = q->first;
-    printf("======================\n");
-    while(c->next != NULL) {
-        printf("%s\n", c->data);
-    }
-    
-    if (c) printf("%s\n", c->data);
-    printf("======================\n");
-    
-    free_queue(q, free_data);
     
     return 0;
 }
+

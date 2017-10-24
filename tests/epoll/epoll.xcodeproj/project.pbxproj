@@ -28,6 +28,7 @@
 		FEBC99501F9C264200D0C58E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		FED4E0FB1F9EAACB002A2F9A /* queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = queue.cpp; sourceTree = "<group>"; };
 		FED4E0FC1F9EAACB002A2F9A /* queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = queue.hpp; sourceTree = "<group>"; };
+		FED4E0FE1F9ED121002A2F9A /* wing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wing.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +64,7 @@
 				FEBC99501F9C264200D0C58E /* main.cpp */,
 				FED4E0FB1F9EAACB002A2F9A /* queue.cpp */,
 				FED4E0FC1F9EAACB002A2F9A /* queue.hpp */,
+				FED4E0FE1F9ED121002A2F9A /* wing.h */,
 			);
 			path = epoll;
 			sourceTree = "<group>";
