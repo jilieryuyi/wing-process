@@ -267,14 +267,22 @@ int queue_test()
     queue* q = create_queue();
     mem_block *block = create_mem_block(10240);
     
-    char* data = (char*)malloc(5);
-    memset(data, 0, 5);
-    sprintf(data, "%s", "hello");
+    char* data = (char*)malloc(6);
+    memset(data, 0, 6);
+    sprintf(data, "%s", "hello1");
     
     node* n = create_node(block, data);
     push(q, n);
     
-    exit_if(q->length != 1, "队列出错");
+    
+    data = (char*)malloc(6);
+    memset(data, 0, 6);
+    sprintf(data, "%s", "hello2");
+    
+    n = create_node(block, data);
+    push(q, n);
+    
+    exit_if(q->length != 2, "队列出错");
     
     printf("queue length = %lu\n", q->length);
     node* c = q->first;
@@ -287,6 +295,8 @@ int queue_test()
     
     node* n1 = pop_queue(block, q);
     printf("%s\n", n1->data);
+    
+    mem_move(block);
     
     free_queue(block, q, free_data);
     
