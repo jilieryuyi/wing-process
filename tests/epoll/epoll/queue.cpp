@@ -20,7 +20,7 @@ queue* create_queue()
 }
 
 //释放一个队列
-void free_queue(queue* q)
+void free_queue(queue* q, void (*free_data)(void*))
 {
     if (!q) {
         return;
@@ -31,13 +31,13 @@ void free_queue(queue* q)
     
     while (current->next != NULL) {
         temp = current->next;
-        free_node(current);
+        free_node(current, free_data);
         q->length--;
         current = temp;
     }
     
     if (current) {
-        free_node(current);
+        free_node(current, free_data);
         q->length--;
         current = NULL;
     }
@@ -94,10 +94,10 @@ node* create_node(void* data)
 }
 
 //释放一个节点
-void free_node(node* n)
+void free_node(node* n, void (*free_data)(void*))
 {
     if (n->data) {
-        free(n->data);
+        free_data(n->data);
     }
     free(n);
 }

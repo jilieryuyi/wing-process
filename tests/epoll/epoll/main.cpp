@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "stdlib.h"
 #include "queue.hpp"
+#include "assert.h"
 
 #define exit_if(r, ...) \
 if (r) {\
@@ -291,6 +292,14 @@ int main1()
     return 0;
 }
 
+//释放data的函数，用于释放队列以及其节点的函数指针
+void free_data(void* data)
+{
+    if (data) {
+        free(data);
+    }
+}
+
 int main()
 {
     queue* q = create_queue();
@@ -305,6 +314,8 @@ int main()
     n->data = data;
     push(q, n);
     
+    assert(q->length == 1);
+    
     printf("queue length = %lu\n", q->length);
     node* c = q->first;
     printf("======================\n");
@@ -315,7 +326,7 @@ int main()
     if (c) printf("%s\n", c->data);
     printf("======================\n");
     
-    free_queue(q);
+    free_queue(q, free_data);
     
     return 0;
 }
