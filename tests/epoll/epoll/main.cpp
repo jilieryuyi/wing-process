@@ -26,15 +26,13 @@
 #include "assert.h"
 #include "wing.h"
 
-#define SEND_QUEUE_BUF_SIZE 10240
-#define MAX_SEND_TIMES 100 //发送失败最大的重试次数
+#define SEND_QUEUE_BUF_SIZE 10240 //队列最大容量
+#define MAX_SEND_TIMES 100        //发送失败最大的重试次数
 
 const int kReadEvent  = 1;
 const int kWriteEvent = 2;
 
-void free_data(void* data);
-
-
+//客户端节点
 typedef struct _client {
     int fd;
     queue* queue;
@@ -42,15 +40,22 @@ typedef struct _client {
     int port;
 } client_node;
 
-
+//发送队列节点数据
 typedef struct _send_queue_node {
     client_node* client;
-    char* _msg;
-    unsigned long _msg_size;
-    int send_times;
+    char* msg;
+    unsigned long msg_size;
+    int send_times; //发送计数器，当达到MAX_SEND_TIMES时直接放弃重试
 } send_queue_node;
 
+//发送数据，自带重试机制
 ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times);
+//释放发送队列节点数据
+void free_send_queue_node(void* n);
+
+/**
+ * 初始化客户端节点资源
+ */
 client_node* init_client(int fd, char* ip, int port)
 {
     client_node *client = (client_node*)malloc(sizeof(client_node));
@@ -67,7 +72,6 @@ client_node* init_client(int fd, char* ip, int port)
     return client;
 }
 
-void free_send_queue_node(void* n);
 /**
  * 释放客户端
  */
@@ -87,8 +91,9 @@ void free_client(client_node* client)
 void free_send_queue_node(void* n)
 {
     send_queue_node* _n = (send_queue_node*)n;
-    if(_n->_msg) {
-        free(_n->_msg);
+    if(_n->msg) {
+        free(_n->msg);
+        _n->msg = NULL;
     }
     free(n);
     n = NULL;
@@ -222,7 +227,7 @@ void handle_read(int efd, client_node* client, long bytes)
 }
 
 /**
- * 写事件回调
+ * 可写事件回调
  * @param efd kqueue
  * @param client client_node
  */
@@ -230,13 +235,13 @@ void handle_write(int efd, client_node* client)
 {
     node* n = pop_queue(client->queue);
     if (n == NULL) {
-        update_events(efd, client, kReadEvent, true);
-        return;
+        goto end;
     }
     
+    //如果存在未发送完成的数据，尝试重发
     while (n != NULL) {
         send_queue_node* sn = (send_queue_node*)n->data;
-        send_data(efd, client, (const char*)sn->_msg, (size_t)sn->_msg_size, sn->send_times);
+        send_data(efd, client, (const char*)sn->msg, (size_t)sn->msg_size, sn->send_times);
         n = pop_queue(client->queue);
     }
     
@@ -244,6 +249,7 @@ void handle_write(int efd, client_node* client)
         //如果是htpp协议，可以考虑在这里free_client
     }
     
+end:
     update_events(efd, client, kReadEvent, true);
 }
 
@@ -261,29 +267,27 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     //创建一个数据节点
     send_queue_node* _node = (send_queue_node*)malloc(sizeof(send_queue_node));
     _node->send_times = send_times + 1;
-    _node->_msg = (char*)malloc(buf_size+1);
-    memset(_node->_msg, 0, buf_size + 1);
+    _node->msg        = (char*)malloc(buf_size+1);
+    memset(_node->msg, 0, buf_size + 1);
     
     //创建一个队列节点，用于容纳数据节点
     node* n = create_node(client->queue, (void*)_node);
     
     if (size == -1) {
-        sprintf(_node->_msg, buf, buf_size);
-        _node->_msg_size = buf_size;
-        push_queue(client->queue, n);
-        update_events(efd, client, kWriteEvent, false);
-        return size;
+        //发送失败，直接进入重试队列
+        sprintf(_node->msg, buf, buf_size);
+        _node->msg_size = buf_size;
     }
     
-    if (size < buf_size) {
+    else if (size < buf_size) {
+        //发送部分失败，直接进入重试队列
         char *_buf = (char*)(buf+size);
-        sprintf(_node->_msg, _buf, buf_size - size);
-         _node->_msg_size = buf_size - size;
-        push_queue(client->queue, n);
-        update_events(efd, client, kWriteEvent, false);
-        return size;
+        sprintf(_node->msg, _buf, buf_size - size);
+        _node->msg_size = buf_size - size;
     }
     
+    push_queue(client->queue, n);
+    update_events(efd, client, kWriteEvent, false);
     return size;
 }
 
@@ -296,27 +300,31 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
 void loop(int efd, client_node* server, int waitms)
 {
     struct timespec timeout;
-    const int kMaxEvents = 20;
+    const int max_enents = 20;
 
     timeout.tv_sec  = waitms / 1000;
     timeout.tv_nsec = (waitms % 1000) * 1000 * 1000;
 
-    struct kevent activeEvs[kMaxEvents];
+    struct kevent active_events[max_enents];
     //获取ready的fd，类似epoll_wait
-    int n = kevent(efd, NULL, 0, activeEvs, kMaxEvents, &timeout);
+    int n = kevent(efd, NULL, 0, active_events, max_enents, &timeout);
     printf("epoll_wait return %d\n", n);
 
     for (int i = 0; i < n; i ++) {
-        client_node* client = (client_node*)activeEvs[i].udata;
-        long data = activeEvs[i].data;
+        //用户数据
+        client_node* client = (client_node*)active_events[i].udata;
+        //这里的data在不同的事件里面有不同的意义，accept里面代表等待连接的客户端
+        //read事件里面代表可读的数据字节数
+        long data = active_events[i].data;
         
         //处理出错的socket
-        if (activeEvs[i].flags & EV_ERROR) {
-            close((int)activeEvs[i].ident);
+        if (active_events[i].flags & EV_ERROR) {
+            free_client(client);
+            //close((int)activeEvs[i].ident);
             continue;
         }
         
-        int events = activeEvs[i].filter;
+        int events = active_events[i].filter;
         
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
@@ -325,9 +333,13 @@ void loop(int efd, client_node* server, int waitms)
             } else {
                 handle_read(efd, client, data);
             }
-        } else if (events == EVFILT_WRITE) {
+        }
+        
+        else if (events == EVFILT_WRITE) {
             handle_write(efd, client);
-        } else {
+        }
+        
+        else {
             printf("unknown event %d\r\n", events);
             goto error;
             break;
@@ -342,7 +354,8 @@ error:
 }
 
 
-//释放data的函数，用于释放队列以及其节点的函数指针
+//用于释放队列数据的函数指针
+//这里仅用户测试队列，这里的data就是一个char*
 void free_data(void* data)
 {
     if (data) {
