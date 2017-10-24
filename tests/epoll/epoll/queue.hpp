@@ -16,13 +16,10 @@ typedef struct _node {
     void* data;
     _node* prev;
     _node* next;
+    unsigned long offset;
 } node;
 
-typedef struct _queue {
-    _node *first;
-    _node *last;
-    unsigned long length;
-} queue;
+
 
 typedef struct _mem_block {
     void *start;
@@ -31,27 +28,35 @@ typedef struct _mem_block {
     unsigned long offset;
 } mem_block;
 
+typedef struct _queue {
+    _node *first;
+    _node *last;
+    _mem_block* block;
+    unsigned long length;
+} queue;
+
 
 //创建一大块内存 返回开始指针
-mem_block *create_mem_block(unsigned long size);
+//mem_block *create_mem_block(unsigned long size);
 //内存移位
-void mem_move(mem_block* mem_block);
-
-
+void _mem_move(mem_block* mem_block);
 
 //创建一个队列
-queue* create_queue();
+queue* create_queue(size_t max_size);
+
 //释放一个队列
-void free_queue(mem_block *block, queue* q, void (*free_data)(void*));
+void free_queue(queue* q, void (*free_data)(void*));
 //队列尾部追加元素
-int push(queue* q, node *n);
+int push_queue(queue* q, node *n);
 //队列顶部弹出元素
-node* pop_queue(mem_block *block, queue* q);
+node* pop_queue(queue* q);
 //队列长度
 unsigned long length(queue* q);
+//删除节点
+void del_node(queue* q, node* n, void (*free_data)(void *));
 
 //创建一个节点
-node* create_node(mem_block *block, void* data);
+node* create_node(queue* q, void* data);
 //释放一个节点
 void free_node(node* n, void (*free_data)(void*));
 
