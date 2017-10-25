@@ -8,6 +8,7 @@
 //  kqueue demo
 //  @link http://blog.csdn.net/bytxl/article/details/17526351
 //  @link https://www.ibm.com/developerworks/cn/aix/library/1105_huangrg_kqueue/
+//  @link https://www.freebsd.org/cgi/man.cgi?query=kqueue&sektion=2
 //
 
 #include <iostream>
@@ -90,7 +91,23 @@ void free_client(client_node* client)
 }
 
 /**
- * 释放发送的队列数据
+ * 创建一个发送队列节点数据，2个malloc
+ */
+send_queue_node* create_send_queue_node(char* buf, size_t buf_size, int send_times)
+{
+    send_queue_node* _node = (send_queue_node*)malloc(sizeof(send_queue_node));
+    _node->send_times      = send_times + 1;
+    _node->msg             = (char*)malloc(buf_size+1);
+    
+    memset(_node->msg, 0, buf_size + 1);
+    sprintf(_node->msg, buf, buf_size);
+    _node->msg_size = buf_size;
+    
+    return _node;
+}
+
+/**
+ * 释放发送的队列数据，2个free
  */
 void free_send_queue_node(void* n)
 {
@@ -125,6 +142,12 @@ void set_non_block(int fd)
  */
 void update_events(int efd, /*int fd*/client_node* client, int events, bool modify)
 {
+    if (!client) {
+        return;
+    }
+    if (client->fd <= 0) {
+        return;
+    }
     struct kevent ev[2];
     int n = 0;
 
@@ -157,6 +180,13 @@ void update_events(int efd, /*int fd*/client_node* client, int events, bool modi
 
     //使read、write事件生效
     int r = kevent(efd, ev, n, NULL, 0, NULL);
+    
+    printf("=====================%d\n", r);
+    
+    //if (r == -1 && errno == 2) {
+      //  return;
+    //}
+    
     exit_if(r, "kevent failed ");
 }
 
@@ -184,6 +214,18 @@ void handle_accept(int efd, int fd, long nums)
         exit_if(r < 0, "getpeername failed");
         printf("accept a connection from %s:%d\n", inet_ntoa(raddr.sin_addr), raddr.sin_port);
     
+        
+        
+        //对sock_cli设置KEEPALIVE和NODELAY
+       // int len = sizeof(unsigned int);
+       // setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, &optval, len);//使用KEEPALIVE
+       // setsockopt(cfd, IPPROTO_TCP, TCP_NODELAY, &optval, len);//禁用NAGLE算法
+        
+    
+        //struct linger linger;
+       // memset(&linger, 0, sizeof(struct linger));
+       // setsockopt(cfd, SOL_SOCKET, SO_LINGER, (const void*)&linger, sizeof(struct linger));
+        
         client_node *client = init_client(cfd, inet_ntoa(raddr.sin_addr), raddr.sin_port);
         
         set_non_block(cfd);
@@ -204,17 +246,23 @@ void handle_read(int efd, client_node* client, long bytes)
     ssize_t n = 0;
     
     while (1) {
-        n += ::read(client->fd, buf, bytes);
+        n += recv(client->fd, buf, bytes, 0);
         if (n < 0 || n >= bytes) {
             break;
         }
     }
     
     printf("read %zd bytes:\n%s\n\n", n, buf);
-    char *msg = (char*)"HTTP/1.1 200 OK\r\n\r\nhello world";
-    size_t send_size = strlen(msg);
+    
+    if (n == 0) {
+        printf("receive error fd %d closed\n", client->fd);
+        free_client(client);
+        return;
+    }
+    
+    char *msg           = (char*)"HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world";
+    size_t send_size    = strlen(msg);
     ssize_t sended_size = send_data(efd, client, msg, send_size, 0); //写出读取的数据
-    //free_client(client);
     
     if (sended_size == send_size) {
         //发送成功，如果是htpp协议，可以考虑在这里free_client
@@ -223,9 +271,15 @@ void handle_read(int efd, client_node* client, long bytes)
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
         return;
     }
+    
+    //ENOTSOCK	38		/* Socket operation on non-socket */
+    //这个错误一般由于socket被close释放掉了，然后还进行read操作造成的
+    if (errno == ENOTSOCK) {
+        return;
+    }
+    
     exit_if(n < 0, "read error"); //实际应用中，n<0应当检查各类错误，如EINTR
-    printf("fd %d closed\n", client->fd);
-    free_client(client);//(fd);
+    
 }
 
 /**
@@ -243,6 +297,7 @@ void handle_write(int efd, client_node* client)
     //如果存在未发送完成的数据，尝试重发
     while (n != NULL) {
         send_queue_node* sn = (send_queue_node*)n->data;
+        printf("队列发送\n");
         send_data(efd, client, (const char*)sn->msg, (size_t)sn->msg_size, sn->send_times);
         n = pop_queue(client->queue);
     }
@@ -260,36 +315,35 @@ end:
  */
 ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times)
 {
-    if (send_times > MAX_SEND_TIMES) {
+    if (send_times > 5) {
+        printf("resend max times error close %d\n", client->fd);
+        free_client(client);
         return 0;
     }
     
     ssize_t size = send(client->fd, buf, buf_size, 0);
+    printf("send msg %zu bytes:\n%s\n\n", buf_size, buf);
     
     //创建一个数据节点
-    send_queue_node* _node = (send_queue_node*)malloc(sizeof(send_queue_node));
-    _node->send_times = send_times + 1;
-    _node->msg        = (char*)malloc(buf_size+1);
-    memset(_node->msg, 0, buf_size + 1);
-    
-    //创建一个队列节点，用于容纳数据节点
-    node* n = create_node(client->queue, (void*)_node);
+    send_queue_node* _node = NULL;
     
     if (size == -1) {
         //发送失败，直接进入重试队列
-        sprintf(_node->msg, buf, buf_size);
-        _node->msg_size = buf_size;
+        _node = create_send_queue_node((char*)buf, buf_size, send_times + 1);
     }
     
     else if (size < buf_size) {
         //发送部分失败，直接进入重试队列
-        char *_buf = (char*)(buf+size);
-        sprintf(_node->msg, _buf, buf_size - size);
-        _node->msg_size = buf_size - size;
+        _node = create_send_queue_node((char*)(buf+size), buf_size - size, send_times + 1);
     }
     
-    push_queue(client->queue, n);
+    if (_node != NULL) {
+        node* n = create_node(client->queue, (void*)_node);
+        push_queue(client->queue, n);
+    }
+    
     update_events(efd, client, kWriteEvent, false);
+
     return size;
 }
 
@@ -317,16 +371,23 @@ void loop(int efd, client_node* server, int waitms)
         client_node* client = (client_node*)active_events[i].udata;
         //这里的data在不同的事件里面有不同的意义，accept里面代表等待连接的客户端
         //read事件里面代表可读的数据字节数
-        long data = active_events[i].data;
+        long data      = active_events[i].data;
+        uint16_t flags = active_events[i].flags;
+        int events     = active_events[i].filter;
+        
+        printf("events = %d \n", events);
+        printf("flags = %d \n", flags);
+        printf("data = %ld \n", data);
+
         
         //处理出错的socket
-        if (active_events[i].flags & EV_ERROR) {
+        if (flags & EV_ERROR) {
             free_client(client);
             //close((int)activeEvs[i].ident);
             continue;
         }
         
-        int events = active_events[i].filter;
+       
         
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
@@ -338,6 +399,13 @@ void loop(int efd, client_node* server, int waitms)
         }
         
         else if (events == EVFILT_WRITE) {
+            
+            if (flags & EV_EOF) {
+                printf("ev eof close %d\n", client->fd);
+                free_client(client);
+                continue;
+            }
+            
             handle_write(efd, client);
         }
         
@@ -351,6 +419,7 @@ void loop(int efd, client_node* server, int waitms)
     return;
     
 error:
+    printf("server error close %d\n", server->fd);
     free_client(server);
     exit_if(1, "unknown event");
 }
@@ -444,6 +513,11 @@ int main()
     exit_if(epollfd < 0, "epoll_create failed");
     
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    
+    //struct linger linger;
+   // memset(&linger, 0, sizeof(struct linger));
+   // setsockopt(listenfd, SOL_SOCKET, SO_LINGER, (const void*)&linger, sizeof(struct linger));
+    
     exit_if(listenfd < 0, "socket failed");
     
     struct sockaddr_in addr;

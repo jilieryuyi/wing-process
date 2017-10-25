@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "wing.h"
 
+//队列节点
 typedef struct _node {
     void* data;
     _node* prev;
@@ -19,8 +20,7 @@ typedef struct _node {
     unsigned long offset;
 } node;
 
-
-
+//队列节点内存池
 typedef struct _mem_block {
     void *start;
     unsigned long empty_offset;
@@ -28,6 +28,7 @@ typedef struct _mem_block {
     unsigned long offset;
 } mem_block;
 
+//队列
 typedef struct _queue {
     _node *first;
     _node *last;
@@ -46,17 +47,22 @@ queue* create_queue(size_t max_size);
 
 //释放一个队列
 void free_queue(queue* q, void (*free_data)(void*));
+
 //队列尾部追加元素
 int push_queue(queue* q, node *n);
+
 //队列顶部弹出元素
 node* pop_queue(queue* q);
+
 //队列长度
 unsigned long length(queue* q);
+
 //删除节点
 void del_node(queue* q, node* n, void (*free_data)(void *));
 
 //创建一个节点
 node* create_node(queue* q, void* data);
+
 //释放一个节点
 void free_node(node* n, void (*free_data)(void*));
 

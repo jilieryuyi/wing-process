@@ -10,11 +10,12 @@
 #define wing_h
 #include <errno.h>
 #include <string.h>
+
 #define exit_if(r, ...) \
 if (r) {\
-printf(__VA_ARGS__); \
-printf("error no: %d error msg %s\n", errno, strerror(errno)); \
-exit(1);\
+    printf(__VA_ARGS__); \
+    printf("error no: %d error msg %s\n", errno, strerror(errno)); \
+    exit(1);\
 }
 
 #endif /* wing_h */
