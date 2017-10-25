@@ -34,18 +34,18 @@ const int kWriteEvent = 2;
 
 //客户端节点
 typedef struct _client {
-    int fd;
-    queue* queue;
-    char ip[16];
-    int port;
+    int fd;       //socket句柄
+    queue* queue; //队列指针
+    char ip[16];  //客户端ip
+    int port;     //客户端连接端口
 } client_node;
 
 //发送队列节点数据
 typedef struct _send_queue_node {
-    client_node* client;
-    char* msg;
-    unsigned long msg_size;
-    int send_times; //发送计数器，当达到MAX_SEND_TIMES时直接放弃重试
+    client_node* client;    //客户端节点
+    char* msg;              //待发送的数据
+    unsigned long msg_size; //待发送的数据大小
+    int send_times;         //发送计数器，当达到MAX_SEND_TIMES时直接放弃重试
 } send_queue_node;
 
 //发送数据，自带重试机制
@@ -55,6 +55,10 @@ void free_send_queue_node(void* n);
 
 /**
  * 初始化客户端节点资源
+ * @param fd socket句柄
+ * @param ip 连接ip
+ * @param port 连接端口
+ * @return client_node*
  */
 client_node* init_client(int fd, char* ip, int port)
 {
