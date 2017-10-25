@@ -166,7 +166,7 @@ node* pop_queue(queue* q)
         return NULL;
     }
     node *t  = q->first;
-    if ( t == NULL) {
+    if (t == NULL) {
         return NULL;
     }
     q->first = t->next;

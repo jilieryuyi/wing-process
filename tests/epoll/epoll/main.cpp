@@ -156,8 +156,6 @@ void update_events(int efd, /*int fd*/client_node* client, int events, bool modi
     exit_if(r, "kevent failed ");
 }
 
-
-
 /**
  * accept接受连接
  * @param efd kqueue
