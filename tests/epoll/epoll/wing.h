@@ -18,4 +18,7 @@ if (r) {\
     exit(1);\
 }
 
+#define SEND_QUEUE_BUF_SIZE 10240 //队列最大容量
+#define MAX_SEND_TIMES 100        //发送失败最大的重试次数
+
 #endif /* wing_h */

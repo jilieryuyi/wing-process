@@ -54,6 +54,9 @@ int push_queue(queue* q, node *n);
 //队列顶部弹出元素
 node* pop_queue(queue* q);
 
+//读取首部元素
+node* peek_queue(queue* q);
+
 //队列长度
 unsigned long length(queue* q);
 

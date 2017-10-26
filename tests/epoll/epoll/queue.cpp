@@ -175,6 +175,9 @@ int push_queue(queue* q, node *n)
     if (!q || !n) {
         return 0;
     }
+    
+    printf("push queue ========== %lu\n", (q->length+1));
+    
     node *t = q->last;
     
     if (t == NULL) {
@@ -189,6 +192,15 @@ int push_queue(queue* q, node *n)
     q->last = n;
     q->length++;
     return 1;
+}
+
+node* peek_queue(queue* q)
+{
+    if (q == NULL) {
+        return NULL;
+    }
+    
+    return q->first;
 }
 
 /**
