@@ -370,8 +370,8 @@ void handle_write(int efd, client_node* client, size_t left_size)
     }
     
 end:
-   // update_events(efd, client, kReadEvent, true);
-    printf("");
+    update_events(efd, client, kReadEvent, true);
+   // printf("");
 }
 
 static size_t _send(int fd, const char* buf, size_t buf_size)
@@ -459,7 +459,8 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
 
 static void keepalive(client_node* client, const char* buf, size_t buf_size)
 {
-    size_t size = write(client->fd, buf, buf_size);
+    //printf("heepalive==============\n");
+    size_t size = send(client->fd, buf, buf_size, 0);
 
     
     //如果出现EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
@@ -546,7 +547,7 @@ void loop(int efd, client_node* server, int waitms)
         uint16_t flags = active_events[i].flags;
         int events     = active_events[i].filter;
         
-        /*printf("events = %d \n", events);
+       /* printf("events = %d \n", events);
         printf("flags = %d \n", flags);
         printf("data = %ld \n", data);*/
 
@@ -560,7 +561,7 @@ void loop(int efd, client_node* server, int waitms)
         }
         
         else if (events == EVFILT_WRITE) {
-            keepalive(client, "", 0);
+            //keepalive(client, "", 0);
             handle_write(efd, client, data);
             /*if (flags & EV_EOF) {
                 printf("ev eof close %d\n", client->fd);
