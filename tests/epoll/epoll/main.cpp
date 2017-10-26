@@ -9,6 +9,7 @@
 //  @link http://blog.csdn.net/bytxl/article/details/17526351
 //  @link https://www.ibm.com/developerworks/cn/aix/library/1105_huangrg_kqueue/
 //  @link https://www.freebsd.org/cgi/man.cgi?query=kqueue&sektion=2
+//  @link http://www.cnblogs.com/moonz-wu/p/4740908.html
 //
 
 #include <iostream>
@@ -82,11 +83,15 @@ client_node* init_client(int fd, char* ip, int port)
  */
 void free_client(client_node* client)
 {
+    //shutdown(client->fd, SHUT_RDWR);
     close(client->fd);
     client->fd = 0;
     free_queue(client->queue, free_send_queue_node);
     client->queue = NULL;
-    free(client);
+    
+    if (client) {
+        free(client);
+    }
     client = NULL;
 }
 
@@ -241,20 +246,26 @@ void handle_accept(int efd, int fd, long nums)
  */
 void handle_read(int efd, client_node* client, long bytes)
 {
+    if (bytes <= 0) {
+        printf("receive error fd %d closed\n", client->fd);
+        free_client(client);
+        return;
+    }
     char buf[bytes + 1];
     memset(buf, 0, bytes + 1);
-    ssize_t n = 0;
+    ssize_t n = 0, m;
     
     while (1) {
-        n += recv(client->fd, buf, bytes, 0);
-        if (n < 0 || n >= bytes) {
+        m = recv(client->fd, buf, bytes, 0);
+        if (m <= 0 || n >= bytes) {
             break;
         }
+        n += m;
     }
     
     printf("read %zd bytes:\n%s\n\n", n, buf);
     
-    if (n == 0) {
+    if (m == 0) {
         printf("receive error fd %d closed\n", client->fd);
         free_client(client);
         return;
@@ -279,7 +290,6 @@ void handle_read(int efd, client_node* client, long bytes)
     }
     
     exit_if(n < 0, "read error"); //实际应用中，n<0应当检查各类错误，如EINTR
-    
 }
 
 /**
@@ -304,6 +314,7 @@ void handle_write(int efd, client_node* client)
     
     if (1) {
         //如果是htpp协议，可以考虑在这里free_client
+        
     }
     
 end:
@@ -321,21 +332,38 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
         return 0;
     }
     
-    ssize_t size = send(client->fd, buf, buf_size, 0);
-    printf("send msg %zu bytes:\n%s\n\n", buf_size, buf);
+    ssize_t sended = 0;
+    ssize_t size   = 0;
+    char *sbuf     = (char*)buf;
+    
+    while (sended < buf_size) {
+        size = send(client->fd, sbuf, buf_size, 0);
+        printf("send msg %zu bytes:\n%s\n\n", buf_size, sbuf);
+        
+        if (size < 0 && errno == EINTR) {
+            printf("intterupt\n");
+            //nwritten = 0;        /* and call write() again */
+            continue;
+        }
+        //EPIPE 32 d对端关闭
+        if (size < 0) break;
+        sended += size;
+        sbuf = (char*)(buf + sended);
+        
+    }
     
     //创建一个数据节点
     send_queue_node* _node = NULL;
     
-    if (size == -1) {
+    if (size == -1 && errno != EPIPE) {
         //发送失败，直接进入重试队列
         _node = create_send_queue_node((char*)buf, buf_size, send_times + 1);
     }
     
-    else if (size < buf_size) {
+    //else if (size < buf_size) {
         //发送部分失败，直接进入重试队列
-        _node = create_send_queue_node((char*)(buf+size), buf_size - size, send_times + 1);
-    }
+       // _node = create_send_queue_node((char*)(buf+size), buf_size - size, send_times + 1);
+    //}
     
     if (_node != NULL) {
         node* n = create_node(client->queue, (void*)_node);
@@ -343,8 +371,12 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     }
     
     update_events(efd, client, kWriteEvent, false);
-
-    return size;
+    
+    //EPIPE 32 d对端关闭
+    if (errno == EPIPE) {
+        free_client(client);
+    }
+    return sended;
 }
 
 /**
@@ -503,6 +535,11 @@ int queue_test()
     return 0;
 }
 
+void sig_handle(int sig)
+{
+    printf("%d sig received \n", sig);
+}
+
 int main()
 {
     //queue_test();
@@ -540,8 +577,13 @@ int main()
     set_non_block(listenfd);
     update_events(epollfd, server, kReadEvent, false);
     
+   // struct sigaction act;
+   // act.sa_handler = SIG_IGN;
+   // sigaction(SIGPIPE, &act, NULL);
+    signal(SIGPIPE, sig_handle);
+    
     for (;;) { //实际应用应当注册信号处理函数，退出时清理资源
-        loop(epollfd, server, 10000);
+        loop(epollfd, server, 1000);
     }
     
     return 0;
