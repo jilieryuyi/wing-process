@@ -38,6 +38,8 @@ typedef struct _client {
     queue* queue; //队列指针
     char ip[16];  //客户端ip
     int port;     //客户端连接端口
+    int last_send_time;
+    int last_revc_time;
 } client_node;
 
 //发送队列节点数据
@@ -52,6 +54,7 @@ typedef struct _send_queue_node {
 ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times);
 //释放发送队列节点数据
 void free_send_queue_node(void* n);
+ssize_t send_node(int efd, client_node* client, node* n);
 
 /**
  * 初始化客户端节点资源
@@ -72,6 +75,8 @@ client_node* init_client(int fd, char* ip, int port)
     sprintf(client->ip, "%s", ip);
     client->port = port;
     client->queue = create_queue(SEND_QUEUE_BUF_SIZE);
+    client->last_revc_time = 0;
+    client->last_send_time = 0;
     
     return client;
 }
@@ -81,6 +86,9 @@ client_node* init_client(int fd, char* ip, int port)
  */
 void free_client(client_node* client)
 {
+    if (client == NULL) {
+        return;
+    }
     shutdown(client->fd, SHUT_RDWR);
     close(client->fd);
     client->fd = 0;
@@ -231,6 +239,19 @@ void handle_accept(int efd, int fd, long nums)
        // memset(&linger, 0, sizeof(struct linger));
        // setsockopt(cfd, SOL_SOCKET, SO_LINGER, (const void*)&linger, sizeof(struct linger));
         
+        int keepalive = 1; // 开启keepalive属性
+      //  int keepidle = 60; // 如该连接在60秒内没有任何数据往来,则进行探测
+      //  int keepinterval = 5; // 探测时发包的时间间隔为5 秒
+       // int keepcount = 3; // 探测尝试的次数.如果第1次探测包就收到响应了,则后2次的不再发.
+        setsockopt(cfd, SOL_SOCKET, SO_KEEPALIVE, (void *)&keepalive , sizeof(keepalive));
+        //setsockopt(cfd, /*SOL_TCP*/IPPROTO_TCP, TCP_KEEPIDLE, (void*)&keepidle , sizeof(keepidle ));
+       // setsockopt(cfd, /*SOL_TCP*/IPPROTO_TCP, TCP_KEEPINTVL, (void *)&keepinterval , sizeof(keepinterval ));
+        //setsockopt(cfd, /*SOL_TCP*/IPPROTO_TCP, /*TCP_KEEPCNT == 4*/IP_TTL, (void *)&keepcount , sizeof(keepcount ));
+        //
+       // int on = 1, secs = 10;
+       // setsockopt(cfd, SOL_SOCKET,  SO_KEEPALIVE, &on, sizeof on);
+       // setsockopt(cfd, IPPROTO_TCP, TCP_KEEPALIVE, &secs, sizeof secs);
+        
         client_node *client = init_client(cfd, inet_ntoa(raddr.sin_addr), raddr.sin_port);
         
         set_non_block(cfd);
@@ -284,8 +305,8 @@ void handle_read(int efd, client_node* client, long bytes)
     ssize_t sended_size = 0;
     
     //这里的for循环仅仅是为了测试send
-    int i = 0;
-    for (i = 0; i < 1000000; i++)
+    //int i = 0;
+    //for (i = 0; i < 1000000; i++)
     //发送回应数据
     sended_size = send_data(efd, client, msg, send_size, 0); //写出读取的数据
     
@@ -337,9 +358,9 @@ void handle_write(int efd, client_node* client, size_t left_size)
     
     //如果存在未发送完成的数据，尝试重发
     while (n != NULL) {
-        send_queue_node* sn = (send_queue_node*)n->data;
+        //send_queue_node* sn = (send_queue_node*)n->data;
         printf("队列发送\n");
-        send_data(efd, client, (const char*)sn->msg, (size_t)sn->msg_size, sn->send_times);
+        send_node(efd, client, n);
         n = pop_queue(client->queue);
     }
     
@@ -349,20 +370,12 @@ void handle_write(int efd, client_node* client, size_t left_size)
     }
     
 end:
-    update_events(efd, client, kReadEvent, true);
+   // update_events(efd, client, kReadEvent, true);
+    printf("");
 }
 
-/**
- * 如果失败会自动进入重试队列，待客户端可写，重试发送，最多重试100次
- */
-ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times)
+static size_t _send(int fd, const char* buf, size_t buf_size)
 {
-    if (send_times > 5) {
-        printf("resend max times error close %d\n", client->fd);
-        free_client(client);
-        return 0;
-    }
-    
     ssize_t sended = 0;
     ssize_t size   = 0;
     char *sbuf     = (char*)buf;
@@ -370,17 +383,23 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     //nonblock write则是返回能够放下的字节数，之后调用则返回-1（errno = EAGAIN或EWOULDBLOCK）
     while (sended < buf_size) {
         //size = send(client->fd, sbuf, buf_size, MSG_NOSIGNAL);//mac没有这个参数MSG_NOSIGNAL
-        size = write(client->fd, sbuf, buf_size);
-        printf("send msg %zu bytes:\n%s\n\n", buf_size, sbuf);
+        size = write(fd, sbuf, buf_size);
+        printf("%d send msg %zu bytes:\n%s\n\n", errno, buf_size, sbuf);
         
+        //如果出现EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         if (size < 0 && errno == EINTR) {
             printf("intterupt\n");
+            //exit(0);
             //nwritten = 0;        /* and call write() again */
             continue;
         }
         
         //缓冲区满
+        //EAGAIN		35		/* Resource temporarily unavailable */
+        //EAGAIN 的意思也很明显，就是要你再次尝试。
         if (size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            printf("缓冲区满\n");
+           // exit(0);
             continue;
         }
         
@@ -394,23 +413,39 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
         
     }
     
+    return sended;
+}
+
+static void _push_to_queue(queue* q, const char* buf, size_t buf_size, int send_times)
+{
     //创建一个数据节点
-    send_queue_node* _node = NULL;
+    send_queue_node* _node = create_send_queue_node((char*)buf, buf_size, send_times + 1);
+
+    node* n = create_node(q, (void*)_node);
+    if (n != NULL) {
+        push_queue(q, n);
+    } else {
+        free_send_queue_node((void*)_node);
+    }
+    
+}
+
+/**
+ * 如果失败会自动进入重试队列，待客户端可写，重试发送，最多重试100次
+ */
+ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times)
+{
+    if (send_times > 5) {
+        printf("resend max times error close %d\n", client->fd);
+        free_client(client);
+        return 0;
+    }
+    
+    size_t size = _send(client->fd, buf, buf_size);
     
     if (size == -1 && errno != EPIPE && errno != ECONNRESET) {
         //发送失败，直接进入重试队列
-        _node = create_send_queue_node((char*)buf, buf_size, send_times + 1);
-    }
-    
-    //else if (size < buf_size) {
-        //这里没有这个必要
-        //发送部分失败，直接进入重试队列
-        //_node = create_send_queue_node((char*)(buf+size), buf_size - size, send_times + 1);
-    //}
-    
-    if (_node != NULL) {
-        node* n = create_node(client->queue, (void*)_node);
-        push_queue(client->queue, n);
+        _push_to_queue(client->queue, buf, buf_size, send_times);
     }
     
     update_events(efd, client, kWriteEvent, false);
@@ -419,7 +454,68 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     if (errno == EPIPE || errno == ECONNRESET) {
         free_client(client);
     }
-    return sended;
+    return size;
+}
+
+static void keepalive(client_node* client, const char* buf, size_t buf_size)
+{
+    size_t size = write(client->fd, buf, buf_size);
+
+    
+    //如果出现EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+    if (size == -1 && errno == EINTR) {
+        printf("intterupt\n");
+        //exit(0);
+        //nwritten = 0;        /* and call write() again */
+        return;
+    }
+    
+    //缓冲区满
+    //EAGAIN		35		/* Resource temporarily unavailable */
+    //EAGAIN 的意思也很明显，就是要你再次尝试。
+    if (size == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        printf("缓冲区满\n");
+        // exit(0);
+        return;
+    }
+    
+
+    //EPIPE 32 d对端关闭
+    if (errno == EPIPE || errno == ECONNRESET) {
+        free_client(client);
+    }
+}
+
+
+ssize_t send_node(int efd, client_node* client, node* n)
+{
+    send_queue_node* sn = (send_queue_node*)n->data;
+    
+    if (sn->send_times > 5) {
+        free_node(n, free_send_queue_node);
+        printf("resend max times error close %d\n", client->fd);
+        free_client(client);
+        return 0;
+    }
+    
+    sn->send_times = sn->send_times+1;
+    size_t size = _send(client->fd, sn->msg, sn->msg_size);
+    
+    if (size == -1 && errno != EPIPE && errno != ECONNRESET) {
+        //发送失败，直接进入重试队列
+        push_queue(client->queue, n);
+    } else {
+        free_node(n, free_send_queue_node);
+    }
+    
+    update_events(efd, client, kWriteEvent, false);
+    
+    //EPIPE 32 d对端关闭
+    if (errno == EPIPE || errno == ECONNRESET) {
+        free_client(client);
+        errno  = 0;
+    }
+    return size;
 }
 
 /**
@@ -439,7 +535,7 @@ void loop(int efd, client_node* server, int waitms)
     struct kevent active_events[max_enents];
     //获取ready的fd，类似epoll_wait
     int n = kevent(efd, NULL, 0, active_events, max_enents, &timeout);
-    printf("epoll_wait return %d\n", n);
+    //printf("epoll_wait return %d\n", n);
 
     for (int i = 0; i < n; i ++) {
         //用户数据
@@ -450,20 +546,10 @@ void loop(int efd, client_node* server, int waitms)
         uint16_t flags = active_events[i].flags;
         int events     = active_events[i].filter;
         
-        printf("events = %d \n", events);
+        /*printf("events = %d \n", events);
         printf("flags = %d \n", flags);
-        printf("data = %ld \n", data);
+        printf("data = %ld \n", data);*/
 
-        
-        //处理出错的socket
-        if (flags & EV_ERROR) {
-            free_client(client);
-            //close((int)activeEvs[i].ident);
-            continue;
-        }
-        
-       
-        
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
             if (client->fd == server->fd) {
@@ -474,20 +560,27 @@ void loop(int efd, client_node* server, int waitms)
         }
         
         else if (events == EVFILT_WRITE) {
-            
-            if (flags & EV_EOF) {
+            keepalive(client, "", 0);
+            handle_write(efd, client, data);
+            /*if (flags & EV_EOF) {
                 printf("ev eof close %d\n", client->fd);
                 free_client(client);
                 continue;
-            }
-            
-            handle_write(efd, client, data);
+            }*/
         }
         
         else {
             printf("unknown event %d\r\n", events);
             goto error;
             break;
+        }
+        
+        //处理出错的socket
+        if (flags & EV_ERROR) {
+            printf("ev error close %d\n", client->fd);
+            free_client(client);
+            //close((int)activeEvs[i].ident);
+            continue;
         }
     }
     
@@ -542,6 +635,7 @@ int main()
     //屏蔽sigpipe
     const int value = 1;
     setsockopt(epollfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
+    setsockopt(epollfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
     
     set_non_block(listenfd);
     update_events(epollfd, server, kReadEvent, false);
