@@ -11,4 +11,8 @@
 
 #include <stdio.h>
 
+long get_timestamp();
+void get_daytime(char *nowtime, size_t size);
+void time_test();
+
 #endif /* time_hpp */

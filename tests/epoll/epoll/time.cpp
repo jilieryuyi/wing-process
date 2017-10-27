@@ -12,29 +12,43 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+/**
+ * 获取时间戳
+ * @return long 当前时间戳
+ */
 long get_timestamp()
 {
     time_t t = time(NULL);
     return time(&t);
     
-    struct timespec time;
+    /*struct timespec time;
     memset(&time, 0, sizeof(time));
     clock_gettime(CLOCK_REALTIME, &time);
     //毫秒时间戳和纳秒时间戳
-    printf("%ld----->%ld\n", time.tv_sec, time.tv_nsec);
-    return 0;
+    //printf("%ld----->%ld\n", time.tv_sec, time.tv_nsec);
+    
+    if (nsec) {
+        return time.tv_nsec;
+    }
+    
+    return time.tv_sec;*/
 }
 
-void get_daytime(char **nowtime)
+/**
+ * @demo
+ * char time[24];
+ * get_daytime((char*)time, 24);
+ * printf("current time: %s\n", time);
+ * @param nowtime 用于容纳当前时间的内存指针
+ * @param size nowtime的大小
+ */
+void get_daytime(char *nowtime, size_t size)
 {
     time_t t;
     t = time(NULL);
     struct tm *lt;
-    //long ii = time(&t);
-   // printf("ii = %d\n", ii);
     t = time(NULL);
     lt = localtime(&t);
-    //char nowtime[24];
-    //memset(*nowtime, 0, sizeof(nowtime));
-    strftime(*nowtime, 24, "%Y-%m-%d %H:%M:%S", lt);
+    memset(nowtime, 0, size);
+    strftime(nowtime, size, "%Y-%m-%d %H:%M:%S", lt);
 }

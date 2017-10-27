@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE1E12621FA3138F00DADFF8 /* time_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE1E12611FA3138F00DADFF8 /* time_test.cpp */; };
 		FE8CF8F41FA21E2300AB854F /* queue_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE8CF8F31FA21E2300AB854F /* queue_test.cpp */; };
 		FE8CF8F71FA2A8FC00AB854F /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE8CF8F51FA2A8FC00AB854F /* time.cpp */; };
 		FEBC99511F9C264200D0C58E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEBC99501F9C264200D0C58E /* main.cpp */; };
@@ -26,6 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE1E12611FA3138F00DADFF8 /* time_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = time_test.cpp; sourceTree = "<group>"; };
 		FE8CF8F31FA21E2300AB854F /* queue_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = queue_test.cpp; sourceTree = "<group>"; };
 		FE8CF8F51FA2A8FC00AB854F /* time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = time.cpp; sourceTree = "<group>"; };
 		FE8CF8F61FA2A8FC00AB854F /* time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 				FE8CF8F31FA21E2300AB854F /* queue_test.cpp */,
 				FE8CF8F51FA2A8FC00AB854F /* time.cpp */,
 				FE8CF8F61FA2A8FC00AB854F /* time.hpp */,
+				FE1E12611FA3138F00DADFF8 /* time_test.cpp */,
 			);
 			path = epoll;
 			sourceTree = "<group>";
@@ -138,6 +141,7 @@
 				FEBC99511F9C264200D0C58E /* main.cpp in Sources */,
 				FE8CF8F41FA21E2300AB854F /* queue_test.cpp in Sources */,
 				FED4E0FD1F9EAACB002A2F9A /* queue.cpp in Sources */,
+				FE1E12621FA3138F00DADFF8 /* time_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +238,7 @@
 		FEBC99551F9C264200D0C58E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -241,6 +246,7 @@
 		FEBC99561F9C264200D0C58E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
