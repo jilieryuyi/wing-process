@@ -8,6 +8,7 @@
 
 #include "queue.hpp"
 #include "stdlib.h"
+#include "string.h"
 
 /**
  * 创建内存池，返回开始指针，这里2次malloc

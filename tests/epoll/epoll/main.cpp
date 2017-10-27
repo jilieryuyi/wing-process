@@ -14,163 +14,16 @@
 //
 
 #include <iostream>
-#include <sys/socket.h>
-#include <sys/event.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include "stdlib.h"
 #include "queue.hpp"
 #include "assert.h"
 #include "wing.h"
+#include "wing.hpp"
 #include "time.hpp"
-#include <dlfcn.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <strings.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-
-#define	TCP_NODELAY             0x01    /* don't delay send to coalesce packets */
-#define	TCP_MAXSEG              0x02    /* set maximum segment size */
-#define TCP_NOPUSH              0x04    /* don't push last block of write */
-#define TCP_NOOPT               0x08    /* don't use TCP options */
-#define TCP_KEEPALIVE           0x10    /* idle time used when SO_KEEPALIVE is enabled */
-#define TCP_CONNECTIONTIMEOUT   0x20    /* connection timeout */
-#define PERSIST_TIMEOUT		    0x40	/* time after which a connection in
-                                         * persist timeout will terminate.
-                                         * see draft-ananth-tcpm-persist-02.txt
-                                         */
-#define TCP_RXT_CONNDROPTIME    0x80	/* time after which tcp retransmissions will be
-                                         * stopped and the connection will be dropped
-                                         */
-#define TCP_RXT_FINDROP		    0x100	/* when this option is set, drop a connection
-                                         * after retransmitting the FIN 3 times. It will
-                                         * prevent holding too many mbufs in socket
-                                         * buffer queues.
-                                         */
-#define	TCP_KEEPINTVL		    0x101	/* interval between keepalives */
-#define	TCP_KEEPCNT		        0x102	/* number of keepalives before close */
-#define	TCP_SENDMOREACKS	    0x103	/* always ack every other packet */
-#define	TCP_ENABLE_ECN		    0x104	/* Enable ECN on a connection */
-#define	TCP_FASTOPEN		    0x105	/* Enable/Disable TCP Fastopen on this socket */
-#define	TCP_CONNECTION_INFO	    0x106	/* State of TCP connection */
-
-
-#ifndef SOL_TCP 
-#define SOL_TCP IPPROTO_TCP
-#endif
 
 const int kReadEvent  = 1;
 const int kWriteEvent = 2;
+int listenfd;
 
-//客户端节点
-typedef struct _client {
-    int fd;             //socket句柄
-    queue* queue;       //队列指针
-    char ip[16];        //客户端ip
-    int port;           //客户端连接端口
-    int last_send_time; //最后的发送时间
-    int last_revc_time; //最后的读取时间
-} client_node;
-
-//发送队列节点数据
-typedef struct _send_queue_node {
-    client_node* client;    //客户端节点
-    char* msg;              //待发送的数据
-    unsigned long msg_size; //待发送的数据大小
-    int send_times;         //发送计数器，当达到MAX_SEND_TIMES时直接放弃重试
-} send_queue_node;
-
-//发送数据，自带重试机制
-ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size, int send_times);
-//释放发送队列节点数据
-void free_send_queue_node(void* n);
-//发送一个队列节点，一般用于失败重试
-ssize_t send_node(int efd, client_node* client, node* n);
-//启用和设置socket的keepalive模式
-void set_keepalive(int sockfd);
-
-/**
- * 初始化客户端节点资源
- * @param fd socket句柄
- * @param ip 连接ip
- * @param port 连接端口
- * @return client_node*
- */
-client_node* init_client(int fd, char* ip, int port)
-{
-    client_node *client = (client_node*)malloc(sizeof(client_node));
-    memset(client, 0, sizeof(client_node));
-    
-    client->fd = fd;
-    
-    //123.123.123.123
-    memset(client->ip, 0, 16);
-    sprintf(client->ip, "%s", ip);
-    client->port = port;
-    client->queue = create_queue(SEND_QUEUE_BUF_SIZE);
-    client->last_revc_time = 0;
-    client->last_send_time = 0;
-    
-    return client;
-}
-
-/**
- * 释放客户端
- */
-void free_client(client_node* client)
-{
-    if (client == NULL) {
-        return;
-    }
-    shutdown(client->fd, SHUT_RDWR);
-    close(client->fd);
-    client->fd = 0;
-    free_queue(client->queue, free_send_queue_node);
-    client->queue = NULL;
-    
-    if (client) {
-        free(client);
-    }
-    client = NULL;
-}
-
-/**
- * 创建一个发送队列节点数据，2个malloc
- */
-send_queue_node* create_send_queue_node(char* buf, size_t buf_size, int send_times)
-{
-    send_queue_node* node = (send_queue_node*)malloc(sizeof(send_queue_node));
-    node->send_times      = send_times + 1;
-    node->msg             = (char*)malloc(buf_size+1);
-    
-    memset(node->msg, 0, buf_size + 1);
-    sprintf(node->msg, buf, buf_size);
-    node->msg_size = buf_size;
-    
-    return node;
-}
-
-/**
- * 释放发送的队列数据，2个free
- */
-void free_send_queue_node(void* n)
-{
-    send_queue_node* sn = (send_queue_node*)n;
-    if(sn->msg) {
-        free(sn->msg);
-        sn->msg = NULL;
-    }
-    free(n);
-    n = NULL;
-}
 
 /**
  * 将socket设置为非阻塞
@@ -222,40 +75,6 @@ void update_events(int efd, client_node* client, int events, bool modify)
     //使read、write事件生效
     int r = kevent(efd, ev, n, NULL, 0, NULL);
     exit_if(r, "kevent failed ");
-}
-
-/**
- * 设置socket的keepalive
- * @param sockfd socket句柄
- */
-void set_keepalive(int sockfd)
-{
-    const uint32_t keepaliveIntervalSec = 10;
-    
-#ifdef _WIN32
-    tcp_keepalive keepaliveParams;
-    DWORD ret = 0;
-    keepaliveParams.onoff = 1;
-    keepaliveParams.keepaliveinterval = keepaliveParams.keepalivetime = keepaliveIntervalSec * 1000;
-    WSAIoctl(sockfd, SIO_KEEPALIVE_VALS, &keepaliveParams, sizeof(keepaliveParams), NULL, 0, &ret, NULL, NULL);
-    
-#elif __APPLE__
-    int on = 1, secs = keepaliveIntervalSec;
-    setsockopt(sockfd, SOL_SOCKET,  SO_KEEPALIVE, &on, sizeof(on));
-    setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPALIVE, &secs, sizeof(secs));
-    
-#elif __linux
-    int32_t optval;
-    socklen_t optlen = sizeof(optval);
-    optval = 1;
-    setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
-    const uint32_t keepaliveProbeCount = 20;
-    optval = keepaliveIntervalSec;
-    setsockopt(sockfd, SOL_TCP, TCP_KEEPIDLE, &optval, optlen);
-    setsockopt(sockfd, SOL_TCP, TCP_KEEPINTVL, &optval, optlen);
-    optval = keepaliveProbeCount;
-    setsockopt(sockfd, SOL_TCP, TCP_KEEPCNT, &optval, optlen);
-#endif
 }
 
 /**
@@ -541,7 +360,7 @@ void loop(int efd, client_node* server, int waitms)
     struct kevent active_events[max_enents];
     //获取ready的fd，类似epoll_wait
     int n = kevent(efd, NULL, 0, active_events, max_enents, &timeout);
-    //debug("epoll_wait return %d\n", n);
+    //debug("epoll_wait return %d", n);
 
     for (int i = 0; i < n; i ++) {
         //用户数据
@@ -552,9 +371,7 @@ void loop(int efd, client_node* server, int waitms)
         uint16_t flags = active_events[i].flags;
         int events     = active_events[i].filter;
         
-       /* printf("events = %d \n", events);
-        printf("flags = %d \n", flags);
-        printf("data = %ld \n", data);*/
+        debug("events = %d flags = %d data = %ld ", events, flags, data);
 
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
@@ -567,11 +384,6 @@ void loop(int efd, client_node* server, int waitms)
         
         else if (events == EVFILT_WRITE) {
             handle_write(efd, client, data);
-            /*if (flags & EV_EOF) {
-                printf("ev eof close %d\n", client->fd);
-                free_client(client);
-                continue;
-            }*/
         }
         
         else {
@@ -584,7 +396,6 @@ void loop(int efd, client_node* server, int waitms)
         if (flags & EV_ERROR) {
             debug("ev error close %d\n", client->fd);
             free_client(client);
-            //close((int)activeEvs[i].ident);
             continue;
         }
     }
@@ -600,12 +411,14 @@ error:
 
 void sig_handle(int sig)
 {
-    debug("%d sig received \n", sig);
+    debug("%d sig received ", sig);
+    close(listenfd);
+    exit(0);
 }
 
 int main()
 {
-    debug("server start ......\n");
+    debug("server start ......");
     //queue_test();
     //return 0;
     
@@ -616,7 +429,7 @@ int main()
     int epollfd = kqueue();
     exit_if(epollfd < 0, "epoll_create failed");
     
-    int listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
     exit_if(listenfd < 0, "socket failed");
     
     struct sockaddr_in addr;
@@ -631,20 +444,23 @@ int main()
     
     r = listen(listenfd, 20);
     exit_if(r, "listen failed %d %s", errno, strerror(errno));
-    
-    debug("fd %d listening at %d\n", listenfd, port);
+    debug("fd %d listening at %d", listenfd, port);
     
     client_node* server = init_client(listenfd, (char*)"0.0.0.0", port);
     
     //屏蔽sigpipe
     const int value = 1;
-    setsockopt(epollfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
-    setsockopt(epollfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
-    set_keepalive(epollfd);
+    setsockopt(listenfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
+    set_keepalive(listenfd);
 
     set_non_block(listenfd);
     update_events(epollfd, server, kReadEvent, false);
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGINT, sig_handle);
+    signal(SIGQUIT, sig_handle);
+    signal(SIGHUP, sig_handle);
+    signal(SIGTERM, sig_handle);
     
     for (;;) { //实际应用应当注册信号处理函数，退出时清理资源
         loop(epollfd, server, 1000);

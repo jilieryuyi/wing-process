@@ -8,9 +8,10 @@
 
 #ifndef wing_h
 #define wing_h
-#include <errno.h>
-#include <string.h>
+#include "errno.h"
 #include "time.hpp"
+#include <stdlib.h>
+
 
 #define exit_if(r, ...) \
 if (r) {\

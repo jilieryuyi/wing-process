@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "wing.h"
+#include "string.h"
 #include "queue.hpp"
 
 

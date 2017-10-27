@@ -12,6 +12,7 @@
 		FE8CF8F71FA2A8FC00AB854F /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE8CF8F51FA2A8FC00AB854F /* time.cpp */; };
 		FEBC99511F9C264200D0C58E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEBC99501F9C264200D0C58E /* main.cpp */; };
 		FED4E0FD1F9EAACB002A2F9A /* queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FED4E0FB1F9EAACB002A2F9A /* queue.cpp */; };
+		FEF4DCE41FA3E1D3003A0B69 /* wing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEF4DCE31FA3E1D3003A0B69 /* wing.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,6 +37,8 @@
 		FED4E0FB1F9EAACB002A2F9A /* queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = queue.cpp; sourceTree = "<group>"; };
 		FED4E0FC1F9EAACB002A2F9A /* queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = queue.hpp; sourceTree = "<group>"; };
 		FED4E0FE1F9ED121002A2F9A /* wing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wing.h; sourceTree = "<group>"; };
+		FEF4DCE31FA3E1D3003A0B69 /* wing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wing.cpp; sourceTree = "<group>"; };
+		FEF4DCE51FA3E385003A0B69 /* wing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = wing.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +79,8 @@
 				FE8CF8F51FA2A8FC00AB854F /* time.cpp */,
 				FE8CF8F61FA2A8FC00AB854F /* time.hpp */,
 				FE1E12611FA3138F00DADFF8 /* time_test.cpp */,
+				FEF4DCE31FA3E1D3003A0B69 /* wing.cpp */,
+				FEF4DCE51FA3E385003A0B69 /* wing.hpp */,
 			);
 			path = epoll;
 			sourceTree = "<group>";
@@ -139,6 +144,7 @@
 			files = (
 				FE8CF8F71FA2A8FC00AB854F /* time.cpp in Sources */,
 				FEBC99511F9C264200D0C58E /* main.cpp in Sources */,
+				FEF4DCE41FA3E1D3003A0B69 /* wing.cpp in Sources */,
 				FE8CF8F41FA21E2300AB854F /* queue_test.cpp in Sources */,
 				FED4E0FD1F9EAACB002A2F9A /* queue.cpp in Sources */,
 				FE1E12621FA3138F00DADFF8 /* time_test.cpp in Sources */,
