@@ -78,45 +78,6 @@ static int add_event(int qfd, client_node* client, int mask)
 }
 
 /**
- * 添加或删除read、write监听
- * @param efd kqueue返回值
- * @param client client节点指针
- * @param events 操作类型
- * @param modify 是否修改
- */
-/*void update_events(int efd, client_node* client, int events, bool modify)
-{
-    if (!client) {
-        return;
-    }
-    if (client->fd <= 0) {
-        return;
-    }
-    struct kevent ev[2];
-    int n = 0;
-
-    //添加read事件
-    if (events & kReadEvent) {
-        EV_SET(&ev[n++], client->fd, EVFILT_READ, EV_ADD|EV_ERROR|EV_ENABLE, 0, 0, (void*)client);
-    } else if (modify) {
-        EV_SET(&ev[n++], client->fd, EVFILT_READ, EV_DELETE, 0, 0, (void*)client);
-    }
-
-    //添加write事件
-    if (events & kWriteEvent) {
-        EV_SET(&ev[n++], client->fd, EVFILT_WRITE, EV_ADD|EV_ERROR|EV_ENABLE, 0, 0, (void*)client);
-    } else if (modify) {
-        EV_SET(&ev[n++], client->fd, EVFILT_WRITE, EV_DELETE, 0, 0, (void*)client);
-    }
-    debug("%s fd %d events read %d write %d\n",
-           modify ? "mod" : "add", client->fd, events & kReadEvent, events & kWriteEvent);
-
-    //使read、write事件生效
-    int r = kevent(efd, ev, n, NULL, 0, NULL);
-    exit_if(r, "kevent failed ");
-}*/
-
-/**
  * accept接受连接
  * @param efd kqueue
  * @param fd listen的socket句柄
@@ -127,7 +88,7 @@ void handle_accept(int efd, int fd, long nums)
     struct sockaddr_in raddr;
     socklen_t rsz = sizeof(raddr);
     int cfd, i, r;
-    sockaddr_in peer;//, local;
+    sockaddr_in peer;
     socklen_t alen = sizeof(peer);
     
     for (i = 0; i < nums; i++) {
@@ -179,7 +140,7 @@ void handle_read(int efd, client_node* client, long bytes)
     //如果可读字节数等于0，说明对端关闭了，这个时候可以释放连接了
     if (bytes <= 0) {
         debug("1=>receive error fd %d closed\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT);
         free_client(client);
         return;
     }
@@ -208,12 +169,12 @@ void handle_read(int efd, client_node* client, long bytes)
     //ECONNRESET  54 Connection reset by peer
     if (m == 0 || errno == EPIPE || errno == ECONNRESET) {
         debug("2=>receive error %d closed\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT);
         free_client(client);
         return;
     }
     
-    char *msg           = (char*)"HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world";
+    /*char *msg           = (char*)"HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world";
     size_t send_size    = strlen(msg);
     ssize_t sended_size = 0;
     
@@ -222,7 +183,7 @@ void handle_read(int efd, client_node* client, long bytes)
     //for (i = 0; i < 1000000; i++)
     //发送回应数据
     sended_size = send_data(efd, client, msg, send_size, 0); //写出读取的数据
-    
+    */
     //只有当receive buffer为空时，blocking模式才会等待，而nonblock模式下会立即返回-1（errno = EAGAIN或EWOULDBLOCK
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
         return;
@@ -255,7 +216,6 @@ void handle_write(int efd, client_node* client, size_t left_size)
     node* n = pop_queue(client->queue);
     if (n == NULL) {
         debug("queue is empty");
-        goto end;
     }
     
     //如果存在未发送完成的数据，尝试重发
@@ -265,7 +225,6 @@ void handle_write(int efd, client_node* client, size_t left_size)
         n = pop_queue(client->queue);
     }
     
-end:
     del_event(efd, client->fd, WRITE_EVENT);
 }
 
@@ -330,7 +289,7 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
 {
     if (send_times > 5) {
         debug("resend max times error close %d\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT);
         free_client(client);
         return 0;
     }
@@ -344,7 +303,7 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT);
         free_client(client);
     }
     return size;
@@ -357,7 +316,7 @@ ssize_t send_node(int efd, client_node* client, node* n)
     if (sn->send_times > 5) {
         free_node(n, free_send_queue_node);
         debug("resend max times error close %d\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, WRITE_EVENT);
         free_client(client);
         return 0;
     }
@@ -376,7 +335,7 @@ ssize_t send_node(int efd, client_node* client, node* n)
     
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
-        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+        del_event(efd, client->fd, WRITE_EVENT);
         free_client(client);
         errno  = 0;
     }
@@ -413,6 +372,14 @@ void loop(int efd, client_node* server, int waitms)
         
         debug("events = %d flags = %d data = %ld ", events, flags, data);
 
+        //处理出错的socket
+        if (flags & EV_ERROR) {
+            debug("ev error close %d\n", client->fd);
+            del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
+            free_client(client);
+            continue;
+        }
+        
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
             if (client->fd == server->fd) {
@@ -433,14 +400,6 @@ void loop(int efd, client_node* server, int waitms)
             debug("unknown event %d\r\n", events);
             goto error;
             break;
-        }
-        
-        //处理出错的socket
-        if (flags & EV_ERROR) {
-            debug("ev error close %d\n", client->fd);
-            del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
-            free_client(client);
-            continue;
         }
     }
     

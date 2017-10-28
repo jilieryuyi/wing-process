@@ -48,7 +48,7 @@ void free_client(client_node* client)
     debug("%d shutdown", client->fd);
     close(client->fd);
     debug("%d close", client->fd);
-    client->fd = 0;
+   // client->fd = 0;
     free_queue(client->queue, free_send_queue_node);
     client->queue = NULL;
     
