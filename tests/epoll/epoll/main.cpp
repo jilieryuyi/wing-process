@@ -140,7 +140,7 @@ void handle_read(int efd, client_node* client, long bytes)
     //如果可读字节数等于0，说明对端关闭了，这个时候可以释放连接了
     if (bytes <= 0) {
         debug("1=>receive error fd %d closed\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return;
     }
@@ -169,7 +169,7 @@ void handle_read(int efd, client_node* client, long bytes)
     //ECONNRESET  54 Connection reset by peer
     if (m == 0 || errno == EPIPE || errno == ECONNRESET) {
         debug("2=>receive error %d closed\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return;
     }
@@ -289,7 +289,7 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
 {
     if (send_times > 5) {
         debug("resend max times error close %d\n", client->fd);
-        del_event(efd, client->fd, READ_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return 0;
     }
@@ -303,7 +303,7 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
     
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
-        del_event(efd, client->fd, READ_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
     }
     return size;
@@ -316,7 +316,7 @@ ssize_t send_node(int efd, client_node* client, node* n)
     if (sn->send_times > 5) {
         free_node(n, free_send_queue_node);
         debug("resend max times error close %d\n", client->fd);
-        del_event(efd, client->fd, WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return 0;
     }
@@ -335,7 +335,7 @@ ssize_t send_node(int efd, client_node* client, node* n)
     
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
-        del_event(efd, client->fd, WRITE_EVENT);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         errno  = 0;
     }
