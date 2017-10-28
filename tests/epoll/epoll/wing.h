@@ -19,7 +19,7 @@ if (r) {\
     get_daytime((char*)time, 24);\
     printf("%s ", time);\
     printf(__VA_ARGS__); \
-    printf("error no: %d error msg %s\n", errno, strerror(errno)); \
+    printf("  error no: %d error msg %s\n", errno, strerror(errno)); \
     exit(1);\
 }
 

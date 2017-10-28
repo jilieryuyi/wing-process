@@ -20,8 +20,11 @@
 #include "wing.hpp"
 #include "time.hpp"
 
-const int kReadEvent  = 1;
-const int kWriteEvent = 2;
+#define READ_EVENT 1
+#define WRITE_EVENT 2
+
+//const int kReadEvent  = 1;
+//const int kWriteEvent = 2;
 int listenfd;
 
 
@@ -36,6 +39,42 @@ void set_non_block(int fd)
     
     int r = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     exit_if(r < 0, "fcntl failed");
+    debug("%d set no block", fd);
+}
+
+static void del_event(int qfd, int fd, int mask)
+{
+    struct kevent ke;
+    
+    if (mask & READ_EVENT) {
+        debug("%d del read event", fd);
+        EV_SET(&ke, fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+        kevent(qfd, &ke, 1, NULL, 0, NULL);
+    }
+    
+    if (mask & WRITE_EVENT) {
+        debug("%d del write event", fd);
+        EV_SET(&ke, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+        kevent(qfd, &ke, 1, NULL, 0, NULL);
+    }
+}
+
+static int add_event(int qfd, client_node* client, int mask)
+{
+    struct kevent ke;
+    
+    if (mask & READ_EVENT) {
+        debug("%d add read event", client->fd);
+        EV_SET(&ke, client->fd, EVFILT_READ, EV_ADD, 0, 0, (void*)client);
+        if (kevent(qfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
+    }
+    
+    if (mask & WRITE_EVENT) {
+        debug("%d add write event", client->fd);
+        EV_SET(&ke, client->fd, EVFILT_WRITE, EV_ADD, 0, 0, (void*)client);
+        if (kevent(qfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
+    }
+    return 0;
 }
 
 /**
@@ -45,7 +84,7 @@ void set_non_block(int fd)
  * @param events 操作类型
  * @param modify 是否修改
  */
-void update_events(int efd, client_node* client, int events, bool modify)
+/*void update_events(int efd, client_node* client, int events, bool modify)
 {
     if (!client) {
         return;
@@ -75,7 +114,7 @@ void update_events(int efd, client_node* client, int events, bool modify)
     //使read、write事件生效
     int r = kevent(efd, ev, n, NULL, 0, NULL);
     exit_if(r, "kevent failed ");
-}
+}*/
 
 /**
  * accept接受连接
@@ -96,24 +135,36 @@ void handle_accept(int efd, int fd, long nums)
         cfd = accept(fd,(struct sockaddr *)&raddr, &rsz);
         
         if (cfd < 0) {
-            debug("accept failed");
+            debug("accept failed, do continue");
             continue;
         }
         //exit_if(cfd < 0, "accept failed");
         memset(&peer, 0, alen);
         r = getpeername(cfd, (sockaddr*)&peer, &alen);
-        exit_if(r < 0, "getpeername failed");
-        debug("accept a connection from %s:%d\n", inet_ntoa(raddr.sin_addr), raddr.sin_port);
+        if (r < 0) {
+            close(cfd);
+            debug("%d getpeername failed, do continue", cfd);
+            continue;
+        }
+        debug("%d accept a new connection %d from %s:%d", fd, cfd, inet_ntoa(raddr.sin_addr), raddr.sin_port);
     
         //屏蔽sigpipe
         const int value = 1;
-        setsockopt(cfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
+        r = setsockopt(cfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
+        if (r != 0) {
+            debug("%d set SO_NOSIGPIPE failed, do continue", cfd);
+            close(cfd);
+            continue;
+        }
+        
+        debug("%d set SO_NOSIGPIPE", cfd);
         set_keepalive(cfd);
+        debug("%d set_keepalive", cfd);
         
         client_node *client = init_client(cfd, inet_ntoa(raddr.sin_addr), raddr.sin_port);
         
         set_non_block(cfd);
-        update_events(efd, client, kReadEvent|kWriteEvent, false);
+        add_event(efd, client, WRITE_EVENT|READ_EVENT);
     }
 }
 
@@ -127,7 +178,8 @@ void handle_read(int efd, client_node* client, long bytes)
 {
     //如果可读字节数等于0，说明对端关闭了，这个时候可以释放连接了
     if (bytes <= 0) {
-        debug("receive error fd %d closed\n", client->fd);
+        debug("1=>receive error fd %d closed\n", client->fd);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return;
     }
@@ -147,13 +199,16 @@ void handle_read(int efd, client_node* client, long bytes)
         debug("read %ld => %ld \n", bytes, n);
     }
     
+    //读取时添加写事件，可写时触发
+    add_event(efd, client, WRITE_EVENT);
     debug("read %zd bytes:\n%s  errno: %d\n\n", n, buf, errno);
     
     //返回0或者EPIPE和ECONNRESET均代表客户端已经断开连接了
     //EPIPE		  32 Broken pipe
     //ECONNRESET  54 Connection reset by peer
     if (m == 0 || errno == EPIPE || errno == ECONNRESET) {
-        debug("receive error fd %d closed\n", client->fd);
+        debug("2=>receive error %d closed\n", client->fd);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return;
     }
@@ -167,11 +222,6 @@ void handle_read(int efd, client_node* client, long bytes)
     //for (i = 0; i < 1000000; i++)
     //发送回应数据
     sended_size = send_data(efd, client, msg, send_size, 0); //写出读取的数据
-    
-    if (sended_size == send_size) {
-        //发送成功，如果是htpp协议，可以考虑在这里free_client
-        //待测试
-    }
     
     //只有当receive buffer为空时，blocking模式才会等待，而nonblock模式下会立即返回-1（errno = EAGAIN或EWOULDBLOCK
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
@@ -197,38 +247,26 @@ void handle_write(int efd, client_node* client, size_t left_size)
 {
     //缓冲区满，不可写
     if (left_size <= 0) {
+        debug("% is not writeable", client->fd);
         return;
     }
-    
-    /*
-    //这里的预期是想要判断可写的缓冲区大小是否足够容纳接下来要发送的数据
-    node* n = peek_queue(client->queue);
-    if (n != NULL) {
-        send_queue_node* sn = (send_queue_node*)n->data;
-        if (sn->msg_size > left_size) {}
-    }*/
     
     //发送队列pop数据
     node* n = pop_queue(client->queue);
     if (n == NULL) {
+        debug("queue is empty");
         goto end;
     }
     
     //如果存在未发送完成的数据，尝试重发
     while (n != NULL) {
-        //send_queue_node* sn = (send_queue_node*)n->data;
-        debug("队列发送\n");
+        debug("队列发送");
         send_node(efd, client, n);
         n = pop_queue(client->queue);
     }
     
-    if (1) {
-        //如果是htpp协议，可以考虑在这里free_client
-        //待测试
-    }
-    
 end:
-    update_events(efd, client, kReadEvent, true);
+    del_event(efd, client->fd, WRITE_EVENT);
 }
 
 static size_t _send(int fd, const char* buf, size_t buf_size)
@@ -292,6 +330,7 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
 {
     if (send_times > 5) {
         debug("resend max times error close %d\n", client->fd);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return 0;
     }
@@ -303,10 +342,9 @@ ssize_t send_data(int efd, client_node* client, const char* buf, size_t buf_size
         _push_to_queue(client->queue, buf, buf_size, send_times);
     }
     
-    update_events(efd, client, kWriteEvent, false);
-    
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
     }
     return size;
@@ -319,6 +357,7 @@ ssize_t send_node(int efd, client_node* client, node* n)
     if (sn->send_times > 5) {
         free_node(n, free_send_queue_node);
         debug("resend max times error close %d\n", client->fd);
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         return 0;
     }
@@ -333,10 +372,11 @@ ssize_t send_node(int efd, client_node* client, node* n)
         free_node(n, free_send_queue_node);
     }
     
-    update_events(efd, client, kWriteEvent, false);
+    //update_events(efd, client, kWriteEvent, false);
     
     //EPIPE 32 d对端关闭
     if (errno == EPIPE || errno == ECONNRESET) {
+        del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
         free_client(client);
         errno  = 0;
     }
@@ -376,13 +416,16 @@ void loop(int efd, client_node* server, int waitms)
         if (events == EVFILT_READ) {
             //如果触发的socket等于监听的socket，说明有新的连接
             if (client->fd == server->fd) {
+                debug("new connect");
                 handle_accept(efd, server->fd, data);
             } else {
+                debug("%d read event", client->fd);
                 handle_read(efd, client, data);
             }
         }
         
         else if (events == EVFILT_WRITE) {
+            debug("%d is writeable", client->fd);
             handle_write(efd, client, data);
         }
         
@@ -395,6 +438,7 @@ void loop(int efd, client_node* server, int waitms)
         //处理出错的socket
         if (flags & EV_ERROR) {
             debug("ev error close %d\n", client->fd);
+            del_event(efd, client->fd, READ_EVENT|WRITE_EVENT);
             free_client(client);
             continue;
         }
@@ -404,6 +448,7 @@ void loop(int efd, client_node* server, int waitms)
     
 error:
     debug("server error close %d\n", server->fd);
+    del_event(efd, server->fd, READ_EVENT);
     free_client(server);
     exit_if(1, "unknown event");
 }
@@ -440,22 +485,27 @@ int main()
     addr.sin_addr.s_addr = INADDR_ANY;
     
     int r = ::bind(listenfd,(struct sockaddr *)&addr, sizeof(struct sockaddr));
-    exit_if(r, "bind to 0.0.0.0:%d failed %d %s", port, errno, strerror(errno));
+    exit_if(r, "%d bind to 0.0.0.0:%d failed", listenfd, port);
+    debug("%d bind to 0.0.0.0:%d", listenfd, port);
     
     r = listen(listenfd, 20);
     exit_if(r, "listen failed %d %s", errno, strerror(errno));
-    debug("fd %d listening at %d", listenfd, port);
+    debug("%d listening at %d", listenfd, port);
     
     client_node* server = init_client(listenfd, (char*)"0.0.0.0", port);
     
     //屏蔽sigpipe
     const int value = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(int));
+    debug("%d set SO_NOSIGPIPE", listenfd);
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
+    debug("%d set SO_REUSEADDR", listenfd);
     set_keepalive(listenfd);
+    debug("%d set_keepalive", listenfd);
 
     set_non_block(listenfd);
-    update_events(epollfd, server, kReadEvent, false);
+    //update_events(epollfd, server, kReadEvent, false);
+    add_event(epollfd, server, READ_EVENT);
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT, sig_handle);
     signal(SIGQUIT, sig_handle);

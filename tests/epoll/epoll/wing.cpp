@@ -41,10 +41,13 @@ client_node* init_client(int fd, char* ip, int port)
 void free_client(client_node* client)
 {
     if (client == NULL) {
+        debug("client is null");
         return;
     }
     shutdown(client->fd, SHUT_RDWR);
+    debug("%d shutdown", client->fd);
     close(client->fd);
+    debug("%d close", client->fd);
     client->fd = 0;
     free_queue(client->queue, free_send_queue_node);
     client->queue = NULL;
