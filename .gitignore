@@ -58,3 +58,4 @@ Release/tests/*.pid
 /EXPERIMENTAL
 /CREDITS
 /wing_process.php
+/configure.ac
