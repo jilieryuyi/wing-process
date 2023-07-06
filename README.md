@@ -75,10 +75,7 @@ This library provides a better API to work with daemon processes on windows、ma
 	echo "thread_id = ",     $process->getThreadId(), "\r\n";
 	echo "command line = ",  $process->getCommandLine(),"\r\n";
 	//$process->kill();
-
-### Help
-For more information QQ group 535218312	     
-how to build wing-process in windows? visit: http://www.itdfy.com/details/1004      
+ 
 build in linux/unix/mac
 ````
 phpize
